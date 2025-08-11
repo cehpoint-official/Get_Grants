@@ -1,4 +1,3 @@
-// src/hooks/use-auth.ts
 import { useState, useEffect } from "react";
 import { auth } from "@/lib/firebase";
 import { 
@@ -21,14 +20,15 @@ export function useAuth() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
-      setIsAdmin(isAdminUser(user));
+      const adminStatus = isAdminUser(user);
+      setIsAdmin(adminStatus);
       
       if (user) {
-        // For admin users, we don't need Firestore profile
-        if (isAdminUser(user)) {
+        // We don't need a Firestore profile for admin users
+        if (adminStatus) {
           setUserProfile(null);
         } else {
-          // For incubators, fetch their profile from Firestore
+          // For any other user (founder or incubator), fetch their profile
           const profile = await getUserProfile(user.uid);
           setUserProfile(profile);
         }
@@ -50,6 +50,29 @@ export function useAuth() {
     }
   };
 
+  // New signup function for Founders
+  const signup = async (email: string, password: string, fullName: string) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Prepare the data for the founder's profile
+      const profileData: CreateUserData = {
+        fullName,
+        email,
+        role: 'founder' // Set the role as 'founder'
+      };
+
+      // Create the user profile in Firestore
+      const profile = await createUserProfile(userCredential.user, profileData);
+      
+      setUserProfile(profile);
+      return userCredential.user;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // This function is specifically for incubators, we'll keep it for later use.
   const registerIncubator = async (
     email: string, 
     password: string, 
@@ -58,7 +81,6 @@ export function useAuth() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
-      // Create user profile in Firestore
       const profile = await createUserProfile(userCredential.user, {
         ...additionalData,
         email,
@@ -88,6 +110,7 @@ export function useAuth() {
     loading,
     isAdmin,
     login,
+    signup, // Export the new signup function
     registerIncubator,
     logout,
   };
