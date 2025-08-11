@@ -5,12 +5,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { AdminModal } from "./admin-modal";
 import { IncubatorSignupModal } from "./ui/IncubatorSignupModal";
 import { Link, useLocation } from "wouter";
-// Naye AuthModal ko import kiya hai
 import { AuthModal } from "./AuthModal";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  // Auth modal ke liye naya state
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [showIncubatorModal, setShowIncubatorModal] = useState(false);
@@ -55,7 +53,6 @@ export function Navbar() {
         return <Button onClick={handleLogout} variant="destructive" className="hidden lg:block text-sm">Logout</Button>;
       }
     } else {
-      // Button ab modal kholega, page par nahi jayega
       return <Button onClick={() => setIsAuthModalOpen(true)} className="hidden lg:block bg-primary-blue hover:bg-accent-blue">Login/Signup</Button>;
     }
   };
@@ -73,7 +70,6 @@ export function Navbar() {
         return <Button onClick={handleLogout} variant="destructive" className="w-full mt-2 text-sm">Logout</Button>;
       }
     } else {
-      // Mobile button bhi ab modal kholega
       return <Button onClick={() => setIsAuthModalOpen(true)} className="w-full bg-primary-blue hover:bg-accent-blue">Login/Signup</Button>;
     }
   };
@@ -86,8 +82,10 @@ export function Navbar() {
         </div>
       )}
 
+      {/* The main nav tag provides the full-width background */}
       <nav className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+        {/* This new div centers the content and sets a max-width */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14 sm:h-16">
             <Link href="/" className="flex items-center gap-2 text-gray-800 hover:text-primary-blue transition-colors">
               <Rocket className="h-6 w-6 sm:h-7 sm:w-7" />
@@ -111,6 +109,7 @@ export function Navbar() {
           </div>
         </div>
         {isOpen && (
+          // The mobile menu should be full-width, so it's outside the container
           <div className="lg:hidden border-t border-gray-100">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-white">
               {navItems.map((item) => (
@@ -124,7 +123,6 @@ export function Navbar() {
         )}
       </nav>
 
-      {/* Saare modals ko yahan render kiya hai */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <AdminModal isOpen={showAdminModal} onClose={() => setShowAdminModal(false)} />
       <IncubatorSignupModal isOpen={showIncubatorModal} onClose={() => setShowIncubatorModal(false)} />

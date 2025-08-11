@@ -9,7 +9,6 @@ import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { CheckCircle } from "lucide-react";
-// Import the new TrustBar component
 import { TrustBar } from "../components/TrustBar";
 
 export default function Home() {
@@ -21,9 +20,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    // We use a React Fragment here as the main wrapper.
+    <>
       <Hero />
-      {/* Add the TrustBar component right here */}
       <TrustBar />
       <Features />
       <GrantCategories />
@@ -65,7 +64,6 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-
               <Button
                 onClick={() => scrollToSection("apply-incubator")}
                 variant="outline"
@@ -143,6 +141,6 @@ export default function Home() {
       </section>
 
       <Footer />
-    </div>
+    </>
   );
 }

@@ -1,13 +1,12 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Search, CheckCircle, MapPin } from "lucide-react";
-// Link component ko import karna zaroori hai naye buttons ke liye
+import { CheckCircle, MapPin } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 export function Hero() {
   const [, setLocation] = useLocation();
 
-  // ✅ On mount, scroll if requested
+  // This useEffect hook for scrolling remains unchanged.
   useEffect(() => {
     const scrollTarget = localStorage.getItem("scrollTo");
     if (scrollTarget) {
@@ -16,37 +15,25 @@ export function Hero() {
         setTimeout(() => {
           el.scrollIntoView({ behavior: "smooth" });
           localStorage.removeItem("scrollTo");
-        }, 100); // Ensure DOM is ready
+        }, 100);
       }
     }
   }, []);
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
-  const navigate = (path: string) => {
-    setLocation(path);
-  };
-
   return (
+    // The outer section provides the full-width background color.
     <section id="home" className="bg-light-blue py-20">
+      {/* This inner div centers the content and sets a max-width. */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
           <div className="mb-12 lg:mb-0">
-            {/* Headline ko document ke hisaab se update kiya gaya hai */}
             <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
               Discover & Apply for <span className="text-primary-blue">Startup Grants</span> & Incubator Programs
             </h1>
-            {/* Subtext ko document ke hisaab se update kiya gaya hai */}
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
               India’s go-to platform for early-stage funding and acceleration.
             </p>
 
-            {/* Buttons ko document ke hisaab se update kiya gaya hai */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 asChild
