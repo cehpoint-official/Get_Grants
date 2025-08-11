@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Search, CheckCircle, MapPin } from "lucide-react";
-import { useLocation } from "wouter";
+// Link component ko import karna zaroori hai naye buttons ke liye
+import { Link, useLocation } from "wouter";
 
 export function Hero() {
   const [, setLocation] = useLocation();
@@ -36,35 +37,34 @@ export function Hero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
           <div className="mb-12 lg:mb-0">
+            {/* Headline ko document ke hisaab se update kiya gaya hai */}
             <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Discover
-              <br />
-              Government <span className="text-primary-blue">Grants</span>
-              <br />
-              <span className="text-primary-blue">& Funding</span> for
-              <br />
-              Indian Startups
+              Discover & Apply for <span className="text-primary-blue">Startup Grants</span> & Incubator Programs
             </h1>
+            {/* Subtext ko document ke hisaab se update kiya gaya hai */}
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Navigate through different stages and sectors to find the perfect
-              funding opportunity. Access ₹77,000+ Cr in non-dilutive government
-              capital for your startup.
+              India’s go-to platform for early-stage funding and acceleration.
             </p>
 
+            {/* Buttons ko document ke hisaab se update kiya gaya hai */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
-                onClick={() => scrollToSection("grants")}
-                className="bg-primary-blue hover:bg-accent-blue text-white px-6 py-3 font-medium"
+                asChild
+                className="bg-primary-blue hover:bg-accent-blue text-white px-6 py-3 font-medium text-base"
               >
-                <Search className="mr-2 h-4 w-4" />
-                Explore Grants
+                <Link href="/explore-grants">Explore Free Grants</Link>
               </Button>
-
               <Button
-                onClick={() => navigate("/apply")}
-                className="bg-primary-blue text-white hover:bg-blue-600 px-6 py-3 font-medium"
+                asChild
+                className="bg-primary-blue hover:bg-accent-blue text-white px-6 py-3 font-medium text-base"
               >
-               Ask a Specialist 
+                <Link href="/premium-support">Apply with Support</Link>
+              </Button>
+              <Button
+                asChild
+                className="bg-primary-blue hover:bg-accent-blue text-white px-6 py-3 font-medium text-base"
+              >
+                <Link href="/incubator-area">List Your Program</Link>
               </Button>
             </div>
 

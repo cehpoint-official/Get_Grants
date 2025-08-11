@@ -1,18 +1,29 @@
-// src/components/navbar.tsx
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Rocket } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { AdminModal } from "./admin-modal";
 import { IncubatorSignupModal } from "./ui/IncubatorSignupModal";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
+// Naye AuthModal ko import kiya hai
+import { AuthModal } from "./AuthModal";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  // Auth modal ke liye naya state
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [showIncubatorModal, setShowIncubatorModal] = useState(false);
-  const { user, isAdmin, userProfile, logout } = useAuth();
-  const [location, navigate] = useLocation();
+  const { user, isAdmin, logout } = useAuth();
+  const [, navigate] = useLocation();
+
+  const navItems = [
+    { name: 'Home', href: '/' },
+    { name: 'Explore Grants', href: '/explore-grants' },
+    { name: 'Founders Area', href: '/founders-area' },
+    { name: 'Incubator Area', href: '/incubator-area' },
+    { name: 'Premium Support', href: '/premium-support' },
+  ];
 
   const handleLogout = async () => {
     try {
@@ -23,36 +34,10 @@ export function Navbar() {
     }
   };
 
-  const scrollToSection = (sectionId: string) => {
-    const currentPath = location;
-
-    if (currentPath !== "/") {
-      localStorage.setItem("scrollTo", sectionId);
-      navigate("/");
-    } else {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
-      }
-    }
-
-    setIsOpen(false);
-  };
-
-  const handleAdminClick = () => {
-    if (user && isAdmin) {
-      navigate("/admin");
-    } else {
-      setShowAdminModal(true);
-    }
-  };
-
   const handleIncubatorClick = () => {
     if (user && !isAdmin) {
-      // User is logged in as incubator, go to application
       navigate("/applyincubator");
     } else if (!user) {
-      // Not logged in, show signup modal
       setShowIncubatorModal(true);
     }
   };
@@ -62,52 +47,16 @@ export function Navbar() {
       if (isAdmin) {
         return (
           <>
-            <Button
-              onClick={() => navigate("/admin")}
-              className="hidden lg:block bg-primary-blue hover:bg-accent-blue text-sm"
-            >
-              Admin Dashboard
-            </Button>
-            <Button
-              onClick={handleLogout}
-              variant="destructive"
-              className="hidden lg:block text-sm"
-            >
-              Logout
-            </Button>
+            <Button onClick={() => navigate("/admin")} className="hidden lg:block bg-primary-blue hover:bg-accent-blue text-sm">Admin Dashboard</Button>
+            <Button onClick={handleLogout} variant="destructive" className="hidden lg:block text-sm">Logout</Button>
           </>
         );
       } else {
-        // Incubator user
-        return (
-          <>
-            <Button
-              onClick={handleLogout}
-              variant="destructive"
-              className="hidden lg:block text-sm"
-            >
-              Logout
-            </Button>
-          </>
-        );
+        return <Button onClick={handleLogout} variant="destructive" className="hidden lg:block text-sm">Logout</Button>;
       }
     } else {
-      return (
-        <>
-          <Button
-            onClick={handleAdminClick}
-            className="hidden lg:block bg-primary-blue hover:bg-accent-blue text-sm"
-          >
-            Admin
-          </Button>
-          <Button
-            onClick={handleIncubatorClick}
-            className="hidden lg:block bg-green-600 hover:bg-green-700 text-sm"
-          >
-            Incubator Login
-          </Button>
-        </>
-      );
+      // Button ab modal kholega, page par nahi jayega
+      return <Button onClick={() => setIsAuthModalOpen(true)} className="hidden lg:block bg-primary-blue hover:bg-accent-blue">Login/Signup</Button>;
     }
   };
 
@@ -116,103 +65,43 @@ export function Navbar() {
       if (isAdmin) {
         return (
           <>
-            <Button
-              onClick={() => navigate("/admin")}
-              className="w-full bg-primary-blue hover:bg-accent-blue text-sm"
-            >
-              Admin Dashboard
-            </Button>
-            <Button
-              onClick={handleLogout}
-              variant="destructive"
-              className="w-full mt-2 text-sm"
-            >
-              Logout
-            </Button>
+            <Button onClick={() => navigate("/admin")} className="w-full bg-primary-blue hover:bg-accent-blue text-sm">Admin Dashboard</Button>
+            <Button onClick={handleLogout} variant="destructive" className="w-full mt-2 text-sm">Logout</Button>
           </>
         );
       } else {
-        return (
-          <>
-            <Button
-              onClick={() => navigate("/applyincubator")}
-              className="w-full bg-green-600 hover:bg-green-700 text-sm"
-            >
-              Dashboard
-            </Button>
-            <Button
-              onClick={handleLogout}
-              variant="destructive"
-              className="w-full mt-2 text-sm"
-            >
-              Logout
-            </Button>
-          </>
-        );
+        return <Button onClick={handleLogout} variant="destructive" className="w-full mt-2 text-sm">Logout</Button>;
       }
     } else {
-      return (
-        <>
-          <Button
-            onClick={handleAdminClick}
-            className="w-full bg-primary-blue hover:bg-accent-blue mb-2 text-sm"
-          >
-            Admin
-          </Button>
-          <Button
-            onClick={handleIncubatorClick}
-            className="w-full bg-green-600 hover:bg-green-700 text-sm"
-          >
-            Incubator Login
-          </Button>
-        </>
-      );
+      // Mobile button bhi ab modal kholega
+      return <Button onClick={() => setIsAuthModalOpen(true)} className="w-full bg-primary-blue hover:bg-accent-blue">Login/Signup</Button>;
     }
   };
 
   return (
     <>
-      {/* Announcement Bar - Only show for non-admin users */}
       {!isAdmin && (
-        <div
-          onClick={handleIncubatorClick}
-          className="bg-yellow-400 text-black text-xs sm:text-sm text-center py-2 cursor-pointer hover:bg-yellow-300 transition-all"
-        >
+        <div onClick={handleIncubatorClick} className="bg-yellow-400 text-black text-xs sm:text-sm text-center py-2 cursor-pointer hover:bg-yellow-300 transition-all">
           🚀 Apply as an Incubator — Click here to get started!
         </div>
       )}
 
-      {/* Navbar */}
       <nav className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="flex justify-between items-center h-14 sm:h-16">
-            <div className="flex items-center">
-              <h1 className="text-lg sm:text-xl font-bold text-gray-900">Get Grants</h1>
-              {user && isAdmin && (
-                <span className="ml-2 sm:ml-4 text-xs sm:text-sm text-blue-600 font-medium">
-                  Admin
-                </span>
-              )}
-            </div>
-
-            {/* Desktop Navigation */}
+            <Link href="/" className="flex items-center gap-2 text-gray-800 hover:text-primary-blue transition-colors">
+              <Rocket className="h-6 w-6 sm:h-7 sm:w-7" />
+              <span className="text-lg sm:text-xl font-bold">Get Grants</span>
+            </Link>
             <div className="hidden lg:block">
               <div className="ml-10 flex items-baseline space-x-6 xl:space-x-8">
-                <button onClick={() => scrollToSection("home")} className="text-primary-blue hover:text-accent-blue font-medium text-sm">Home</button>
-                <button onClick={() => scrollToSection("grants")} className="text-gray-600 hover:text-primary-blue font-medium text-sm">Grants</button>
-                <button onClick={() => scrollToSection("blog")} className="text-gray-600 hover:text-primary-blue font-medium text-sm">Blog</button>
-                <button onClick={() => scrollToSection("about")} className="text-gray-600 hover:text-primary-blue font-medium text-sm">About</button>
-                <button onClick={() => scrollToSection("contact")} className="text-gray-600 hover:text-primary-blue font-medium text-sm">Contact</button>
-                {/* Only show Apply As Incubator for non-admin users */}
-                {!isAdmin && (
-                  <button onClick={handleIncubatorClick} className="text-gray-600 hover:text-primary-blue font-medium text-sm">Apply As Incubator</button>
-                )}
+                {navItems.map((item) => (
+                  <Link key={item.name} href={item.href} className="text-gray-600 hover:text-primary-blue font-medium text-sm">{item.name}</Link>
+                ))}
               </div>
             </div>
-
             <div className="flex items-center space-x-2 sm:space-x-4">
               {renderAuthButtons()}
-
               <div className="lg:hidden">
                 <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)} className="h-8 w-8 sm:h-10 sm:w-10">
                   {isOpen ? <X className="h-4 w-4 sm:h-6 sm:w-6" /> : <Menu className="h-4 w-4 sm:h-6 sm:w-6" />}
@@ -221,22 +110,13 @@ export function Navbar() {
             </div>
           </div>
         </div>
-
-        {/* Mobile Navigation */}
         {isOpen && (
           <div className="lg:hidden border-t border-gray-100">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-white">
-              <button onClick={() => scrollToSection("home")} className="block w-full text-left px-3 py-2 text-primary-blue font-medium text-sm">Home</button>
-              <button onClick={() => scrollToSection("grants")} className="block w-full text-left px-3 py-2 text-gray-600 hover:text-primary-blue text-sm">Grants</button>
-              <button onClick={() => scrollToSection("blog")} className="block w-full text-left px-3 py-2 text-gray-600 hover:text-primary-blue text-sm">Blog</button>
-              <button onClick={() => scrollToSection("about")} className="block w-full text-left px-3 py-2 text-gray-600 hover:text-primary-blue text-sm">About</button>
-              <button onClick={() => scrollToSection("contact")} className="block w-full text-left px-3 py-2 text-gray-600 hover:text-primary-blue text-sm">Contact</button>
-              {/* Only show Apply As Incubator for non-admin users */}
-              {!isAdmin && (
-                <button onClick={handleIncubatorClick} className="block w-full text-left px-3 py-2 text-gray-600 hover:text-primary-blue text-sm">Apply As Incubator</button>
-              )}
-
-              <div className="px-3 py-2">
+              {navItems.map((item) => (
+                <Link key={item.name} href={item.href} className="block w-full text-left px-3 py-2 text-gray-600 hover:text-primary-blue text-sm" onClick={() => setIsOpen(false)}>{item.name}</Link>
+              ))}
+              <div className="px-3 py-2 border-t mt-2 pt-3">
                 {renderMobileAuthButtons()}
               </div>
             </div>
@@ -244,15 +124,10 @@ export function Navbar() {
         )}
       </nav>
 
-      {/* Modals */}
-      <AdminModal
-        isOpen={showAdminModal}
-        onClose={() => setShowAdminModal(false)}
-      />
-      <IncubatorSignupModal
-        isOpen={showIncubatorModal}
-        onClose={() => setShowIncubatorModal(false)}
-      />
+      {/* Saare modals ko yahan render kiya hai */}
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <AdminModal isOpen={showAdminModal} onClose={() => setShowAdminModal(false)} />
+      <IncubatorSignupModal isOpen={showIncubatorModal} onClose={() => setShowIncubatorModal(false)} />
     </>
   );
 }

@@ -1,4 +1,3 @@
-import { Navbar } from "../components/navbar";
 import { Hero } from "../components/hero";
 import { Features } from "../components/features";
 import { GrantCategories } from "../components/grant-categories";
@@ -8,10 +7,10 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
-import { useNavigate } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { CheckCircle } from "lucide-react";
-import ApplyIncubatorForm from "../components/ApplyIncubatorForm";
+// Import the new TrustBar component
+import { TrustBar } from "../components/TrustBar";
 
 export default function Home() {
   const scrollToSection = (sectionId: string) => {
@@ -23,8 +22,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-     
       <Hero />
+      {/* Add the TrustBar component right here */}
+      <TrustBar />
       <Features />
       <GrantCategories />
       <BlogSection />
@@ -66,7 +66,6 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* ✅ Updated Button */}
               <Button
                 onClick={() => scrollToSection("apply-incubator")}
                 variant="outline"
@@ -78,8 +77,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      
 
       {/* Contact Section */}
       <section id="contact" className="py-20 bg-white">
