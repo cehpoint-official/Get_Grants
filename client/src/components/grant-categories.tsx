@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ExternalLink } from "lucide-react";
+import { ChevronDown, ExternalLink, Bookmark, BookmarkCheck, Filter, X } from "lucide-react";
 import {
   Rocket,
   Building,
@@ -16,6 +16,13 @@ interface Grant {
   name: string;
   description: string;
   website: string;
+  stage?: string;
+  fundingType?: string;
+  sector?: string;
+  deadline?: string;
+  amount?: string;
+  tag?: string;
+  isBookmarked?: boolean;
 }
 
 interface Stage {
@@ -36,12 +43,38 @@ interface Category {
   items?: (string | Grant)[];
 }
 
+interface FilterOptions {
+  stage: string[];
+  fundingType: string[];
+  sector: string[];
+  deadline: string[];
+}
+
 export function GrantCategories() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [expandedStages, setExpandedStages] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [_, navigate] = useLocation();
+  
+  // Filter states
+  const [selectedFilters, setSelectedFilters] = useState<FilterOptions>({
+    stage: [],
+    fundingType: [],
+    sector: [],
+    deadline: [],
+  });
+  
+  const [bookmarkedGrants, setBookmarkedGrants] = useState<Set<string>>(new Set());
+
+  // Filter options
+  const filterOptions = {
+    stage: ["Idea", "MVP", "Revenue", "Scaling"],
+    fundingType: ["Grant", "Equity", "Fellowship", "Others"],
+    sector: ["Health", "Agri", "AI", "SaaS", "Deeptech", "Fintech", "Edtech", "Biotech"],
+    deadline: ["This week", "This month", "Next month", "Custom"],
+  };
   const toggleDropdown = (dropdownId: string) => {
     setOpenDropdown(openDropdown === dropdownId ? null : dropdownId);
     // Clear expanded stages when closing or switching categories
@@ -59,14 +92,92 @@ export function GrantCategories() {
     }
     setExpandedStages(newSet);
   };
+
+  // Filter functions
+  const toggleFilter = (filterType: keyof FilterOptions, value: string) => {
+    setSelectedFilters(prev => {
+      const current = prev[filterType];
+      if (current.includes(value)) {
+        return {
+          ...prev,
+          [filterType]: current.filter(item => item !== value)
+        };
+      } else {
+        return {
+          ...prev,
+          [filterType]: [...current, value]
+        };
+      }
+    });
+  };
+
+  const clearAllFilters = () => {
+    setSelectedFilters({
+      stage: [],
+      fundingType: [],
+      sector: [],
+      deadline: [],
+    });
+  };
+
+  const toggleBookmark = (grantName: string) => {
+    setBookmarkedGrants(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(grantName)) {
+        newSet.delete(grantName);
+      } else {
+        newSet.add(grantName);
+      }
+      return newSet;
+    });
+  };
+
+  const hasActiveFilters = () => {
+    return Object.values(selectedFilters).some(filters => filters.length > 0);
+  };
+
   const filterGrants = (grants: Grant[]) => {
-    if (!searchTerm.trim()) return grants;
-    const term = searchTerm.toLowerCase();
-    return grants.filter(
-      (grant) =>
-        grant.name.toLowerCase().includes(term) ||
-        grant.description.toLowerCase().includes(term)
-    );
+    let filtered = grants;
+
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (grant) =>
+          grant.name.toLowerCase().includes(term) ||
+          grant.description.toLowerCase().includes(term)
+      );
+    }
+
+    // Apply stage filter
+    if (selectedFilters.stage.length > 0) {
+      filtered = filtered.filter(grant => 
+        grant.stage && selectedFilters.stage.includes(grant.stage)
+      );
+    }
+
+    // Apply funding type filter
+    if (selectedFilters.fundingType.length > 0) {
+      filtered = filtered.filter(grant => 
+        grant.fundingType && selectedFilters.fundingType.includes(grant.fundingType)
+      );
+    }
+
+    // Apply sector filter
+    if (selectedFilters.sector.length > 0) {
+      filtered = filtered.filter(grant => 
+        grant.sector && selectedFilters.sector.includes(grant.sector)
+      );
+    }
+
+    // Apply deadline filter
+    if (selectedFilters.deadline.length > 0) {
+      filtered = filtered.filter(grant => 
+        grant.deadline && selectedFilters.deadline.includes(grant.deadline)
+      );
+    }
+
+    return filtered;
   };
 
   const filterItems = (items: (string | Grant)[]) => {
@@ -122,23 +233,47 @@ export function GrantCategories() {
               description:
                 "Support for translating innovative ideas to market-ready prototypes",
               website: "https://nidhi.dst.gov.in/",
+              stage: "Idea",
+              fundingType: "Grant",
+              sector: "Deeptech",
+              deadline: "This month",
+              amount: "₹10 Lakhs",
+              tag: "Govt",
             },
             {
               name: "SSIP Gujarat",
               description: "Student Startup and Innovation Policy support",
               website: "https://www.ssipgujarat.in/",
+              stage: "Idea",
+              fundingType: "Grant",
+              sector: "SaaS",
+              deadline: "Next month",
+              amount: "₹5 Lakhs",
+              tag: "Govt",
             },
             {
               name: "PRISM",
               description: "Promoting Innovations in Students and Researchers",
               website:
                 "https://www.dsir.gov.in/promoting-innovations-individuals-start-ups-and-msmes-prism",
+              stage: "Idea",
+              fundingType: "Grant",
+              sector: "AI",
+              deadline: "This week",
+              amount: "₹2 Lakhs",
+              tag: "Govt",
             },
             {
               name: "BIG (Biotech)",
               description:
                 "Biotechnology Innovation Grant for early-stage biotech ideas",
               website: "https://birac.nic.in/",
+              stage: "Idea",
+              fundingType: "Grant",
+              sector: "Biotech",
+              deadline: "Next month",
+              amount: "₹50 Lakhs",
+              tag: "Govt",
             },
           ],
         },
@@ -151,34 +286,92 @@ export function GrantCategories() {
               description:
                 "Startup India Seed Fund Scheme for proof of concept and prototype development",
               website: "https://seedfund.startupindia.gov.in/",
+              stage: "MVP",
+              fundingType: "Grant",
+              sector: "SaaS",
+              deadline: "This month",
+              amount: "₹50 Lakhs",
+              tag: "Govt",
             },
             {
               name: "NIDHI-SSP",
               description: "Startup Support Programme for technology startups",
               website: "https://nidhi.dst.gov.in/nidhissp/",
+              stage: "MVP",
+              fundingType: "Grant",
+              sector: "Deeptech",
+              deadline: "Next month",
+              amount: "₹25 Lakhs",
+              tag: "Govt",
             },
             {
               name: "SAMRIDH",
               description: "Software products and services support program",
               website: "https://msh.meity.gov.in/schemes/samridh",
+              stage: "MVP",
+              fundingType: "Grant",
+              sector: "AI",
+              deadline: "This week",
+              amount: "₹40 Lakhs",
+              tag: "Govt",
             },
             {
               name: "TIDE 2.0",
               description:
                 "Technology Incubation and Development of Entrepreneurs",
               website: "https://msh.meity.gov.in/schemes/tide",
+              stage: "MVP",
+              fundingType: "Grant",
+              sector: "Health",
+              deadline: "Next month",
+              amount: "₹30 Lakhs",
+              tag: "Govt",
             },
             {
               name: "CIIE.CO Accelerators (IIM Ahmedabad)",
               description:
                 "Accelerator & incubation support for early-stage startups across India",
               website: "https://iimaventures.com/current-programs/",
+              stage: "MVP",
+              fundingType: "Equity",
+              sector: "Fintech",
+              deadline: "This month",
+              amount: "₹1 Crore",
+              tag: "Incubator",
             },
             {
               name: "IITM Incubation Cell",
               description:
                 "India's leading deep tech startup incubator (Chennai, all stages)",
               website: "http://rtbi.in/incubationiitm/",
+              stage: "MVP",
+              fundingType: "Equity",
+              sector: "Deeptech",
+              deadline: "Next month",
+              amount: "₹75 Lakhs",
+              tag: "Incubator",
+            },
+            {
+              name: "HealthTech Accelerator",
+              description: "Healthcare technology startup accelerator program",
+              website: "https://example.com/healthtech",
+              stage: "MVP",
+              fundingType: "Grant",
+              sector: "Health",
+              deadline: "This week",
+              amount: "₹40 Lakhs",
+              tag: "Private",
+            },
+            {
+              name: "AgriTech Innovation Fund",
+              description: "Agricultural technology innovation and development fund",
+              website: "https://example.com/agritech",
+              stage: "MVP",
+              fundingType: "Grant",
+              sector: "Agri",
+              deadline: "Next month",
+              amount: "₹35 Lakhs",
+              tag: "Govt",
             },
           ],
         },
@@ -191,17 +384,57 @@ export function GrantCategories() {
               description:
                 "Fund of Funds for Startups - venture capital funding",
               website: "https://www.sidbivcf.in/en",
+              stage: "Scaling",
+              fundingType: "Equity",
+              sector: "SaaS",
+              deadline: "Next month",
+              amount: "₹10 Crores",
+              tag: "Govt",
             },
             {
               name: "PMMY",
               description: "Pradhan Mantri MUDRA Yojana for micro enterprises",
               website: "https://www.mudra.org.in/",
+              stage: "Scaling",
+              fundingType: "Grant",
+              sector: "Agri",
+              deadline: "This month",
+              amount: "₹10 Lakhs",
+              tag: "Govt",
             },
             {
               name: "Stand-Up India / CGSS",
               description: "Support for SC/ST and women entrepreneurs",
               website:
                 "https://www.standupmitra.in/Login/IndexNewSchemeFeatures",
+              stage: "Scaling",
+              fundingType: "Grant",
+              sector: "Fintech",
+              deadline: "This week",
+              amount: "₹1 Crore",
+              tag: "Govt",
+            },
+            {
+              name: "EdTech Growth Fund",
+              description: "Education technology scaling and growth support",
+              website: "https://example.com/edtech",
+              stage: "Scaling",
+              fundingType: "Equity",
+              sector: "Edtech",
+              deadline: "Next month",
+              amount: "₹2 Crores",
+              tag: "Private",
+            },
+            {
+              name: "AI Innovation Grant",
+              description: "Artificial Intelligence innovation and scaling support",
+              website: "https://example.com/ai",
+              stage: "Scaling",
+              fundingType: "Grant",
+              sector: "AI",
+              deadline: "This month",
+              amount: "₹75 Lakhs",
+              tag: "Govt",
             },
           ],
         },
@@ -221,43 +454,83 @@ export function GrantCategories() {
           name: "Biotech – BIRAC BIG",
           description: "Biotechnology sector specific grants and support",
           website: "https://birac.nic.in/",
+          fundingType: "Grant",
+          sector: "Biotech",
+          deadline: "Next month",
+          amount: "₹50 Lakhs",
+          tag: "Govt",
         },
         {
           name: "AI / DeepTech – SAMRIDH",
           description:
             "Artificial Intelligence and Deep Technology initiatives",
           website: "https://msh.meity.gov.in/schemes/samridh",
+          fundingType: "Grant",
+          sector: "AI",
+          deadline: "This month",
+          amount: "₹40 Lakhs",
+          tag: "Govt",
         },
         {
           name: "AgriTech – ASPIRE",
           description: "Agricultural technology and rural innovation support",
           website: "https://aspire.msme.gov.in/ASPIRE/AFHome.aspx",
+          fundingType: "Grant",
+          sector: "Agri",
+          deadline: "This week",
+          amount: "₹25 Lakhs",
+          tag: "Govt",
         },
         {
           name: "SpaceTech – IN-SPACe",
           description: "Space technology and satellite innovation support",
           website: "https://www.inspace.gov.in/inspace",
+          fundingType: "Grant",
+          sector: "Deeptech",
+          deadline: "Next month",
+          amount: "₹1 Crore",
+          tag: "Govt",
         },
         {
           name: "Gaming – Digital India Fund",
           description: "Gaming and digital content development support",
           website: "https://seedfund.startupindia.gov.in/",
+          fundingType: "Grant",
+          sector: "SaaS",
+          deadline: "This month",
+          amount: "₹30 Lakhs",
+          tag: "Govt",
         },
         {
           name: "EdTech / Skilling – MSDE",
           description: "Education technology and skill development initiatives",
           website: "https://www.msde.gov.in/offerings?page=2",
+          fundingType: "Grant",
+          sector: "Edtech",
+          deadline: "Next month",
+          amount: "₹20 Lakhs",
+          tag: "Govt",
         },
         {
           name: "Women / SC-ST – Stand-Up India",
           description: "Support for women and SC/ST entrepreneurs",
           website: "https://www.standupmitra.in/Login/IndexNewSchemeFeatures",
+          fundingType: "Grant",
+          sector: "Fintech",
+          deadline: "This week",
+          amount: "₹1 Crore",
+          tag: "Govt",
         },
         {
           name: "SINE IIT Bombay",
           description:
             "Sector-agnostic innovation & incubation support (Pan India)",
           website: "https://www.sineiitb.org/",
+          fundingType: "Equity",
+          sector: "Deeptech",
+          deadline: "Next month",
+          amount: "₹75 Lakhs",
+          tag: "Incubator",
         },
       ],
     },
@@ -275,16 +548,31 @@ export function GrantCategories() {
           name: "Odisha",
           description: "Odisha state startup support and initiatives",
           website: "https://startupodisha.gov.in/startup-incentives/",
+          fundingType: "Grant",
+          sector: "SaaS",
+          deadline: "This month",
+          amount: "₹25 Lakhs",
+          tag: "Govt",
         },
         {
           name: "Karnataka",
           description: "Karnataka state startup ecosystem support",
           website: "https://www.missionstartupkarnataka.org/?en",
+          fundingType: "Grant",
+          sector: "AI",
+          deadline: "Next month",
+          amount: "₹50 Lakhs",
+          tag: "Govt",
         },
         {
           name: "Startup TN",
           description: "Tamil Nadu startup mission and support",
           website: "https://startuptn.in/",
+          fundingType: "Grant",
+          sector: "Health",
+          deadline: "This week",
+          amount: "₹30 Lakhs",
+          tag: "Govt",
         },
         {
           name: "Gujarat SSIP",
@@ -344,16 +632,31 @@ export function GrantCategories() {
           name: "SISFS",
           description: "Startup India Seed Fund Scheme",
           website: "https://seedfund.startupindia.gov.in/",
+          fundingType: "Grant",
+          sector: "SaaS",
+          deadline: "This month",
+          amount: "₹50 Lakhs",
+          tag: "Govt",
         },
         {
           name: "FFS (SIDBI)",
           description: "Fund of Funds for Startups by SIDBI",
           website: "https://www.sidbivcf.in/en",
+          fundingType: "Equity",
+          sector: "Fintech",
+          deadline: "Next month",
+          amount: "₹10 Crores",
+          tag: "Govt",
         },
         {
           name: "MUDRA Loans",
           description: "Micro Units Development and Refinance Agency loans",
           website: "https://www.mudra.org.in/",
+          fundingType: "Grant",
+          sector: "Agri",
+          deadline: "This week",
+          amount: "₹10 Lakhs",
+          tag: "Govt",
         },
         {
           name: "Stand-Up India",
@@ -408,59 +711,114 @@ export function GrantCategories() {
           name: "Google for Startups",
           description: "Google's global startup support program",
           website: "https://startup.google.com/",
+          fundingType: "Grant",
+          sector: "SaaS",
+          deadline: "This month",
+          amount: "$100K",
+          tag: "Private",
         },
         {
           name: "AWS Activate",
           description: "Amazon Web Services startup support and credits",
           website: "https://aws.amazon.com/startups",
+          fundingType: "Grant",
+          sector: "SaaS",
+          deadline: "Next month",
+          amount: "$100K",
+          tag: "Private",
         },
         {
           name: "Cisco LaunchPad",
           description: "Cisco's startup accelerator program",
           website: "https://startups.cisco.com/",
+          fundingType: "Equity",
+          sector: "Deeptech",
+          deadline: "This week",
+          amount: "$500K",
+          tag: "Private",
         },
         {
           name: "Villgro",
           description: "Social innovation incubator and accelerator",
           website: "https://villgro.org/",
+          fundingType: "Grant",
+          sector: "Health",
+          deadline: "Next month",
+          amount: "₹50 Lakhs",
+          tag: "Incubator",
         },
         {
           name: "Social Alpha",
           description: "Impact tech innovation platform",
           website: "https://www.socialalpha.org/",
+          fundingType: "Grant",
+          sector: "Health",
+          deadline: "This month",
+          amount: "₹25 Lakhs",
+          tag: "Incubator",
         },
         {
           name: "The/Nudge Incubator",
           description: "Social impact incubator program",
           website:
             "https://www.thenudge.org/livelihoods-ecosystem/social-entrepreneurship/incubator/",
+          fundingType: "Grant",
+          sector: "Fintech",
+          deadline: "This week",
+          amount: "₹30 Lakhs",
+          tag: "Incubator",
         },
         {
           name: "CIIE.CO (IIMA)",
           description: "IIM Ahmedabad's startup incubator",
           website: "https://iimaventures.com/current-programs/",
+          fundingType: "Equity",
+          sector: "Fintech",
+          deadline: "Next month",
+          amount: "₹1 Crore",
+          tag: "Incubator",
         },
         {
           name: "Gates Foundation",
           description: "Global health and development grants",
           website: "https://www.gatesfoundation.org/",
+          fundingType: "Grant",
+          sector: "Health",
+          deadline: "Next month",
+          amount: "$1M",
+          tag: "Private",
         },
         {
           name: "Microsoft for Startups Founders Hub",
           description: "Cloud credits and global support for private startups",
           website: "https://www.microsoft.com/en-in/startups",
+          fundingType: "Grant",
+          sector: "SaaS",
+          deadline: "This month",
+          amount: "$120K",
+          tag: "Private",
         },
         {
           name: "GSVlabs (now OneValley)",
           description:
             "Global startup support platform offering mentoring, workspace, capital access",
           website: "https://www.theonevalley.com/onevalley-announcement",
+          fundingType: "Equity",
+          sector: "Edtech",
+          deadline: "Next month",
+          amount: "$500K",
+          tag: "Private",
         },
         {
           name: "Techstars Bangalore",
           description:
             "Global accelerator network – Bangalore program for Indian startups",
           website: "https://www.techstars.com/accelerators",
+          fundingType: "Equity",
+          sector: "SaaS",
+          deadline: "This month",
+          amount: "$120K",
+          tag: "Private",
         },
       ],
     },
@@ -1153,22 +1511,71 @@ export function GrantCategories() {
                         {filteredGrants.map((grant, index) => (
                           <div
                             key={index}
-                            className="bg-white rounded-lg p-3 shadow-sm hover:shadow transition-all group cursor-pointer border border-gray-200 hover:border-blue-200"
+                            className="bg-white rounded-lg p-4 shadow-sm hover:shadow transition-all group cursor-pointer border border-gray-200 hover:border-blue-200"
                           >
-                            <div className="flex items-start justify-between mb-1">
+                            <div className="flex items-start justify-between mb-2">
                               <h4 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
                                 {grant.name}
                               </h4>
-                              <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0 ml-2" />
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleBookmark(grant.name);
+                                }}
+                                className="text-gray-400 hover:text-blue-600 transition-colors flex-shrink-0 ml-2"
+                              >
+                                {bookmarkedGrants.has(grant.name) ? (
+                                  <BookmarkCheck className="h-4 w-4 text-blue-600" />
+                                ) : (
+                                  <Bookmark className="h-4 w-4" />
+                                )}
+                              </button>
                             </div>
-                            <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                            
+                            <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                               {grant.description}
                             </p>
+                            
+                            <div className="flex items-center justify-between mb-3">
+                              {grant.amount && (
+                                <span className="text-sm font-medium text-green-600">
+                                  {grant.amount}
+                                </span>
+                              )}
+                              {grant.deadline && (
+                                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                  {grant.deadline}
+                                </span>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center justify-between">
+                              {grant.tag && (
+                                <span className={`text-xs px-2 py-1 rounded-full ${
+                                  grant.tag === 'Govt' ? 'bg-blue-100 text-blue-800' :
+                                  grant.tag === 'Private' ? 'bg-purple-100 text-purple-800' :
+                                  'bg-green-100 text-green-800'
+                                }`}>
+                                  {grant.tag}
+                                </span>
+                              )}
+                              <Button
+                                size="sm"
+                                className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate("/apply");
+                                }}
+                              >
+                                Apply Now
+                              </Button>
+                            </div>
+                            
                             <a
                               href={grant.website}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-xs text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1"
+                              className="text-xs text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1 mt-2"
                               onClick={(e) => e.stopPropagation()}
                             >
                               Visit Website
@@ -1204,7 +1611,19 @@ export function GrantCategories() {
                     {typeof item === "string" ? item : item.name}
                   </h4>
                   {typeof item === "object" && (
-                    <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-primary-blue transition-colors flex-shrink-0 ml-2" />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleBookmark(item.name);
+                      }}
+                      className="text-gray-400 hover:text-blue-600 transition-colors flex-shrink-0 ml-2"
+                    >
+                      {bookmarkedGrants.has(item.name) ? (
+                        <BookmarkCheck className="h-4 w-4 text-blue-600" />
+                      ) : (
+                        <Bookmark className="h-4 w-4" />
+                      )}
+                    </button>
                   )}
                 </div>
                 {typeof item === "object" && (
@@ -1212,6 +1631,42 @@ export function GrantCategories() {
                     <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                       {item.description}
                     </p>
+                    
+                    <div className="flex items-center justify-between mb-3">
+                      {item.amount && (
+                        <span className="text-sm font-medium text-green-600">
+                          {item.amount}
+                        </span>
+                      )}
+                      {item.deadline && (
+                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                          {item.deadline}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center justify-between mb-3">
+                      {item.tag && (
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          item.tag === 'Govt' ? 'bg-blue-100 text-blue-800' :
+                          item.tag === 'Private' ? 'bg-purple-100 text-purple-800' :
+                          'bg-green-100 text-green-800'
+                        }`}>
+                          {item.tag}
+                        </span>
+                      )}
+                      <Button
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate("/apply");
+                        }}
+                      >
+                        Apply Now
+                      </Button>
+                    </div>
+                    
                     <a
                       href={item.website}
                       target="_blank"
@@ -1268,6 +1723,21 @@ export function GrantCategories() {
               </button>
             </div>
 
+            {/* Filter Button */}
+            <Button
+              onClick={() => setShowFilters(!showFilters)}
+              variant="outline"
+              className="border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-4 py-3 flex items-center gap-2"
+            >
+              <Filter className="h-4 w-4" />
+              Filters
+              {hasActiveFilters() && (
+                <span className="bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {Object.values(selectedFilters).reduce((sum, filters) => sum + filters.length, 0)}
+                </span>
+              )}
+            </Button>
+
             {/* Apply Button */}
             <Button
               onClick={() => navigate("/apply")}
@@ -1279,6 +1749,166 @@ export function GrantCategories() {
 
           {showForm && <GrantApplicationForm />}
         </div>
+
+        {/* Filter Panel */}
+        {showFilters && (
+          <div className="max-w-6xl mx-auto mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
+              <div className="flex items-center gap-2">
+                {hasActiveFilters() && (
+                  <Button
+                    onClick={clearAllFilters}
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    Clear All
+                  </Button>
+                )}
+                <Button
+                  onClick={() => setShowFilters(false)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Stage Filter */}
+              <div>
+                <h4 className="font-medium text-gray-900 mb-3">Stage</h4>
+                <div className="space-y-2">
+                  {filterOptions.stage.map((stage) => (
+                    <label key={stage} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedFilters.stage.includes(stage)}
+                        onChange={() => toggleFilter('stage', stage)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{stage}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Funding Type Filter */}
+              <div>
+                <h4 className="font-medium text-gray-900 mb-3">Funding Type</h4>
+                <div className="space-y-2">
+                  {filterOptions.fundingType.map((type) => (
+                    <label key={type} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedFilters.fundingType.includes(type)}
+                        onChange={() => toggleFilter('fundingType', type)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{type}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sector Filter */}
+              <div>
+                <h4 className="font-medium text-gray-900 mb-3">Sector</h4>
+                <div className="space-y-2">
+                  {filterOptions.sector.map((sector) => (
+                    <label key={sector} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedFilters.sector.includes(sector)}
+                        onChange={() => toggleFilter('sector', sector)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{sector}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Deadline Filter */}
+              <div>
+                <h4 className="font-medium text-gray-900 mb-3">Deadline</h4>
+                <div className="space-y-2">
+                  {filterOptions.deadline.map((deadline) => (
+                    <label key={deadline} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedFilters.deadline.includes(deadline)}
+                        onChange={() => toggleFilter('deadline', deadline)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{deadline}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Summary Section */}
+        <div className="max-w-6xl mx-auto mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600">
+          <div className="flex items-center gap-4">
+            <span>
+              Total Grants: {categories.reduce((total, category) => {
+                if (category.stages) {
+                  return total + category.stages.reduce((stageTotal, stage) => 
+                    stageTotal + filterGrants(stage.grants).length, 0
+                  );
+                } else if (category.items) {
+                  return total + filterItems(category.items).length;
+                }
+                return total;
+              }, 0)}
+            </span>
+            {hasActiveFilters() && (
+              <span className="text-blue-600 font-medium">
+                Active Filters: {Object.values(selectedFilters).reduce((sum, filters) => sum + filters.length, 0)}
+              </span>
+            )}
+          </div>
+          {hasActiveFilters() && (
+            <Button
+              onClick={clearAllFilters}
+              variant="ghost"
+              size="sm"
+              className="text-gray-500 hover:text-gray-700"
+            >
+              Clear All Filters
+            </Button>
+          )}
+        </div>
+
+        {/* Active Filter Tags */}
+        {hasActiveFilters() && (
+          <div className="max-w-6xl mx-auto mb-6">
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(selectedFilters).map(([filterType, values]) =>
+                values.map((value: string) => (
+                  <div
+                    key={`${filterType}-${value}`}
+                    className="flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                  >
+                    <span className="capitalize">{filterType}: {value}</span>
+                    <button
+                      onClick={() => toggleFilter(filterType as keyof FilterOptions, value)}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="max-w-6xl mx-auto space-y-4">
           {categories.map((category) => {
@@ -1306,6 +1936,21 @@ export function GrantCategories() {
                           {category.subtitle}
                         </p>
                         <p className="text-gray-600">{category.description}</p>
+                        {hasActiveFilters() && (
+                          <div className="text-sm text-blue-600 font-medium mt-1">
+                            {(() => {
+                              let count = 0;
+                              if (category.stages) {
+                                count = category.stages.reduce((stageTotal, stage) => 
+                                  stageTotal + filterGrants(stage.grants).length, 0
+                                );
+                              } else if (category.items) {
+                                count = filterItems(category.items).length;
+                              }
+                              return `${count} grant${count !== 1 ? 's' : ''} found`;
+                            })()}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <Button
@@ -1338,6 +1983,16 @@ export function GrantCategories() {
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">
                   No grants found matching your search. Try different keywords.
+                </p>
+              </div>
+            )}
+          {!searchTerm && hasActiveFilters() && 
+            categories.every(
+              (category) => !shouldDisplayCategory(category, "")
+            ) && (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">
+                  No grants found matching your filters. Try adjusting your filter criteria.
                 </p>
               </div>
             )}

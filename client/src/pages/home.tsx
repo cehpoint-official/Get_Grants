@@ -20,7 +20,6 @@ export default function Home() {
   };
 
   return (
-    // We use a React Fragment here as the main wrapper.
     <>
       <Hero />
       <TrustBar />
