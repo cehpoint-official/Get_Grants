@@ -33,7 +33,7 @@ export function Navbar() {
     { name: 'Home', action: () => scrollToSection('home') },
     { name: 'Explore Grants', action: () => scrollToSection('grants') },
     { name: 'Founders Area', action: () => scrollToSection('founders-area') },
-    { name: 'Incubator Area', action: () => scrollToSection('incubator-area') },
+    { name: 'Grants Program', action: () => scrollToSection('grants-program') },
     { name: 'Premium Support', action: () => scrollToSection('premium-support') },
   ] as const;
 

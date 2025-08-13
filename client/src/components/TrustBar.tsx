@@ -13,7 +13,7 @@ export function TrustBar() {
     <section className="py-16 md:py-20 bg-light-blue">
       <div className="container mx-auto px-4 md:px-6">
         <h2 className="text-center text-3xl font-bold text-gray-800 mb-12">
-          Trusted by India's most innovative schemes & incubators
+          Trusted by India's most innovative startup founders
         </h2>
         
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">

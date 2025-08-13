@@ -39,17 +39,7 @@ export function Hero() {
               >
                 Apply with Support
               </Button>
-              <Button
-                onClick={() => {
-                  const element = document.getElementById('incubator-area');
-                  if (element) {
-                    element.scrollIntoView({ behavior: "smooth" });
-                  }
-                }}
-                className="bg-primary-blue hover:bg-accent-blue text-white px-6 py-3 font-medium text-base"
-              >
-                List Your Program
-              </Button>
+
             </div>
 
             <div className="mt-8 flex items-center space-x-6 text-sm text-gray-500">

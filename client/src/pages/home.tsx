@@ -163,15 +163,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Incubator Area Section */}
-      <section id="incubator-area" className="py-20 bg-gray-50">
+      {/* Grants Program Section */}
+      <section id="grants-program" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Incubator Area
+              List Your Grants Program
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Reach Thousands of Founders. List Your Incubator.
+              Reach Thousands of Founders. List Your Grants Program.
             </p>
           </div>
 
@@ -263,20 +263,6 @@ export default function Home() {
                 onClick={() => scrollToSection('incubator-login')}
               >
                 Access Admin Dashboard
-              </Button>
-            </div>
-
-            {/* CTA Section */}
-            <div className="bg-white rounded-lg p-8 shadow-sm border border-gray-200 text-center">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">List Your Program</h3>
-              <p className="text-gray-600 mb-6">
-                Join leading incubators and accelerators in our network. Start receiving qualified applications today.
-              </p>
-              <Button 
-                onClick={() => scrollToSection('incubator-login')}
-                className="bg-primary-blue hover:bg-accent-blue text-white px-8 py-3 font-semibold"
-              >
-                List Your Program
               </Button>
             </div>
           </div>
@@ -584,48 +570,130 @@ export default function Home() {
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about" className="py-20 bg-light-blue">
+      {/* FAQ Section */}
+      <section id="faq" className="py-20 bg-light-blue">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
-            <div className="mb-12 lg:mb-0">
-              <img
-                src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=600"
-                alt="Professional team discussing startup strategy"
-                className="rounded-xl shadow-2xl w-full h-auto"
-              />
-            </div>
-            <div>
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-                Empowering Indian Startups with Government Funding
-              </h2>
-              <p className="text-xl text-gray-600 mb-6 leading-relaxed">
-                We believe every innovative startup deserves access to
-                non-dilutive funding. Our platform simplifies the complex world
-                of government grants, making it easy for founders to discover
-                and apply for the right opportunities.
-              </p>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Get answers to common questions about our grant platform
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto space-y-6">
+            {[
+              {
+                question: "How do I find grants that match my startup?",
+                answer: "Use our advanced search and filtering system to find grants by stage, sector, funding type, and deadline. Our AI-powered matching also suggests relevant opportunities."
+              },
+              {
+                question: "What documents do I need to apply for grants?",
+                answer: "Typically you'll need a business plan, pitch deck, financial projections, team details, and proof of concept. Requirements vary by grant program."
+              },
+              {
+                question: "How long does the application process take?",
+                answer: "Application timelines vary from 2-8 weeks depending on the grant program. We recommend starting early and following our application guides."
+              },
+              {
+                question: "Do you provide application assistance?",
+                answer: "Yes, we offer premium consultation services and done-for-you application support to increase your chances of success."
+              },
+              {
+                question: "Are there any fees to use the platform?",
+                answer: "Basic access is free. Premium features including priority notifications and expert consultation are available through our subscription plans."
+              }
+            ].map((faq, index) => (
+              <div key={index} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">{faq.question}</h3>
+                <p className="text-gray-600">{faq.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Choose Your Plan
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Get access to premium features and expert support
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
+            {/* Monthly Plan */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-primary-blue relative">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Monthly Plan</h3>
+                <div className="text-4xl font-bold text-primary-blue mb-2">₹499</div>
+                <div className="text-gray-600">per month</div>
+              </div>
+              
               <div className="space-y-4 mb-8">
                 {[
-                  "500+ Verified Grant Programs",
-                  "Real-time Updates & Notifications",
-                  "Expert Application Guidance",
-                  "All Indian States Covered",
-                ].map((item) => (
-                  <div key={item} className="flex items-center">
-                    <div className="w-8 h-8 bg-primary-blue rounded-full flex items-center justify-center mr-4">
-                      <CheckCircle className="h-4 w-4 text-white" />
-                    </div>
-                    <span className="text-gray-700">{item}</span>
+                  "Access to all ongoing grants and programs",
+                  "Priority deadline notifications",
+                  "Exclusive grant recommendations",
+                  "WhatsApp priority support",
+                  "Current month highlights"
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center space-x-3">
+                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    <span className="text-gray-700">{feature}</span>
                   </div>
                 ))}
               </div>
-              <Button
-                onClick={() => scrollToSection("apply-incubator")}
-                variant="outline"
-                className="border-primary-blue text-primary-blue hover:bg-primary-blue hover:text-white px-6 py-3 font-medium"
+
+              <Button 
+                className="w-full bg-primary-blue hover:bg-accent-blue text-white py-3 font-semibold"
+                onClick={() => scrollToSection('contact')}
               >
-                Apply as Incubator
+                Get Started
+              </Button>
+            </div>
+
+            {/* 3-Month Plan */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-accent-blue relative">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="bg-accent-blue text-white px-4 py-2 rounded-full text-sm font-medium">
+                  Most Popular
+                </span>
+              </div>
+              
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">3-Month Plan</h3>
+                <div className="text-4xl font-bold text-accent-blue mb-2">₹999</div>
+                <div className="text-gray-600">for 3 months</div>
+                <div className="text-sm text-green-600 font-medium mt-1">Save ₹498</div>
+              </div>
+              
+              <div className="space-y-4 mb-8">
+                {[
+                  "Everything in Monthly Plan",
+                  "Direct application assistance",
+                  "1:1 expert consultation",
+                  "Pitch deck review",
+                  "Compliance verification",
+                  "Priority application processing"
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center space-x-3">
+                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    <span className="text-gray-700">{feature}</span>
+                  </div>
+                ))}
+              </div>
+
+              <Button 
+                className="w-full bg-accent-blue hover:bg-primary-blue text-white py-3 font-semibold"
+                onClick={() => scrollToSection('contact')}
+              >
+                Get Started
               </Button>
             </div>
           </div>
@@ -637,7 +705,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Get in Touch
+              Contact Us
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Have questions about grants or need help with your application?
