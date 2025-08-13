@@ -1691,14 +1691,13 @@ export function GrantCategories() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-            Explore categories:
+            Explore Grant Categories
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Browse through our organized categories to find the perfect funding
             opportunity for your startup
           </p>
         </div>
-        
         <div className="max-w-6xl mx-auto mb-8 px-4">
           <div className="flex flex-col md:flex-row items-stretch gap-4 mb-8">
             {/* Search Bar */}
@@ -1751,23 +1750,7 @@ export function GrantCategories() {
           {showForm && <GrantApplicationForm />}
         </div>
 
-        {/* Summary Section - Simple design like in image */}
-        <div className="max-w-6xl mx-auto mb-6">
-          <div className="text-sm text-gray-600">
-            Total Grants: {categories.reduce((total, category) => {
-              if (category.stages) {
-                return total + category.stages.reduce((stageTotal, stage) => 
-                  stageTotal + filterGrants(stage.grants).length, 0
-                );
-              } else if (category.items) {
-                return total + filterItems(category.items).length;
-              }
-              return total;
-            }, 0)}
-          </div>
-        </div>
-
-        {/* Filter Panel - Simple design like in image */}
+        {/* Filter Panel */}
         {showFilters && (
           <div className="max-w-6xl mx-auto mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
@@ -1870,7 +1853,62 @@ export function GrantCategories() {
           </div>
         )}
 
+        {/* Summary Section */}
+        <div className="max-w-6xl mx-auto mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600">
+          <div className="flex items-center gap-4">
+            <span>
+              Total Grants: {categories.reduce((total, category) => {
+                if (category.stages) {
+                  return total + category.stages.reduce((stageTotal, stage) => 
+                    stageTotal + filterGrants(stage.grants).length, 0
+                  );
+                } else if (category.items) {
+                  return total + filterItems(category.items).length;
+                }
+                return total;
+              }, 0)}
+            </span>
+            {hasActiveFilters() && (
+              <span className="text-blue-600 font-medium">
+                Active Filters: {Object.values(selectedFilters).reduce((sum, filters) => sum + filters.length, 0)}
+              </span>
+            )}
+          </div>
+          {hasActiveFilters() && (
+            <Button
+              onClick={clearAllFilters}
+              variant="ghost"
+              size="sm"
+              className="text-gray-500 hover:text-gray-700"
+            >
+              Clear All Filters
+            </Button>
+          )}
+        </div>
 
+        {/* Active Filter Tags */}
+        {hasActiveFilters() && (
+          <div className="max-w-6xl mx-auto mb-6">
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(selectedFilters).map(([filterType, values]) =>
+                values.map((value: string) => (
+                  <div
+                    key={`${filterType}-${value}`}
+                    className="flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                  >
+                    <span className="capitalize">{filterType}: {value}</span>
+                    <button
+                      onClick={() => toggleFilter(filterType as keyof FilterOptions, value)}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="max-w-6xl mx-auto space-y-4">
           {categories.map((category) => {

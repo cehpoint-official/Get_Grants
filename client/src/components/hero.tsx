@@ -1,7 +1,25 @@
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, MapPin } from "lucide-react";
+import { Link, useLocation } from "wouter";
 
 export function Hero() {
+  const [, setLocation] = useLocation();
+
+  // This useEffect hook for scrolling remains unchanged.
+  useEffect(() => {
+    const scrollTarget = localStorage.getItem("scrollTo");
+    if (scrollTarget) {
+      const el = document.getElementById(scrollTarget);
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: "smooth" });
+          localStorage.removeItem("scrollTo");
+        }, 100);
+      }
+    }
+  }, []);
+
   return (
     // The outer section provides the full-width background color.
     <section id="home" className="bg-light-blue py-20">
@@ -18,28 +36,23 @@ export function Hero() {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
-                onClick={() => {
-                  const element = document.getElementById('explore-grants');
-                  if (element) {
-                    element.scrollIntoView({ behavior: "smooth" });
-                  }
-                }}
+                asChild
                 className="bg-primary-blue hover:bg-accent-blue text-white px-6 py-3 font-medium text-base"
               >
-                Explore Free Grants
+                <Link href="/grants">Explore Free Grants</Link>
               </Button>
               <Button
-                onClick={() => {
-                  const element = document.getElementById('premium-support');
-                  if (element) {
-                    element.scrollIntoView({ behavior: "smooth" });
-                  }
-                }}
+                asChild
                 className="bg-primary-blue hover:bg-accent-blue text-white px-6 py-3 font-medium text-base"
               >
-                Apply with Support
+                <Link href="/premium-support">Apply with Support</Link>
               </Button>
-
+              {/* <Button
+                asChild
+                className="bg-primary-blue hover:bg-accent-blue text-white px-6 py-3 font-medium text-base"
+              >
+                <Link href="/incubator-area">List Your Program</Link>
+              </Button> */}
             </div>
 
             <div className="mt-8 flex items-center space-x-6 text-sm text-gray-500">

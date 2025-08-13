@@ -33,11 +33,9 @@ export function Navbar() {
     { name: 'Home', action: () => scrollToSection('home') },
     { name: 'Explore Grants', action: () => scrollToSection('grants') },
     { name: 'Founders Area', action: () => scrollToSection('founders-area') },
-    { name: 'Grants Program', action: () => scrollToSection('grants-program') },
+    { name: 'Grants Program', action: () => scrollToSection('blog') },
     { name: 'Premium Support', action: () => scrollToSection('premium-support') },
-  ] as const;
-
-  type NavItem = typeof navItems[number];
+  ];
 
   const handleLogout = async () => {
     try {
@@ -108,13 +106,9 @@ export function Navbar() {
             <div className="hidden lg:block">
               <div className="ml-10 flex items-baseline space-x-6 xl:space-x-8">
                 {navItems.map((item) => (
-                  <button 
-                    key={item.name} 
-                    onClick={item.action} 
-                    className="text-gray-600 hover:text-primary-blue font-medium text-sm"
-                  >
-                    {item.name}
-                  </button>
+                    item.href ?
+                  <Link key={item.name} href={item.href} className="text-gray-600 hover:text-primary-blue font-medium text-sm">{item.name}</Link>
+                  : <button key={item.name} onClick={item.action} className="text-gray-600 hover:text-primary-blue font-medium text-sm">{item.name}</button>
                 ))}
               </div>
             </div>
@@ -132,13 +126,9 @@ export function Navbar() {
           <div className="lg:hidden border-t border-gray-100">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-white">
               {navItems.map((item) => (
-                <button 
-                  key={item.name} 
-                  onClick={() => { item.action(); setIsOpen(false); }} 
-                  className="block w-full text-left px-3 py-2 text-gray-600 hover:text-primary-blue text-sm"
-                >
-                  {item.name}
-                </button>
+                 item.href ?
+                 <Link key={item.name} href={item.href} className="block w-full text-left px-3 py-2 text-gray-600 hover:text-primary-blue text-sm" onClick={() => setIsOpen(false)}>{item.name}</Link>
+                 : <button key={item.name} onClick={item.action} className="block w-full text-left px-3 py-2 text-gray-600 hover:text-primary-blue text-sm">{item.name}</button>
               ))}
               <div className="px-3 py-2 border-t mt-2 pt-3">
                 {renderMobileAuthButtons()}
