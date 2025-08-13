@@ -1,70 +1,54 @@
-import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Search, CheckCircle, MapPin } from "lucide-react";
-import { useLocation } from "wouter";
+import { CheckCircle, MapPin } from "lucide-react";
 
 export function Hero() {
-  const [, setLocation] = useLocation();
-
-  // ✅ On mount, scroll if requested
-  useEffect(() => {
-    const scrollTarget = localStorage.getItem("scrollTo");
-    if (scrollTarget) {
-      const el = document.getElementById(scrollTarget);
-      if (el) {
-        setTimeout(() => {
-          el.scrollIntoView({ behavior: "smooth" });
-          localStorage.removeItem("scrollTo");
-        }, 100); // Ensure DOM is ready
-      }
-    }
-  }, []);
-
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
-  const navigate = (path: string) => {
-    setLocation(path);
-  };
-
   return (
+    // The outer section provides the full-width background color.
     <section id="home" className="bg-light-blue py-20">
+      {/* This inner div centers the content and sets a max-width. */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
           <div className="mb-12 lg:mb-0">
             <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Discover
-              <br />
-              Government <span className="text-primary-blue">Grants</span>
-              <br />
-              <span className="text-primary-blue">& Funding</span> for
-              <br />
-              Indian Startups
+              Discover & Apply for <span className="text-primary-blue">Startup Grants</span> & Incubator Programs
             </h1>
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Navigate through different stages and sectors to find the perfect
-              funding opportunity. Access ₹77,000+ Cr in non-dilutive government
-              capital for your startup.
+              India’s go-to platform for early-stage funding and acceleration.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
-                onClick={() => scrollToSection("grants")}
-                className="bg-primary-blue hover:bg-accent-blue text-white px-6 py-3 font-medium"
+                onClick={() => {
+                  const element = document.getElementById('explore-grants');
+                  if (element) {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                className="bg-primary-blue hover:bg-accent-blue text-white px-6 py-3 font-medium text-base"
               >
-                <Search className="mr-2 h-4 w-4" />
-                Explore Grants
+                Explore Free Grants
               </Button>
-
               <Button
-                onClick={() => navigate("/apply")}
-                className="bg-primary-blue text-white hover:bg-blue-600 px-6 py-3 font-medium"
+                onClick={() => {
+                  const element = document.getElementById('premium-support');
+                  if (element) {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                className="bg-primary-blue hover:bg-accent-blue text-white px-6 py-3 font-medium text-base"
               >
-               Ask a Specialist 
+                Apply with Support
+              </Button>
+              <Button
+                onClick={() => {
+                  const element = document.getElementById('incubator-area');
+                  if (element) {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                className="bg-primary-blue hover:bg-accent-blue text-white px-6 py-3 font-medium text-base"
+              >
+                List Your Program
               </Button>
             </div>
 

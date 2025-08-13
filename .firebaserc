@@ -1,7 +1,8 @@
 {
   "projects": {
     "default": "grant-e982c",
-    "staging": "grant-e982c"
+    "staging": "grant-e982c",
+    "update": "grant-e982c"
   },
   "targets": {},
   "etags": {}
