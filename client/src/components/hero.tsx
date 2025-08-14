@@ -1,24 +1,13 @@
-import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, MapPin } from "lucide-react";
-import { Link, useLocation } from "wouter";
 
 export function Hero() {
-  const [, setLocation] = useLocation();
-
-  // This useEffect hook for scrolling remains unchanged.
-  useEffect(() => {
-    const scrollTarget = localStorage.getItem("scrollTo");
-    if (scrollTarget) {
-      const el = document.getElementById(scrollTarget);
-      if (el) {
-        setTimeout(() => {
-          el.scrollIntoView({ behavior: "smooth" });
-          localStorage.removeItem("scrollTo");
-        }, 100);
-      }
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
     }
-  }, []);
+  };
 
   return (
     // The outer section provides the full-width background color.
@@ -36,22 +25,22 @@ export function Hero() {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
-                asChild
+                onClick={() => scrollToSection('grants')}
                 className="bg-primary-blue hover:bg-accent-blue text-white px-6 py-3 font-medium text-base"
               >
-                <Link href="/grants">Explore Free Grants</Link>
+                Explore Free Grants
               </Button>
               <Button
-                asChild
+                onClick={() => scrollToSection('premium-support')}
                 className="bg-primary-blue hover:bg-accent-blue text-white px-6 py-3 font-medium text-base"
               >
-                <Link href="/premium-support">Apply with Support</Link>
+                Apply with Support
               </Button>
               {/* <Button
-                asChild
+                onClick={() => scrollToSection('incubator-area')}
                 className="bg-primary-blue hover:bg-accent-blue text-white px-6 py-3 font-medium text-base"
               >
-                <Link href="/incubator-area">List Your Program</Link>
+                List Your Program
               </Button> */}
             </div>
 

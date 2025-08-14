@@ -12,6 +12,7 @@ import { CheckCircle } from "lucide-react";
 import { TrustBar } from "../components/TrustBar";
 import FoundersArea from "../components/FoundersArea";
 import PremiumSupport from "../components/PremiumSupport";
+import Faq from "../components/Faq";
 
 export default function Home() {
   const scrollToSection = (sectionId: string) => {
@@ -78,6 +79,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      
 
       {/* Contact Section */}
       {/* <section id="contact" className="py-20 bg-white">
@@ -142,7 +144,7 @@ export default function Home() {
           </div>
         </div>
       </section> */}
-
+      <Faq />
       <Footer />
     </>
   );

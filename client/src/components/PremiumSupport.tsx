@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, Star, MessageSquare } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 
 export default function PremiumSupport() {
-  // Features listed in the document
+  // State to manage which FAQ is open
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
+
   const services = [
     {
       name: "Done-for-you Grant Application",
@@ -22,19 +25,30 @@ export default function PremiumSupport() {
     },
   ];
 
-  // Placeholder testimonials
-  const testimonials = [
+  // FAQ Data
+  const faqs = [
     {
-      quote: "The team's expertise was invaluable. They helped us secure a grant we thought was out of reach!",
-      author: "Rohan Sharma",
-      company: "Founder, AgriTech Innovations",
+      question: "What kind of support can I expect?",
+      answer: "Our premium support includes end-to-end grant application assistance, professional review of your pitch deck and compliance documents, and direct 1:1 access to our grant experts for personalized advice.",
     },
     {
-      quote: "A must-have service for any serious founder. The pitch deck review made all the difference.",
-      author: "Priya Singh",
-      company: "CEO, HealthWell AI",
+      question: "Who are the experts I will be consulting with?",
+      answer: "Our experts are seasoned professionals with years of experience in the venture capital and grant funding sectors. They have a proven track record of helping startups secure funding.",
+    },
+    {
+      question: "What if I don't get the grant after using the service?",
+      answer: "While we cannot guarantee funding, our service significantly increases your chances by ensuring your application is professional, compliant, and compelling. We focus on perfecting your submission to meet the highest standards.",
+    },
+    {
+      question: "How do I schedule my 1:1 consultation?",
+      answer: "Once you sign up for a plan, you will receive access to a private booking calendar where you can schedule your consultation calls at a time that is convenient for you.",
     },
   ];
+
+  // Function to toggle FAQ visibility
+  const handleFaqToggle = (index) => {
+    setOpenFaqIndex(openFaqIndex === index ? null : index);
+  };
 
   return (
     <div id="premium-support" className="bg-white">
@@ -63,23 +77,6 @@ export default function PremiumSupport() {
                 <p className="mt-2 text-gray-600">{service.description}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-  
-
-      {/* CTA Section */}
-      <section className="py-16 md:py-24 text-center">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-gray-900">Ready to Get Started?</h2>
-          <p className="mt-2 text-lg text-gray-600">
-            Book a free, no-obligation consultation call with our experts today.
-          </p>
-          <div className="mt-8">
-            <Button asChild size="lg" className="bg-primary-blue hover:bg-accent-blue text-base px-8 py-6">
-              <Link href="/contact">Book Free Consultation</Link>
-            </Button>
           </div>
         </div>
       </section>
