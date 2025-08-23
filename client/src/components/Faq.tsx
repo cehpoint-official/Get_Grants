@@ -1,12 +1,21 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronDown } from "lucide-react"; // Import ChevronDown
+import { Check, ChevronDown, CheckCircle2, X, User, Mail, Phone, Lock } from "lucide-react";
 import { Link } from "wouter";
 
 export default function PremiumSupport() {
-  const [selectedPlan, setSelectedPlan] = useState("monthly");
   // State to manage which FAQ is open
-  const [openFaqIndex, setOpenFaqIndex] = useState(null);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+ 
+  // State for Contact Modal
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   const services = [
     {
@@ -47,89 +56,35 @@ export default function PremiumSupport() {
   ];
 
   // Function to toggle FAQ visibility
-  const handleFaqToggle = (index) => {
+  const handleFaqToggle = (index: number) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
   };
 
   return (
     <div id="premium-support" className="bg-white">
-      {/* (Previous sections: Hero, Services, Pricing, CTA) */}
-      {/* ... The rest of your component code from before goes here ... */}
-      
-      {/* --- BIGGER Interactive Pricing Section --- */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Choose Your Plan</h2>
-          <p className="mt-2 text-lg text-gray-600">
-            Select the plan that works best for you.
-          </p>
-
-          <div className="mt-12 max-w-lg mx-auto grid md:grid-cols-2 gap-8">
-            
-            {/* Monthly Plan BIG Card */}
-            <div
-              onClick={() => setSelectedPlan("monthly")}
-              className={`p-8 border-2 rounded-xl cursor-pointer transition-all flex flex-col text-left ${
-                selectedPlan === "monthly" 
-                ? "border-primary-blue bg-white shadow-lg" 
-                : "border-gray-200 bg-white hover:border-gray-400"
-              }`}
-            >
-              <h3 className="text-xl font-semibold text-gray-900">Monthly</h3>
-              <p className="mt-4 text-4xl font-bold text-gray-900">₹499</p>
-              <p className="text-sm font-medium text-gray-500">per month</p>
-              <p className="mt-6 text-gray-600">
-                A great way to get started with our premium services without a long-term commitment.
-              </p>
-              <div className="flex-grow" />
-              <Button size="lg" className={`w-full mt-8 ${selectedPlan === 'monthly' ? 'bg-primary-blue' : 'bg-gray-300'} text-white`}>
-                Choose Plan
-              </Button>
-            </div>
-
-            {/* Quarterly Plan BIG Card */}
-            <div
-              onClick={() => setSelectedPlan("quarterly")}
-              className={`p-8 border-2 rounded-xl cursor-pointer transition-all flex flex-col text-left ${
-                selectedPlan === "quarterly" 
-                ? "border-primary-blue bg-white shadow-lg" 
-                : "border-gray-200 bg-white hover:border-gray-400"
-              }`}
-            >
-              <h3 className="text-xl font-semibold text-gray-900">Quarterly</h3>
-              <p className="mt-4 text-4xl font-bold text-gray-900">₹999</p>
-              <p className="text-sm font-medium text-gray-500">per 3 months</p>
-              <p className="mt-6 text-gray-600">
-                Save money with our quarterly plan and get consistent support for your funding goals.
-              </p>
-              <div className="flex-grow" />
-              <Button size="lg" className={`w-full mt-8 ${selectedPlan === 'quarterly' ? 'bg-primary-blue' : 'bg-gray-300'} text-white`}>
-                Choose Plan
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* --- NEW FAQ Section --- */}
-      <section className="py-16 md:py-24">
+     
+     
+      {/* Your New FAQ Section */}
+      <section id="faq" className="py-16 md:py-24" style={{
+        background: 'linear-gradient(135deg, hsl(60, 30%, 95%) 0%, hsl(30, 60%, 90%) 100%)'
+      }}>
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
-            <h2 className="text-center text-3xl font-bold text-gray-900">
+            <h2 className="text-center text-3xl font-bold text-violet mb-8">
               Frequently Asked Questions
             </h2>
             <div className="mt-8 space-y-4">
               {faqs.map((faq, index) => (
-                <div key={index} className="border-b border-gray-200 pb-4">
+                <div key={index} className="border-b-2 border-pink pb-4 bg-yellowish-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
                   <button
                     onClick={() => handleFaqToggle(index)}
                     className="w-full flex justify-between items-center text-left py-2"
                   >
-                    <span className="text-lg font-medium text-gray-800">
+                    <span className="text-lg font-medium text-violet">
                       {faq.question}
                     </span>
                     <ChevronDown
-                      className={`h-6 w-6 text-primary-blue transform transition-transform duration-300 ${
+                      className={`h-6 w-6 text-pink transform transition-transform duration-300 ${
                         openFaqIndex === index ? "rotate-180" : ""
                       }`}
                     />
@@ -139,16 +94,45 @@ export default function PremiumSupport() {
                       openFaqIndex === index ? "max-h-screen pt-2" : "max-h-0"
                     }`}
                   >
-                    <p className="text-gray-600">
+                    <p className="text-gray-700">
                       {faq.answer}
                     </p>
                   </div>
                 </div>
               ))}
             </div>
+
+            {/* Have a Question Button */}
+            <div className="text-center mt-12">
+                <Button 
+                    onClick={() => setIsContactModalOpen(true)}
+                    className="bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold px-8 py-3 text-base"
+                >
+                    Have another question?
+                </Button>
+            </div>
+
           </div>
         </div>
       </section>
+
+      {/* Contact Modal */}
+      {isContactModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
+          <div className="bg-white p-8 rounded-2xl shadow-2xl relative w-full max-w-md" style={{ background: 'linear-gradient(135deg, hsl(60, 30%, 95%) 0%, hsl(30, 60%, 90%) 100%)' }}>
+            <Button variant="ghost" size="icon" onClick={() => setIsContactModalOpen(false)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 hover:bg-gray-200 rounded-full">
+              <X size={24} />
+            </Button>
+            <h3 className="text-2xl font-bold text-violet mb-6 text-center">Send us a message</h3>
+            <form className="space-y-4">
+                <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="text" placeholder="Your Name" className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet focus:border-violet"/></div>
+                <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="email" placeholder="Your Email" className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet focus:border-violet"/></div>
+                <textarea placeholder="Your Message" rows={4} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet focus:border-violet"></textarea>
+                <Button type="submit" className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold py-3 text-lg">Send Message</Button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

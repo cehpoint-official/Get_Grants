@@ -1,34 +1,72 @@
-import { Building2, Lightbulb, Rocket, Network, IndianRupee } from 'lucide-react';
+import React from 'react';
 
 export function TrustBar() {
-  const partners = [
-    { name: 'Govt. Schemes', icon: <Building2 className="h-10 w-10 text-primary-blue" /> },
-    { name: 'Startup India', icon: <Rocket className="h-10 w-10 text-primary-blue" /> },
-    { name: 'Incubators', icon: <Network className="h-10 w-10 text-primary-blue" /> },
-    { name: 'Innovation Mission', icon: <Lightbulb className="h-10 w-10 text-primary-blue" /> },
-    { name: 'Funding Agencies', icon: <IndianRupee className="h-10 w-10 text-primary-blue" /> },
+  const grantLogos = [
+    {
+      name: 'NIDHI',
+      url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/DST_India_Logo.svg/320px-DST_India_Logo.svg.png',
+      description: 'National Initiative for Developing and Harnessing Innovations',
+      category: 'Innovation'
+    },
+    {
+      name: 'BIRAC',
+      url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/BIRAC_Logo.png/320px-BIRAC_Logo.png',
+      description: 'Biotechnology Industry Research Assistance Council',
+      category: 'Biotech'
+    },
+    {
+      name: 'Startup India',
+      url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Startup_India_logo.png/320px-Startup_India_logo.png',
+      description: 'Government of India\'s flagship initiative',
+      category: 'Government'
+    },
+    {
+      name: 'SIDBI',
+      url: 'https://upload.wikimedia.org/wikipedia/en/thumb/7/7b/SIDBI_logo.svg/320px-SIDBI_logo.svg.png',
+      description: 'Small Industries Development Bank of India',
+      category: 'Finance'
+    },
+    {
+      name: 'AIM ',
+      url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/NITI_Aayog_logo.png/320px-NITI_Aayog_logo.png',
+      description: 'Atal Innovation Mission',
+      category: 'Innovation'
+    }
   ];
 
   return (
-    <section className="py-16 md:py-20 bg-light-blue">
+    <section className="py-12" style={{
+      background: 'linear-gradient(135deg, hsl(60, 30%, 95%) 0%, hsl(30, 60%, 90%) 100%)'
+    }}>
       <div className="container mx-auto px-4 md:px-6">
-        <h2 className="text-center text-3xl font-bold text-gray-800 mb-12">
-          Trusted by India's most innovative startup founders
-        </h2>
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-violet mb-4">
+            Trusted by Leading Grant Organizations
+          </h2>
+        </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
-          {partners.map((partner) => (
-            <div 
-              key={partner.name} 
-              className="bg-white p-6 rounded-xl text-center cursor-pointer
-                         hover:-translate-y-2 hover:shadow-xl transition-all duration-300 ease-in-out"
-            >
-              <div className="flex justify-center mb-4">
-                {partner.icon}
+        <div className="overflow-hidden">
+          <div className="marquee__track flex items-center gap-x-16 py-4">
+            {grantLogos.map((logo, idx) => (
+              <div key={`${logo.name}-${idx}`} className="flex-shrink-0">
+                <div className="text-center">
+                  <img
+                    src={logo.url}
+                    alt={logo.name}
+                    className="h-16 object-contain grayscale hover:grayscale-0 transition-all duration-300"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null;
+                      target.src = `https://placehold.co/160x64/f0f0f0/333333?text=${logo.name.replace(/\s/g, '+')}`;
+                    }}
+                  />
+                  <p className="mt-2 text-sm text-violet font-medium">
+                    {logo.name}
+                  </p>
+                </div>
               </div>
-              <p className="font-semibold text-gray-700">{partner.name}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

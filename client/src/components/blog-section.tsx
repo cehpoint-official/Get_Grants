@@ -47,50 +47,49 @@ export function BlogSection() {
   ];
 
   const allPosts = [...posts, ...defaultPosts];
-  const visiblePosts = showAllPosts ? allPosts : allPosts.slice(0, 6);
+  const visiblePosts = showAllPosts ? allPosts : allPosts.slice(0, 3);
   const getCategoryColor = (category: string) => {
     const colors = {
-      "Government Grants": "bg-blue-100 text-primary-blue",
-      "Private Grants": "bg-green-100 text-green-600",
-      "Startup Funding": "bg-orange-100 text-orange-600",
-      "Tools": "bg-green-100 text-green-600",
-      "Strategy": "bg-purple-100 text-purple-600",
-      "Funding": "bg-orange-100 text-orange-600",
+      "Government Grants": "bg-violet/20 text-violet border border-violet",
+      "Private Grants": "bg-pink/20 text-pink border border-pink",
+      "Startup Funding": "bg-rose-gold/20 text-rose-gold border border-rose-gold",
+      "Tools": "bg-pink/20 text-pink border border-pink",
+      "Strategy": "bg-violet/20 text-violet border border-violet",
+      "Funding": "bg-rose-gold/20 text-rose-gold border border-rose-gold",
     };
-    return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-600";
+    return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-600 border border-gray-300";
   };
 
   return (
     <>
-      <section id="blog" className="py-20 bg-white">
+      <section id="blog" className="py-20" style={{
+        background: 'linear-gradient(135deg, hsl(60, 30%, 95%) 0%, hsl(30, 60%, 90%) 100%)'
+      }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="flex justify-between items-center mb-4">
               <div className="flex-1">
-                <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+                <h2 className="text-3xl lg:text-4xl font-bold text-violet mb-4">
                   Latest Insights from Get Grants
                 </h2>
-                <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                <p className="text-xl text-gray-700 max-w-3xl mx-auto">
                   Stay updated with the latest guides, tips, and insights on
                   startup grants and funding in India
                 </p>
               </div>
-            
             </div>
           </div>
 
-        
-
           {loading ? (
             <div className="text-center py-12">
-              <div className="animate-pulse">Loading posts...</div>
+              <div className="animate-pulse text-violet">Loading posts...</div>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {visiblePosts.map((post) => (
                 <article
                   key={post.id}
-                  className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100"
+                  className="bg-yellowish-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border-2 border-pink hover:border-violet"
                 >
                   <img
                     src={
@@ -111,22 +110,22 @@ export function BlogSection() {
                       </span>
                     </div>
                     <h3
-                      className="text-xl font-semibold text-gray-900 mb-3 hover:text-primary-blue cursor-pointer"
+                      className="text-xl font-semibold text-violet mb-3 hover:text-pink cursor-pointer transition-colors"
                       onClick={() => setLocation(`/blog?id=${post.id}`)}
                     >
                       {post.title}
                     </h3>
-                    <p className="text-gray-600 mb-4">
+                    <p className="text-gray-700 mb-4">
                       {post.content.substring(0, 150)}
                       {post.content.length > 150 ? "..." : ""}
                     </p>
-                    <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center justify-between text-sm text-gray-600">
                       <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                       <span>By {post.author}</span>
                     </div>
                     <Button
                       variant="link"
-                      className="mt-4 text-primary-blue hover:text-accent-blue font-medium p-0"
+                      className="mt-4 text-violet hover:text-pink font-medium p-0 transition-colors"
                       onClick={() => setLocation(`/blog?id=${post.id}`)}
                     >
                       Read More →
@@ -137,12 +136,11 @@ export function BlogSection() {
             </div>
           )}
 
-          {/* Show Button Only if More Than 6 Posts */}
-          {!showAllPosts && allPosts.length > 6 && (
+          {!showAllPosts && allPosts.length > 3 && (
             <div className="text-center mt-12">
               <Button
                 onClick={() => setShowAllPosts(true)}
-                className="bg-primary-blue hover:bg-accent-blue"
+                className="bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold"
               >
                 View All Blog Posts
               </Button>

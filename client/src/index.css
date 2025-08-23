@@ -29,6 +29,13 @@
   --accent-blue: hsl(238, 79%, 65%);
   --light-blue: hsl(238, 100%, 97%);
   --dark-blue: hsl(238, 79%, 25%);
+  
+  /* New gradient colors */
+  --rose-gold: hsl(30, 60%, 70%);
+  --violet: hsl(270, 50%, 60%);
+  --pink: hsl(340, 70%, 70%);
+  --red: hsl(0, 70%, 60%);
+  --yellowish-white: hsl(60, 30%, 95%);
 }
 
 .dark {
@@ -90,6 +97,84 @@
     color: var(--primary-blue);
   }
 
+  /* New gradient color utilities */
+  .bg-rose-gold {
+    background-color: var(--rose-gold);
+  }
+  
+  .bg-violet {
+    background-color: var(--violet);
+  }
+  
+  .bg-pink {
+    background-color: var(--pink);
+  }
+  
+  .bg-red {
+    background-color: var(--red);
+  }
+  
+  .bg-yellowish-white {
+    background-color: var(--yellowish-white);
+  }
+  
+  .text-rose-gold {
+    color: var(--rose-gold);
+  }
+  
+  .text-violet {
+    color: var(--violet);
+  }
+  
+  .text-pink {
+    color: var(--pink);
+  }
+  
+  .text-red {
+    color: var(--red);
+  }
+  
+  .text-yellowish-white {
+    color: var(--yellowish-white);
+  }
+  
+  .border-rose-gold {
+    border-color: var(--rose-gold);
+  }
+  
+  .border-violet {
+    border-color: var(--violet);
+  }
+  
+  .border-pink {
+    border-color: var(--pink);
+  }
+  
+  .border-red {
+    border-color: var(--red);
+  }
+  
+  .border-yellowish-white {
+    border-color: var(--yellowish-white);
+  }
+
+  /* Button consistency utilities */
+  .btn-primary {
+    @apply bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold transition-all duration-300;
+  }
+  
+  .btn-secondary {
+    @apply bg-yellowish-white text-violet hover:bg-pink hover:text-white rounded-xl shadow-lg font-semibold border-2 border-pink transition-all duration-300;
+  }
+  
+  .btn-outline {
+    @apply bg-transparent text-violet hover:bg-violet hover:text-white rounded-xl shadow-lg font-semibold border-2 border-violet transition-all duration-300;
+  }
+  
+  .btn-destructive {
+    @apply bg-red hover:bg-pink text-white rounded-xl shadow-lg font-semibold transition-all duration-300;
+  }
+
   /* Line clamp utilities */
   .line-clamp-1 {
     overflow: hidden;
@@ -110,6 +195,21 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
+  }
+
+  /* Simple marquee animation for TrustBar */
+  .marquee__track {
+    width: max-content;
+    animation: marquee-left 25s linear infinite;
+  }
+  
+  .marquee__track:hover {
+    animation-play-state: paused;
+  }
+
+  /* Enhanced hover effects for TrustBar */
+  .marquee__track .group:hover {
+    z-index: 20;
   }
 }
 
@@ -140,4 +240,9 @@
 .react-calendar__navigation button {
   color: #1e40af;
   font-weight: 500;
+}
+
+@keyframes marquee-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
 }

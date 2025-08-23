@@ -8,9 +8,9 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Search, FileText, Send, Award, Users, Zap, Shield, Clock, CheckCircle2 } from "lucide-react";
 import { TrustBar } from "../components/TrustBar";
-import FoundersArea from "../components/FoundersArea";
+// import FoundersArea from "../components/FoundersArea";
 import PremiumSupport from "../components/PremiumSupport";
 import Faq from "../components/Faq";
 
@@ -28,12 +28,11 @@ export default function Home() {
       <TrustBar />
       <Features />
       <GrantCategories />
-      <FoundersArea />
       <BlogSection />
       <PremiumSupport />
 
       {/* About Section */}
-      <section id="about" className="py-20 bg-light-blue">
+      {/* <section id="about" className="py-20 bg-light-blue">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
             <div className="mb-12 lg:mb-0">
@@ -78,7 +77,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
       
 
       {/* Contact Section */}

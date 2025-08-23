@@ -72,7 +72,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </div>
             {error && <p className="text-sm text-red-500">{error}</p>}
           </div>
-          <Button type="submit" className="w-full mt-6 bg-primary-blue hover:bg-accent-blue" disabled={loading}>
+          <Button type="submit" className="w-full mt-6 bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold" disabled={loading}>
             {loading ? 'Processing...' : (authMode === 'login' ? 'Login' : 'Create Account')}
           </Button>
         </form>
@@ -81,7 +81,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           <button
             type="button"
             onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
-            className="font-medium text-primary-blue hover:underline"
+            className="font-medium text-violet hover:text-pink hover:underline transition-colors"
           >
             {authMode === 'login' ? 'Sign up' : 'Login'}
           </button>
