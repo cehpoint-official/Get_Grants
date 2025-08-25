@@ -63,13 +63,13 @@ export default function ApplyIncubatorForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg border space-y-6"
+      className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg border-2 border-violet space-y-6"
     >
       <div className="text-center mb-6">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">
+        <h2 className="text-3xl font-bold text-violet mb-2">
           Apply as Incubator
         </h2>
-        <p className="text-gray-600">Join our network of innovation partners</p>
+        <p className="text-violet">Join our network of innovation partners</p>
       </div>
 
       {/* Name */}
@@ -91,8 +91,8 @@ export default function ApplyIncubatorForm() {
           })}
           type="text"
           placeholder="e.g. IIT Mandi Catalyst"
-          className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-            errors.name ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+          className={`w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 bg-white ${
+            errors.name ? 'border-red-500 bg-red-50' : 'border-violet focus:border-pink hover:border-pink focus:ring-0'
           }`}
         />
         {errors.name && (
@@ -117,8 +117,8 @@ export default function ApplyIncubatorForm() {
           })}
           type="email"
           placeholder="e.g. incubator@example.com"
-          className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-            errors.email ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+          className={`w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 bg-white ${
+            errors.email ? 'border-red-500 bg-red-50' : 'border-violet focus:border-pink hover:border-pink focus:ring-0'
           }`}
         />
         {errors.email && (
@@ -147,8 +147,8 @@ export default function ApplyIncubatorForm() {
           })}
           type="tel"
           placeholder="e.g. +91 9876543210"
-          className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-            errors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+          className={`w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 bg-white ${
+            errors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-violet focus:border-pink hover:border-pink focus:ring-0'
           }`}
         />
         {errors.phoneNumber && (
@@ -195,29 +195,27 @@ export default function ApplyIncubatorForm() {
                   ...base,
                   minHeight: '48px',
                   borderWidth: '2px',
-                  borderColor: errors.sectors ? '#ef4444' : state.isFocused ? '#3b82f6' : '#d1d5db',
-                  borderRadius: '8px',
-                  boxShadow: state.isFocused ? '0 0 0 2px rgba(59, 130, 246, 0.5)' : 'none',
-                  '&:hover': {
-                    borderColor: errors.sectors ? '#ef4444' : '#9ca3af'
-                  }
+                  borderColor: errors.sectors ? '#ef4444' : state.isFocused ? 'hsl(270, 50%, 60%)' : 'hsl(340, 70%, 70%)',
+                  borderRadius: '12px',
+                  boxShadow: state.isFocused ? '0 0 0 2px rgba(124, 58, 237, 0.4)' : 'none',
+                  backgroundColor: 'white',
                 }),
                 multiValue: (base) => ({
                   ...base,
-                  backgroundColor: '#dbeafe',
-                  borderRadius: '6px'
+                  backgroundColor: 'hsl(60, 30%, 95%)',
+                  borderRadius: '8px',
                 }),
                 multiValueLabel: (base) => ({
                   ...base,
-                  color: '#1e40af',
-                  fontWeight: '500'
+                  color: 'hsl(270, 50%, 60%)',
+                  fontWeight: 600,
                 }),
                 multiValueRemove: (base) => ({
                   ...base,
-                  color: '#1e40af',
-                  '&:hover': {
-                    backgroundColor: '#bfdbfe',
-                    color: '#1d4ed8'
+                  color: 'hsl(270, 50%, 60%)',
+                  ':hover': {
+                    backgroundColor: 'hsl(340, 70%, 90%)',
+                    color: 'hsl(270, 50%, 40%)'
                   }
                 })
               }}
@@ -246,8 +244,8 @@ export default function ApplyIncubatorForm() {
           })}
           type="text"
           placeholder="e.g. Startup Accelerator Program 2024"
-          className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-            errors.programName ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+          className={`w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 bg-white ${
+            errors.programName ? 'border-red-500 bg-red-50' : 'border-violet focus:border-pink hover:border-pink focus:ring-0'
           }`}
         />
         {errors.programName && (
@@ -276,8 +274,8 @@ export default function ApplyIncubatorForm() {
           })}
           type="date"
           min={new Date().toISOString().split('T')[0]}
-          className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-            errors.deadlineDate ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+          className={`w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 bg-white ${
+            errors.deadlineDate ? 'border-red-500 bg-red-50' : 'border-violet focus:border-pink hover:border-pink focus:ring-0'
           }`}
         />
         {errors.deadlineDate && (
@@ -306,8 +304,8 @@ export default function ApplyIncubatorForm() {
           })}
           placeholder="Describe your incubation/acceleration program, duration, benefits, selection criteria, etc."
           rows={5}
-          className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-vertical ${
-            errors.programDetails ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+          className={`w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 resize-vertical bg-white ${
+            errors.programDetails ? 'border-red-500 bg-red-50' : 'border-violet focus:border-pink hover:border-pink focus:ring-0'
           }`}
         />
         <div className="flex justify-between items-center">
@@ -339,8 +337,8 @@ export default function ApplyIncubatorForm() {
           })}
           type="url"
           placeholder="https://example.com/application-form"
-          className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-            errors.applicationFormLink ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+          className={`w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 bg-white ${
+            errors.applicationFormLink ? 'border-red-500 bg-red-50' : 'border-violet focus:border-pink hover:border-pink focus:ring-0'
           }`}
         />
         <p className="text-xs text-gray-500 flex items-center gap-1">
@@ -358,7 +356,7 @@ export default function ApplyIncubatorForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-primary-blue hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg"
+          className="w-full btn-primary disabled:bg-gray-400 disabled:cursor-not-allowed py-3 px-6 rounded-lg transform hover:scale-[1.02] active:scale-[0.98]"
         >
           {isSubmitting ? (
             <span className="flex items-center justify-center gap-2">

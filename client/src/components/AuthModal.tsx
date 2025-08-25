@@ -59,16 +59,16 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             {authMode === 'signup' && (
               <div className="space-y-2">
                 <Label htmlFor="fullName-modal">Full Name</Label>
-                <Input id="fullName-modal" type="text" placeholder="Your full name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                <Input id="fullName-modal" type="text" placeholder="Your full name" value={fullName} onChange={(e) => setFullName(e.target.value)} required className="bg-white border-2 border-violet focus:border-pink focus-visible:ring-0" />
               </div>
             )}
             <div className="space-y-2">
               <Label htmlFor="email-modal">Email</Label>
-              <Input id="email-modal" type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input id="email-modal" type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="bg-white border-2 border-violet focus:border-pink focus-visible:ring-0" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password-modal">Password</Label>
-              <Input id="password-modal" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <Input id="password-modal" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required className="bg-white border-2 border-violet focus:border-pink focus-visible:ring-0" />
             </div>
             {error && <p className="text-sm text-red-500">{error}</p>}
           </div>

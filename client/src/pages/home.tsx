@@ -24,12 +24,15 @@ export default function Home() {
 
   return (
     <>
-      <Hero />
-      <TrustBar />
-      <Features />
-      <GrantCategories />
-      <BlogSection />
-      <PremiumSupport />
+      <div className="space-y-10">
+        <div className="shadow-[0_2px_6px_rgba(0,0,0,0.06)]"><Hero /></div>
+        <div className="shadow-[0_2px_6px_rgba(0,0,0,0.06)]"><TrustBar /></div>
+        <div className="shadow-[0_2px_6px_rgba(0,0,0,0.06)]"><Features /></div>
+        <div className="shadow-[0_2px_6px_rgba(0,0,0,0.06)]"><GrantCategories /></div>
+        <div className="shadow-[0_2px_6px_rgba(0,0,0,0.06)]"><BlogSection /></div>
+        <div className="shadow-[0_2px_6px_rgba(0,0,0,0.06)]"><PremiumSupport /></div>
+        <div className="shadow-[0_2px_6px_rgba(0,0,0,0.06)]"><Faq /></div>
+      </div>
 
       {/* About Section */}
       {/* <section id="about" className="py-20 bg-light-blue">
@@ -143,7 +146,7 @@ export default function Home() {
           </div>
         </div>
       </section> */}
-      <Faq />
+      <div className="h-[15px]" />
       <Footer />
     </>
   );

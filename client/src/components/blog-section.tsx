@@ -62,8 +62,8 @@ export function BlogSection() {
 
   return (
     <>
-      <section id="blog" className="py-20" style={{
-        background: 'linear-gradient(135deg, hsl(60, 30%, 95%) 0%, hsl(30, 60%, 90%) 100%)'
+      <section id="blog" className="py-16" style={{
+        background: 'white'
       }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -89,7 +89,7 @@ export function BlogSection() {
               {visiblePosts.map((post) => (
                 <article
                   key={post.id}
-                  className="bg-yellowish-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border-2 border-pink hover:border-violet"
+                  className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border-2 border-violet hover:border-pink"
                 >
                   <img
                     src={

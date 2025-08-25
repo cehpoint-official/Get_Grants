@@ -61,13 +61,11 @@ export default function PremiumSupport() {
   };
 
   return (
-    <div id="premium-support" className="bg-white">
+    <div id="faq" className="bg-white py-16">
      
      
       {/* Your New FAQ Section */}
-      <section id="faq" className="py-16 md:py-24" style={{
-        background: 'linear-gradient(135deg, hsl(60, 30%, 95%) 0%, hsl(30, 60%, 90%) 100%)'
-      }}>
+      <section id="faq" classNampremium-supporte="py-16 md:py-24" >
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-center text-3xl font-bold text-violet mb-8">
@@ -75,7 +73,7 @@ export default function PremiumSupport() {
             </h2>
             <div className="mt-8 space-y-4">
               {faqs.map((faq, index) => (
-                <div key={index} className="border-b-2 border-pink pb-4 bg-yellowish-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div key={index} className="border-b-2 border-pink pb-4 bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
                   <button
                     onClick={() => handleFaqToggle(index)}
                     className="w-full flex justify-between items-center text-left py-2"
@@ -106,9 +104,9 @@ export default function PremiumSupport() {
             <div className="text-center mt-12">
                 <Button 
                     onClick={() => setIsContactModalOpen(true)}
-                    className="bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold px-8 py-3 text-base"
+                    className="bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold px-5 py-3 text-base"
                 >
-                    Have another question?
+                    Have any question
                 </Button>
             </div>
 

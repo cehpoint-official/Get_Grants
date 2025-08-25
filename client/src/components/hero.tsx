@@ -13,16 +13,16 @@ export function Hero() {
   return (
     // The outer section provides the full-width background color.
     <section id="home" className="py-20" style={{
-      background: 'linear-gradient(135deg, hsl(30, 60%, 70%) 0%, hsl(270, 50%, 60%) 50%, hsl(340, 70%, 70%) 100%)'
+      background: 'white'
     }}>
       {/* This inner div centers the content and sets a max-width. */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
           <div className="mb-12 lg:mb-0">
-            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6 drop-shadow-lg">
-              Discover & Apply for <span className="text-yellowish-white drop-shadow-md">Startup Grants</span> & Incubator Programs
+            <h1 className="text-4xl lg:text-5xl font-bold text-violet mb-6 drop-shadow-lg">
+              Discover & Apply for <span className="text-pink drop-shadow-md">Startup Grants</span> & Incubator Programs
             </h1>
-            <p className="text-xl text-yellowish-white mb-8 leading-relaxed drop-shadow-md">
+            <p className="text-xl text-violet mb-8 leading-relaxed drop-shadow-md">
               India's go-to platform for early-stage funding and acceleration.
             </p>
 
@@ -33,21 +33,21 @@ export function Hero() {
                   e.preventDefault();
                   scrollToSection('grants');
                 }}
-                className="flex flex-col sm:flex-row gap-3"
+                className="flex flex-col sm:flex-row gap-0"
               >
-                <div className="relative flex-1">
+                <div className="relative flex w-full sm:flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
                   <Input
                     placeholder="Search grants by sector, state, or amount"
-                    className="pl-10 h-12 text-base bg-yellowish-white border-2 border-pink rounded-xl shadow-lg"
+                    className="pl-10 h-12 text-base bg-yellowish-white border-2 border-violet focus:border-violet focus-visible:ring-0 rounded-l-xl rounded-r-none shadow-lg border-r-0"
                   />
+                  <Button
+                    type="submit"
+                    className="h-12 bg-violet hover:bg-pink text-white px-6 font-medium text-base rounded-r-xl rounded-l-none shadow-lg border-2 border-violet border-l-0"
+                  >
+                    Search
+                  </Button>
                 </div>
-                <Button
-                  type="submit"
-                  className="bg-violet hover:bg-pink text-white px-6 py-3 font-medium text-base rounded-xl shadow-lg"
-                >
-                  Search
-                </Button>
               </form>
             </div>
 
@@ -59,22 +59,17 @@ export function Hero() {
                 Find Grants
               </Button>
           
-              <Button
-                onClick={() => scrollToSection('premium-support')}
-                className="bg-yellowish-white text-violet hover:bg-pink hover:text-white px-6 py-3 font-medium text-base rounded-xl shadow-lg border-2 border-pink"
-              >
-                Apply with Support
-              </Button>
+             
               <Button
                 variant="outline"
                 onClick={() => scrollToSection('grants')}
-                className="bg-yellowish-white text-violet hover:bg-pink hover:text-white px-6 py-3 font-medium text-base rounded-xl shadow-lg border-2 border-pink"
+                className="bg-yellowish-white text-violet hover:bg-pink hover:text-white px-6 py-3 font-medium text-base rounded-xl shadow-lgk"
               >
                 Explore Grant Library
               </Button>
             </div>
 
-            <div className="mt-8 flex items-center space-x-6 text-sm text-yellowish-white drop-shadow-md">
+            <div className="mt-8 flex items-center space-x-6 text-sm text-violet drop-shadow-md">
               <div className="flex items-center">
                 <CheckCircle className="h-4 w-4 text-red mr-2" />
                 500+ Verified Grants

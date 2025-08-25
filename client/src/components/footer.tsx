@@ -10,34 +10,34 @@ export function Footer() {
 
   return (
     <footer style={{
-      background: 'linear-gradient(135deg, hsl(270, 50%, 60%) 0%, hsl(30, 60%, 70%) 100%)'
-    }} className="text-white py-12">
+      background: 'white'
+    }} className="text-violet py-12 border-t">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
-            <h3 className="text-2xl font-bold mb-4 text-yellowish-white">Get Grants</h3>
-            <p className="text-yellowish-white mb-6 leading-relaxed">
+            <h3 className="text-2xl font-bold mb-4 text-pink">Get Grants</h3>
+            <p className="text-violet mb-6 leading-relaxed">
               Empowering Indian Startups through Incubator Programs
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-yellowish-white hover:text-pink transition-colors">
+              <a href="#" className="text-violet hover:text-pink transition-colors">
                 <Linkedin className="h-5 w-5" />
               </a>
-              <a href="#" className="text-yellowish-white hover:text-pink transition-colors">
+              <a href="#" className="text-violet hover:text-pink transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-yellowish-white hover:text-pink transition-colors">
+              <a href="#" className="text-violet hover:text-pink transition-colors">
                 <Facebook className="h-5 w-5" />
               </a>
             </div>
           </div>
           <div>
-            <h4 className="text-lg font-semibold mb-4 text-yellowish-white">Quick Links</h4>
+            <h4 className="text-lg font-semibold mb-4 text-pink">Quick Links</h4>
             <ul className="space-y-2">
               <li>
                 <button
                   onClick={() => scrollToSection("home")}
-                  className="text-yellowish-white hover:text-pink transition-colors"
+                  className="text-violet hover:text-pink transition-colors"
                 >
                   Home
                 </button>
@@ -45,7 +45,7 @@ export function Footer() {
               <li>
                 <button
                   onClick={() => scrollToSection("grants")}
-                  className="text-yellowish-white hover:text-pink transition-colors"
+                  className="text-violet hover:text-pink transition-colors"
                 >
                   Browse Grants
                 </button>
@@ -53,7 +53,7 @@ export function Footer() {
               <li>
                 <button
                   onClick={() => scrollToSection("blog")}
-                  className="text-yellowish-white hover:text-pink transition-colors"
+                  className="text-violet hover:text-pink transition-colors"
                 >
                   Blog
                 </button>
@@ -61,7 +61,7 @@ export function Footer() {
               <li>
                 <button
                   onClick={() => scrollToSection("about")}
-                  className="text-yellowish-white hover:text-pink transition-colors"
+                  className="text-violet hover:text-pink transition-colors"
                 >
                   About
                 </button>
@@ -69,7 +69,7 @@ export function Footer() {
               <li>
                 <button
                   onClick={() => scrollToSection("contact")}
-                  className="text-yellowish-white hover:text-pink transition-colors"
+                  className="text-violet hover:text-pink transition-colors"
                 >
                   Contact
                 </button>
@@ -77,30 +77,35 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h4 className="text-lg font-semibold mb-4 text-yellowish-white">Resources</h4>
+            <h4 className="text-lg font-semibold mb-4 text-pink">Resources</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-yellowish-white hover:text-pink transition-colors">
+                <a href="#" className="text-violet hover:text-pink transition-colors">
                   Grant Guide
                 </a>
               </li>
               <li>
-                <a href="#" className="text-yellowish-white hover:text-pink transition-colors">
+                <a href="#" className="text-violet hover:text-pink transition-colors">
                   Application Tips
                 </a>
               </li>
               <li>
-                <a href="#" className="text-yellowish-white hover:text-pink transition-colors">
+                <a href="#" className="text-violet hover:text-pink transition-colors">
                   Success Stories
                 </a>
               </li>
               <li>
-                <a href="#" className="text-yellowish-white hover:text-pink transition-colors">
-                  FAQ
-                </a>
+              <button
+                  onClick={() => scrollToSection("faq")}
+                  className="text-violet hover:text-pink transition-colors"
+                >
+                   FAQ
+                </button>
+                 
+                
               </li>
               <li>
-                <a href="#" className="text-yellowish-white hover:text-pink transition-colors">
+                <a href="#" className="text-violet hover:text-pink transition-colors">
                   Support
                 </a>
               </li>
@@ -108,7 +113,7 @@ export function Footer() {
           </div>
         </div>
         <div className="border-t-2 border-pink mt-8 pt-8 text-center">
-          <p className="text-yellowish-white">
+          <p className="text-violet">
             © 2025 Get Grants. All rights reserved. |{" "}
             <span className="text-sm">
               Powered by black leo ventures

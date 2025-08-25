@@ -13,7 +13,7 @@
   --card-foreground: hsl(20, 14.3%, 4.1%);
   --border: hsl(20, 5.9%, 90%);
   --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(238, 79%, 60%);
+  --primary: var(--violet);
   --primary-foreground: hsl(0, 0%, 100%);
   --secondary: hsl(60, 4.8%, 95.9%);
   --secondary-foreground: hsl(24, 9.8%, 10%);
@@ -25,22 +25,23 @@
   --radius: 0.5rem;
   
   /* Custom theme colors */
-  --primary-blue: hsl(238, 79%, 60%);
-  --accent-blue: hsl(238, 79%, 65%);
+  --primary-blue:var(--violet);
+  --accent-blue:var(--violet);
   --light-blue: hsl(238, 100%, 97%);
-  --dark-blue: hsl(238, 79%, 25%);
-  
+  --dark-blue:var(--violet);
   /* New gradient colors */
-  --rose-gold: hsl(30, 60%, 70%);
-  --violet: hsl(270, 50%, 60%);
-  --pink: hsl(340, 70%, 70%);
+  --rose-gold: hsl(30, 39%, 69%);
+  --violet: hsl(270, 58%, 55%);
+  --dark-violet: hsl(270, 50%, 40%);
+  --pink: hsl(341, 64%, 61%);
   --red: hsl(0, 70%, 60%);
-  --yellowish-white: hsl(60, 30%, 95%);
+  --yellowish-white: white;
+  
 }
 
 .dark {
   --background: hsl(240, 10%, 3.9%);
-  --foreground: hsl(0, 0%, 98%);
+  --foreground: #ffffff;
   --muted: hsl(240, 3.7%, 15.9%);
   --muted-foreground: hsl(240, 5%, 64.9%);
   --popover: hsl(240, 10%, 3.9%);
@@ -49,7 +50,7 @@
   --card-foreground: hsl(0, 0%, 98%);
   --border: hsl(240, 3.7%, 15.9%);
   --input: hsl(240, 3.7%, 15.9%);
-  --primary: hsl(238, 79%, 60%);
+  --primary:var(--violet);
   --primary-foreground: hsl(0, 0%, 100%);
   --secondary: hsl(240, 3.7%, 15.9%);
   --secondary-foreground: hsl(0, 0%, 98%);
@@ -228,17 +229,17 @@
 }
 
 .react-calendar__tile--active {
-  background-color: #2563eb !important; /* Tailwind's primary-blue */
+  background-color:var(--violet) !important; /* Tailwind's primary-blue */
   color: white !important;
 }
 
 .react-calendar__tile:hover {
   background-color: #dbeafe; /* Tailwind's blue-100 */
-  color: #1e3a8a;
+  color:var(--violet);
 }
 
 .react-calendar__navigation button {
-  color: #1e40af;
+  color:var(--violet);
   font-weight: 500;
 }
 

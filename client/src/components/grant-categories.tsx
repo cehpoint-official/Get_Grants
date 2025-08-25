@@ -1453,15 +1453,15 @@ export function GrantCategories() {
   // --- RENDER FUNCTIONS (New UI) ---
 
   const GrantCard = ({ grant }: { grant: Grant }) => (
-    <div className="bg-yellowish-white rounded-2xl border-2 border-pink p-5 transition-all hover:border-violet hover:shadow-xl flex flex-col h-full">
+    <div className="bg-yellowish-white rounded-2xl border-2 border-violet p-5 transition-all hover:border-pink hover:shadow-xl flex flex-col h-full">
       <div className="flex items-start justify-between mb-3">
         <h4 className="font-bold text-lg text-violet pr-2">{grant.name}</h4>
         <button
           onClick={(e) => { e.stopPropagation(); toggleBookmark(grant.name); }}
-          className="text-gray-400 hover:text-blue-600 transition-colors flex-shrink-0"
+          className="text-gray-400 hover:text-violet transition-colors flex-shrink-0"
         >
           {bookmarkedGrants.has(grant.name)
-            ? <BookmarkCheck className="h-5 w-5 text-blue-600" />
+            ? <BookmarkCheck className="h-5 w-5 text-violet" />
             : <Bookmark className="h-5 w-5" />
           }
         </button>
@@ -1477,7 +1477,7 @@ export function GrantCategories() {
 
       <div className="border-t border-gray-100 pt-4 mt-auto">
         <div className="flex items-center justify-between">
-          <a href={grant.website} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-blue-600 hover:text-blue-800 inline-flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <a href={grant.website} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-violet hover:text-pink inline-flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
             <ExternalLink className="h-4 w-4" /> Website
           </a>
           <Button size="sm" className="bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold" onClick={(e) => {e.stopPropagation(); navigate("/apply"); }}>Apply</Button>
@@ -1493,7 +1493,7 @@ export function GrantCategories() {
         if (filteredStageGrants.length === 0) return null;
         return (
           <div key={stage.id}>
-            <div onClick={() => toggleStage(stage.id)} className="flex items-center justify-between cursor-pointer mb-4 p-3 bg-yellowish-white rounded-2xl border-2 border-pink hover:border-violet transition-all duration-300">
+            <div onClick={() => toggleStage(stage.id)} className="flex items-center justify-between cursor-pointer mb-4 p-3 bg-yellowish-white rounded-2xl border-2 border-violet hover:border-pink transition-all duration-300">
               <h3 className="text-lg font-bold text-gray-800">{stage.title}</h3>
               <ChevronDown className={`h-5 w-5 text-gray-500 transition-transform ${expandedStages.has(stage.id) ? "rotate-180" : ""}`} />
             </div>
@@ -1517,7 +1517,7 @@ export function GrantCategories() {
           typeof item === 'object'
             ? <GrantCard key={`${category.id}-${index}`} grant={item as Grant} />
             : (
-              <div key={`${category.id}-${index}`} className="bg-yellowish-white rounded-2xl p-4 shadow-lg border-2 border-pink hover:border-violet transition-all duration-300">
+              <div key={`${category.id}-${index}`} className="bg-yellowish-white rounded-2xl p-4 shadow-lg border-2 border-violet hover:border-pink transition-all duration-300">
                 <h4 className="font-semibold text-violet">{item}</h4>
               </div>
             )
@@ -1527,14 +1527,14 @@ export function GrantCategories() {
   };
   
   return (
-    <section id="grants" className="py-12 sm:py-20 min-h-screen" style={{
-        background: 'linear-gradient(135deg, hsl(60, 30%, 95%) 0%, hsl(30, 60%, 90%) 100%)'
+    <section id="grants" className="py-10 sm:py-20 min-h-screen" style={{
+        background: 'white'
       }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       	{/* Header */}
       	<div className="text-center mb-12">
       	  <h2 className="text-4xl lg:text-5xl font-extrabold text-violet mb-4 tracking-tight">
-      	    Find Your Funding
+      	    Your Grant Library
       	  </h2>
       	  <p className="text-lg text-gray-600 max-w-3xl mx-auto">
       	    Discover grants, schemes, and programs perfectly matched to your startup's needs.
@@ -1546,173 +1546,173 @@ export function GrantCategories() {
       	  {/* Search Bar and Buttons */}
       	  <div className="flex flex-col md:flex-row items-stretch gap-4">
       	    {/* Restored Search Bar with Button */}
-      	    <div className="flex-grow flex relative shadow-lg rounded-xl overflow-hidden border-2 border-pink bg-yellowish-white">
-      	      <input
-      	        type="text"
-      	        placeholder="Search grants by name or description..."
-      	        className="w-full px-4 py-3 border-0 focus:ring-2 focus:ring-pink text-violet placeholder-gray-500 bg-transparent"
-      	        value={searchTerm}
-      	        onChange={(e) => setSearchTerm(e.target.value)}
-      	      />
-      	      {searchTerm && (
-      	        <button
-      	          onClick={() => setSearchTerm("")}
-      	          className="absolute right-[110px] top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-      	          aria-label="Clear search"
-      	        >
-      	          <X className="h-4 w-4" />
-      	        </button>
-      	      )}
-      	      <button className="bg-violet hover:bg-pink text-white px-6 transition-colors font-medium rounded-xl shadow-lg font-semibold">
-      	        Search
-      	      </button>
-      	    </div>
-      	    <Button
-      	      onClick={() => setShowFilters(!showFilters)}
-      	      variant="outline"
-      	      className="w-full md:w-auto border-2 border-pink bg-yellowish-white hover:bg-pink/20 text-violet font-medium px-4 py-3 flex items-center justify-center gap-2 rounded-xl shadow-lg transition-all duration-300"
-      	    >
-      	      <Filter className="h-4 w-4" />
-    	      <span>Filters</span>
-    	      {hasActiveFilters && (
-    	        <span className="bg-violet text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm">
-    	          {activeFilterCount}
-    	        </span>
-    	      )}
-    	    </Button>
-    	    <Button
-    	      onClick={() => navigate("/apply")}
-    	      className="bg-violet hover:bg-pink text-white px-6 transition-colors font-medium rounded-xl shadow-lg font-semibold"
-    	    >
-    	      Apply for Grant
-    	    </Button>
-    	  </div>
+      	    <div className="flex-grow flex relative shadow-lg rounded-xl overflow-hidden border-0 bg-yellowish-white">
+       	      <input
+       	        type="text"
+       	        placeholder="Search grants by name or description..."
+       	        className="w-full px-4 h-[48px] border-2 border-violet focus:border-violet focus:outline-none focus:ring-0 focus-visible:ring-0 text-violet placeholder-gray-500 bg-transparent rounded-l-xl rounded-r-none"
+       	        value={searchTerm}
+       	        onChange={(e) => setSearchTerm(e.target.value)}
+       	      />
+       	      {searchTerm && (
+       	        <button
+       	          onClick={() => setSearchTerm("")}
+       	          className="absolute right-[110px] top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+       	          aria-label="Clear search"
+       	        >
+       	          <X className="h-4 w-4" />
+       	        </button>
+       	      )}
+       	      <button className="h-[48px] bg-violet hover:bg-pink text-white px-6 transition-colors font-medium rounded-r-xl rounded-l-none shadow-lg font-semibold border-2 border-violet border-l-0">
+       	        Search
+       	      </button>
+       	    </div>
+       	    <Button
+       	      onClick={() => setShowFilters(!showFilters)}
+       	      variant="outline"
+       	      className="w-full md:w-auto border-2 border-violet hover:text-pink bg-yellowish-white hover:bg-pink/20 text-violet font-medium px-4 py-3 flex items-center justify-center gap-2 rounded-xl shadow-lg transition-all duration-300"
+       	    >
+       	      <Filter className="h-4 w-4" />
+   	      <span>Filters</span>
+   	      {hasActiveFilters && (
+   	        <span className="bg-violet text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm">
+   	          {activeFilterCount}
+   	        </span>
+   	      )}
+   	    </Button>
+   	    <Button
+   	      onClick={() => navigate("/apply")}
+   	      className="bg-violet hover:bg-pink text-white px-6 transition-colors font-medium rounded-xl shadow-lg font-semibold"
+   	    >
+   	      Apply for Grant
+   	    </Button>
+   	  </div>
 
-    	  {/* Filter Panel */}
-    	  {showFilters && (
-    	    <div className="mt-4 bg-yellowish-white rounded-2xl shadow-xl border-2 border-pink p-6 animate-in fade-in-0 duration-300">
-    	      <div className="flex items-center justify-between mb-4">
-    	        <h3 className="text-lg font-semibold text-violet">Filters</h3>
-    	        <Button onClick={() => setShowFilters(false)} variant="ghost" size="sm" className="text-violet hover:text-pink rounded-xl"><X className="h-4 w-4" /></Button>
-    	      </div>
+   	  {/* Filter Panel */}
+   	  {showFilters && (
+   	    <div className="mt-4 bg-yellowish-white rounded-2xl shadow-xl border-2 border-pink p-6 animate-in fade-in-0 duration-300">
+   	      <div className="flex items-center justify-between mb-4">
+   	        <h3 className="text-lg font-semibold text-violet">Filters</h3>
+   	        <Button onClick={() => setShowFilters(false)} variant="ghost" size="sm" className="text-violet hover:text-pink rounded-xl"><X className="h-4 w-4" /></Button>
+   	      </div>
 
-    	      	{/* RELOCATED: Filter Summary and Active Tags now appear HERE */}
-    	      	{hasActiveFilters && (
-    	      	<div className="pb-4 mb-4 border-b space-y-4">
-    	      	  	<div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
-    	      	  	<div className="flex items-center gap-4 text-gray-600 font-medium">
-    	      	  	  	<span>Total Grants Found: <strong className="text-gray-800">{totalGrantsCount}</strong></span>
-    	      	  	  	<span className="text-blue-600">Active Filters: <strong className="text-blue-700">{activeFilterCount}</strong></span>
-    	      	  	</div>
-    	      	  	<Button onClick={clearAllFilters} variant="link" size="sm" className="text-violet hover:text-pink px-0 font-medium">
-    	      	  	  	Clear All Filters
-    	      	  	</Button>
-    	      	  	</div>
-    	      	  	<div className="flex flex-wrap gap-2">
-    	      	  	  	{Object.entries(selectedFilters).map(([filterType, values]) =>
-    	      	  	  	values.map((value: string) => (
-    	      	  	  	  	<div
-    	      	  	  	  	key={`${filterType}-${value}`}
-    	      	  	  	  	className="flex items-center gap-2 bg-violet/20 text-violet px-3 py-1 rounded-full text-sm font-medium border border-violet"
-    	      	  	  	  	>
-    	      	  	  	  	<span className="capitalize">{filterType.replace(/([A-Z])/g, ' $1')}: {value}</span>
-    	      	  	  	  	<button
-    	      	  	  	  	  	onClick={() => toggleFilter(filterType as keyof FilterOptions, value)}
-    	      	  	  	  	  	className="text-violet hover:bg-pink/20 rounded-full p-0.5 transition-colors"
-    	      	  	  	  	>
-    	      	  	  	  	  	<X className="h-3 w-3" />
-    	      	  	  	  	</button>
-    	      	  	  	  	</div>
-    	      	  	  	))
-    	      	  	  	)}
-    	      	  	</div>
-    	      	</div>
-    	      	)}
+   	      	{/* RELOCATED: Filter Summary and Active Tags now appear HERE */}
+   	      	{hasActiveFilters && (
+   	      	<div className="pb-4 mb-4 border-b space-y-4">
+   	      	  	<div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
+   	      	  	<div className="flex items-center gap-4 text-gray-600 font-medium">
+   	      	  	  	<span>Total Grants Found: <strong className="text-gray-800">{totalGrantsCount}</strong></span>
+   	      	  	  	<span className="text-violet">Active Filters: <strong className="text-violet">{activeFilterCount}</strong></span>
+   	      	  	</div>
+   	      	  	<Button onClick={clearAllFilters} variant="link" size="sm" className="text-violet hover:text-pink px-0 font-medium">
+   	      	  	  	Clear All Filters
+   	      	  	</Button>
+   	      	  	</div>
+   	      	  	<div className="flex flex-wrap gap-2">
+   	      	  	  	{Object.entries(selectedFilters).map(([filterType, values]) =>
+   	      	  	  	values.map((value: string) => (
+   	      	  	  	  	<div
+   	      	  	  	  	key={`${filterType}-${value}`}
+   	      	  	  	  	className="flex items-center gap-2 bg-violet/20 text-violet px-3 py-1 rounded-full text-sm font-medium border border-violet"
+   	      	  	  	  	>
+   	      	  	  	  	<span className="capitalize">{filterType.replace(/([A-Z])/g, ' $1')}: {value}</span>
+   	      	  	  	  	<button
+   	      	  	  	  	  	onClick={() => toggleFilter(filterType as keyof FilterOptions, value)}
+   	      	  	  	  	  	className="text-violet hover:bg-pink/20 rounded-full p-0.5 transition-colors"
+   	      	  	  	  	  	>
+   	      	  	  	  	  	<X className="h-3 w-3" />
+   	      	  	  	  	</button>
+   	      	  	  	  	</div>
+   	      	  	  	))
+   	      	  	  	)}
+   	      	  	</div>
+   	      	</div>
+   	      	)}
 
-    	      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-    	        {Object.entries(filterOptions).map(([key, options]) => (
-    	          <div key={key}>
-    	            <h4 className="font-medium text-violet mb-3 capitalize">{key === 'fundingType' ? 'Funding Type' : key}</h4>
-    	            <div className="space-y-2">
-    	              {options.map(option => (
-    	                <label key={option} className="flex items-center gap-2 cursor-pointer">
-    	                  <input type="checkbox" checked={selectedFilters[key as keyof FilterOptions].includes(option)} onChange={() => toggleFilter(key as keyof FilterOptions, option)} className="rounded-xl border-pink text-violet focus:ring-pink focus:border-violet" />
-    	                  <span className="text-sm text-gray-700 font-medium">{option}</span>
-    	                </label>
-    	              ))}
-    	            </div>
-    	          </div>
-    	        ))}
-    	      </div>
-    	    </div>
-    	  )}
-    	</div>
+   	      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+   	        {Object.entries(filterOptions).map(([key, options]) => (
+   	          <div key={key}>
+   	            <h4 className="font-medium text-violet mb-3 capitalize">{key === 'fundingType' ? 'Funding Type' : key}</h4>
+   	            <div className="space-y-2">
+   	              {options.map(option => (
+   	                <label key={option} className="flex items-center gap-2 cursor-pointer">
+   	                  <input type="checkbox" checked={selectedFilters[key as keyof FilterOptions].includes(option)} onChange={() => toggleFilter(key as keyof FilterOptions, option)} className="rounded-xl border-pink text-violet focus:ring-pink focus:border-violet" />
+   	                  <span className="text-sm text-gray-700 font-medium">{option}</span>
+   	                </label>
+   	              ))}
+   	            </div>
+   	          </div>
+   	        ))}
+   	      </div>
+   	    </div>
+   	  )}
+   	</div>
 
-    	{/* Main Content Area */}
-    	<div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-    	  {/* Left Column: Categories List */}
-    	  <div className="lg:col-span-4 lg:sticky lg:top-40">
-    	    <div className="bg-yellowish-white rounded-2xl shadow-lg border-2 border-pink p-4">
-    	      <h3 className="font-bold text-lg mb-4 px-2">Categories</h3>
-    	      <div className="space-y-1">
-    	        {visibleCategories.map(category => (
-    	          <button
-    	            key={category.id}
-    	            onClick={() => setActiveCategoryId(category.id)}
-    	            className={`w-full text-left p-3 rounded-xl transition-all flex items-center gap-4 ${
+   	{/* Main Content Area */}
+   	<div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+   	  {/* Left Column: Categories List */}
+   	  <div className="lg:col-span-4 lg:sticky lg:top-40">
+   	    <div className="bg-yellowish-white rounded-2xl shadow-lg border-2 border-violet p-4">
+   	      <h3 className="font-bold text-lg mb-4 px-2">Categories</h3>
+   	      <div className="space-y-1">
+   	        {visibleCategories.map(category => (
+   	          <button
+   	            key={category.id}
+   	            onClick={() => setActiveCategoryId(category.id)}
+   	            className={`w-full text-left p-3 rounded-xl transition-all flex items-center gap-4 ${
               activeCategory?.id === category.id ? 'bg-violet/20 text-violet shadow-inner border-2 border-violet' : 'hover:bg-pink/20 hover:border-pink border-2 border-transparent'
             }`}
-    	          >
-    	            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${category.color}`}>
-    	              <category.icon className={`h-5 w-5 ${category.iconColor}`} />
-    	            </div>
-    	            <div>
-    	              <p className="font-semibold">{category.title}</p>
-    	              <p className="text-xs text-violet font-medium">{category.count} schemes</p>
-    	            </div>
-    	          </button>
-    	        ))}
-    	        {visibleCategories.length === 0 && (
-    	          	<div className="p-4 text-center text-sm text-violet font-medium">No matching categories found.</div>
-    	        )}
-    	      </div>
-    	    </div>
-    	  </div>
+   	          >
+   	            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${category.color}`}>
+   	              <category.icon className={`h-5 w-5 ${category.iconColor}`} />
+   	            </div>
+   	            <div>
+   	              <p className="font-semibold">{category.title}</p>
+   	              <p className="text-xs text-violet font-medium">{category.count} schemes</p>
+   	            </div>
+   	          </button>
+   	        ))}
+   	        {visibleCategories.length === 0 && (
+   	          	<div className="p-4 text-center text-sm text-violet font-medium">No matching categories found.</div>
+   	        )}
+   	      </div>
+   	    </div>
+   	  </div>
 
-    	  {/* Right Column: Grants Display */}
-    	  <div className="lg:col-span-8">
-    	    {activeCategory && totalGrantsCount > 0 ? (
-    	      <div className="space-y-6">
-    	        <div className="p-6 bg-yellowish-white rounded-2xl shadow-lg border-2 border-pink">
-    	          <h2 className="text-2xl font-bold text-violet mb-1">{activeCategory.title}</h2>
-    	          <p className="text-gray-600">{activeCategory.description}</p>
-    	        </div>
-    	        {activeCategory.stages
-    	          ? renderStageContent(activeCategory)
-    	          : renderRegularContent(activeCategory)
-    	        }
-    	      </div>
-    	    ) : (
-    	      <div className="text-center py-20">
-    	        <div className="bg-yellowish-white p-8 rounded-2xl shadow-lg border-2 border-pink">
-    	          <h3 className="text-xl font-bold mb-2">No Results Found</h3>
-    	          <p className="text-gray-600">
-    	            Try adjusting your search or filter criteria to find what you're looking for.
-    	          </p>
-    	          {(searchTerm || hasActiveFilters) && (
-    	            <Button 
+   	  {/* Right Column: Grants Display */}
+   	  <div className="lg:col-span-8">
+   	    {activeCategory && totalGrantsCount > 0 ? (
+   	      <div className="space-y-6">
+   	        <div className="p-6 bg-yellowish-white rounded-2xl shadow-lg border-2 border-violet hover:border-pink">
+   	          <h2 className="text-2xl font-bold text-violet mb-1">{activeCategory.title}</h2>
+   	          <p className="text-gray-600">{activeCategory.description}</p>
+   	        </div>
+   	        {activeCategory.stages
+   	          ? renderStageContent(activeCategory)
+   	          : renderRegularContent(activeCategory)
+   	        }
+   	      </div>
+   	    ) : (
+   	      <div className="text-center py-20">
+   	        <div className="bg-yellowish-white p-8 rounded-2xl shadow-lg border-2 border-violet ">
+   	          <h3 className="text-xl font-bold mb-2">No Results Found</h3>
+   	          <p className="text-gray-600">
+   	            Try adjusting your search or filter criteria to find what you're looking for.
+   	          </p>
+   	          {(searchTerm || hasActiveFilters) && (
+   	            <Button 
               onClick={() => { setSearchTerm(''); clearAllFilters(); }} 
               className="mt-4 bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold"
             >
-    	              Clear Search & Filters
-    	            </Button>
-    	          )}
-    	          	</div>
-    	      	</div>
-    	    )}
-    	  </div>
-  	</div>
-    </div>
-  </section>
-  );
+   	              Clear Search & Filters
+   	            </Button>
+   	          )}
+   	          	</div>
+   	      	</div>
+   	    )}
+   	  </div>
+  	</div>
+   </div>
+ </section>
+ );
 }

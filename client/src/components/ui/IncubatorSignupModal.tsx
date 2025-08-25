@@ -112,7 +112,9 @@ export function IncubatorSignupModal({ isOpen, onClose }: IncubatorSignupModalPr
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isLogin ? "Login as Incubator" : "Register as Incubator"}</DialogTitle>
+          <DialogTitle className="text-2xl text-center text-violet">
+            {isLogin ? "Login as Incubator" : "Register as Incubator"}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -125,6 +127,7 @@ export function IncubatorSignupModal({ isOpen, onClose }: IncubatorSignupModalPr
                 value={formData.email}
                 onChange={handleInputChange}
                 required
+                className="bg-yellowish-white border-2 border-violet focus:border-pink focus-visible:ring-0 focus:ring-0 focus-visible:ring-offset-0"
               />
             </div>
             <div className="space-y-2">
@@ -135,6 +138,7 @@ export function IncubatorSignupModal({ isOpen, onClose }: IncubatorSignupModalPr
                 value={formData.contactName}
                 onChange={handleInputChange}
                 required
+                className="bg-yellowish-white border-2 border-violet focus:border-pink focus-visible:ring-0 focus:ring-0 focus-visible:ring-offset-0"
               />
             </div>
           </div>
@@ -149,6 +153,7 @@ export function IncubatorSignupModal({ isOpen, onClose }: IncubatorSignupModalPr
                 value={formData.password}
                 onChange={handleInputChange}
                 required
+                className="bg-yellowish-white border-2 border-violet focus:border-pink focus-visible:ring-0 focus:ring-0 focus-visible:ring-offset-0"
               />
             </div>
             {!isLogin && (
@@ -161,6 +166,7 @@ export function IncubatorSignupModal({ isOpen, onClose }: IncubatorSignupModalPr
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   required
+                  className="bg-yellowish-white border-2 border-violet focus:border-pink focus-visible:ring-0 focus:ring-0 focus-visible:ring-offset-0"
                 />
               </div>
             )}
@@ -176,6 +182,7 @@ export function IncubatorSignupModal({ isOpen, onClose }: IncubatorSignupModalPr
                   value={formData.companyName}
                   onChange={handleInputChange}
                   required
+                  className="bg-yellowish-white border-2 border-violet focus:border-pink focus-visible:ring-0 focus:ring-0 focus-visible:ring-offset-0"
                 />
               </div>
 
@@ -188,6 +195,7 @@ export function IncubatorSignupModal({ isOpen, onClose }: IncubatorSignupModalPr
                     type="tel"
                     value={formData.phone}
                     onChange={handleInputChange}
+                    className="bg-yellowish-white border-2 border-violet focus:border-pink focus-visible:ring-0 focus:ring-0 focus-visible:ring-offset-0"
                   />
                 </div>
                 <div className="space-y-2">
@@ -199,6 +207,7 @@ export function IncubatorSignupModal({ isOpen, onClose }: IncubatorSignupModalPr
                     placeholder="https://"
                     value={formData.website}
                     onChange={handleInputChange}
+                    className="bg-yellowish-white border-2 border-violet focus:border-pink focus-visible:ring-0 focus:ring-0 focus-visible:ring-offset-0"
                   />
                 </div>
               </div>
@@ -212,6 +221,7 @@ export function IncubatorSignupModal({ isOpen, onClose }: IncubatorSignupModalPr
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={3}
+                  className="bg-yellowish-white border-2 border-violet focus:border-pink focus-visible:ring-0 focus:ring-0 focus-visible:ring-offset-0"
                 />
               </div>
             </>
@@ -219,7 +229,7 @@ export function IncubatorSignupModal({ isOpen, onClose }: IncubatorSignupModalPr
 
           <Button
             type="submit"
-            className="w-full bg-primary-blue hover:bg-accent-blue"
+            className="w-full btn-primary"
             disabled={loading}
           >
             {loading ? (isLogin ? "Logging in..." : "Creating Account...") : (isLogin ? "Login" : "Create Account")}
@@ -230,7 +240,7 @@ export function IncubatorSignupModal({ isOpen, onClose }: IncubatorSignupModalPr
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-blue-600 hover:underline"
+              className="text-violet hover:text-pink hover:underline transition-colors"
             >
               {isLogin ? "Register here" : "Login here"}
             </button>

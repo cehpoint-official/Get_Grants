@@ -32,8 +32,8 @@ export function Navbar() {
   const navItems = [
     { name: 'Home', action: () => scrollToSection('home') },
     { name: 'Explore Grants', action: () => scrollToSection('grants') },
-    { name: 'Founders Area', action: () => scrollToSection('founders-area') },
-    { name: 'Grants Program', action: () => scrollToSection('blog') },
+    // { name: 'Founders Area', action: () => scrollToSection('founders-area') },
+    { name: 'Blog', action: () => scrollToSection('blog') },
     { name: 'Premium Support', action: () => scrollToSection('premium-support') },
   ];
 
@@ -67,7 +67,7 @@ export function Navbar() {
         return <Button onClick={handleLogout} variant="destructive" className="hidden lg:block text-sm rounded-xl shadow-lg font-semibold">Logout</Button>;
       }
     } else {
-      return <Button onClick={() => setIsAuthModalOpen(true)} className="hidden lg:block bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Login/Signup</Button>;
+      return <Button onClick={() => setIsAuthModalOpen(true)} className="hidden lg:block bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Login</Button>;
     }
   };
 
