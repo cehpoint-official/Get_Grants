@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import { toast } from "@/hooks/use-toast";
 import { db } from "@/lib/firebase";
 import { addDoc, collection } from "firebase/firestore";
+import { Button } from "@/components/ui/button";
 
 interface FormData {
   name: string;
@@ -63,7 +64,7 @@ export default function ApplyIncubatorForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg border-2 border-violet space-y-6"
+      className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-[0_12px_28px_rgba(0,0,0,0.28)] space-y-6"
     >
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-violet mb-2">
@@ -92,7 +93,7 @@ export default function ApplyIncubatorForm() {
           type="text"
           placeholder="e.g. IIT Mandi Catalyst"
           className={`w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 bg-white ${
-            errors.name ? 'border-red-500 bg-red-50' : 'border-violet focus:border-pink hover:border-pink focus:ring-0'
+            errors.name ? 'border-red-500 bg-red-50' : 'border-gray-400 focus:border-gray-500 hover:border-gray-500 focus:ring-0'
           }`}
         />
         {errors.name && (
@@ -118,7 +119,7 @@ export default function ApplyIncubatorForm() {
           type="email"
           placeholder="e.g. incubator@example.com"
           className={`w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 bg-white ${
-            errors.email ? 'border-red-500 bg-red-50' : 'border-violet focus:border-pink hover:border-pink focus:ring-0'
+            errors.email ? 'border-red-500 bg-red-50' : 'border-gray-400 focus:border-gray-500 hover:border-gray-500 focus:ring-0'
           }`}
         />
         {errors.email && (
@@ -148,7 +149,7 @@ export default function ApplyIncubatorForm() {
           type="tel"
           placeholder="e.g. +91 9876543210"
           className={`w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 bg-white ${
-            errors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-violet focus:border-pink hover:border-pink focus:ring-0'
+            errors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-gray-400 focus:border-gray-500 hover:border-gray-500 focus:ring-0'
           }`}
         />
         {errors.phoneNumber && (
@@ -195,9 +196,9 @@ export default function ApplyIncubatorForm() {
                   ...base,
                   minHeight: '48px',
                   borderWidth: '2px',
-                  borderColor: errors.sectors ? '#ef4444' : state.isFocused ? 'hsl(270, 50%, 60%)' : 'hsl(340, 70%, 70%)',
+                  borderColor: errors.sectors ? '#ef4444' : state.isFocused ? '#6b7280' : '#9ca3af',
                   borderRadius: '12px',
-                  boxShadow: state.isFocused ? '0 0 0 2px rgba(124, 58, 237, 0.4)' : 'none',
+                  boxShadow: 'none',
                   backgroundColor: 'white',
                 }),
                 multiValue: (base) => ({
@@ -353,23 +354,13 @@ export default function ApplyIncubatorForm() {
 
       {/* Submit Button */}
       <div className="pt-4">
-        <button
+        <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full btn-primary disabled:bg-gray-400 disabled:cursor-not-allowed py-3 px-6 rounded-lg transform hover:scale-[1.02] active:scale-[0.98]"
+          className="w-full mt-2 bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-              </svg>
-              Submitting...
-            </span>
-          ) : (
-            "Submit Application"
-          )}
-        </button>
+          {isSubmitting ? "Submitting..." : "Submit Application"}
+        </Button>
       </div>
     </form>
   );

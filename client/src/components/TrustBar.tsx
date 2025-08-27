@@ -1,47 +1,23 @@
 import React from 'react';
+import iitd from '../assets/logos/IIT-D.png.png';
+import nit from '../assets/logos/NIT.png.png';
+import nsrcel from '../assets/logos/NSRCEL.png.png';
+import nuc from '../assets/logos/NUC.png.png';
+import startupIndia from '../assets/logos/startup-india.png.png';
+import startGujarat from '../assets/logos/start-gujarat.png.png';
 
 export default function App() {
   return <TrustBar />;
 }
 
 export function TrustBar() {
-  const grantLogos = [
-    {
-      name: 'NIDHI',
-      url: 'https://startupgrants.in/assets/img/grant/nidhi.png',
-    },
-    {
-      name: 'BIRAC',
-      url: 'https://startupgrants.in/assets/img/grant/birac.png',
-    },
-    {
-      name: 'Startup India',
-      url: 'https://startupgrants.in/assets/img/grant/startup-india.png',
-    },
-    {
-      name: 'SIDBI',
-      url: 'https://startupgrants.in/assets/img/grant/sidbi.png',
-    },
-    {
-      name: 'AIM',
-      url: 'https://startupgrants.in/assets/img/grant/aim.png',
-    },
-    {
-        name: 'MeitY Startup Hub',
-        url: 'https://startupgrants.in/assets/img/grant/meity.png',
-    },
-    {
-        name: 'Startup Uttarakhand',
-        url: 'https://startupgrants.in/assets/img/grant/uttarakhand.png',
-    },
-    {
-        name: 'i-STAC',
-        url: 'https://startupgrants.in/assets/img/grant/karnataka.png',
-    },
-    {
-        name: 'StartInUP',
-        url: 'https://startupgrants.in/assets/img/grant/up.png',
-    }
+  const grantLogos  = [
+    { name: 'IIT-D', url: iitd },
+    { name: 'NIT-A', url: nit },
+    { name: 'NSRCEL', url: nsrcel },
+    { name: 'NCU', url: nuc },
+    { name: 'Startup India', url: startupIndia },
+    { name: 'Start Gujarat', url: startGujarat },
   ];
 
   const duplicatedLogos = [...grantLogos, ...grantLogos];
@@ -78,7 +54,7 @@ export function TrustBar() {
                   <img
                     src={logo.url}
                     alt={`${logo.name} logo`}
-                    className="h-16 object-contain grayscale hover:grayscale-0 transition-all duration-300"
+                    className="h-30 object-contain transition-all duration-400"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.onerror = null;

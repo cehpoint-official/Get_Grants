@@ -39,11 +39,11 @@ export function Hero() {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
                   <Input
                     placeholder="Search grants by sector, state, or amount"
-                    className="pl-10 h-12 text-base bg-yellowish-white border-2 border-violet focus:border-violet focus-visible:ring-0 rounded-l-xl rounded-r-none shadow-lg border-r-0"
+                    className="pl-10 h-12 text-base bg-yellowish-white rounded-l-xl rounded-r-none shadow-lg shadow-black/20 focus-visible:ring-0 focus:outline-none"
                   />
                   <Button
                     type="submit"
-                    className="h-12 bg-violet hover:bg-pink text-white px-6 font-medium text-base rounded-r-xl rounded-l-none shadow-lg border-2 border-violet border-l-0"
+                    className="h-12 bg-violet hover:bg-pink text-white px-6 font-medium text-base rounded-r-xl rounded-l-none shadow-lg shadow-black/20 hover:shadow-black/40 transform hover:-translate-y-[1px]"
                   >
                     Search
                   </Button>

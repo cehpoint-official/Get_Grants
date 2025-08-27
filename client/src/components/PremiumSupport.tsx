@@ -77,7 +77,7 @@ export default function PremiumSupport() {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8">
             {services.map((service) => (
-              <div key={service.name} className="bg-white p-8 rounded-2xl text-center shadow-xl border-2 border-violet hover:border-pink transition-all duration-300">
+              <div key={service.name} className="bg-white p-8 rounded-2xl text-center shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/40 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01]">
                 <div className="mx-auto bg-violet rounded-full h-12 w-12 flex items-center justify-center mb-4 shadow-lg">
                   {service.icon}
                 </div>
@@ -172,7 +172,7 @@ export default function PremiumSupport() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Free Plan */}
-            <div className="bg-white border-2 border-violet rounded-2xl p-8 text-center hover:border-pink transition-all duration-300 hover:shadow-xl shadow-lg">
+            <div className="bg-white rounded-2xl p-8 text-center transition-all duration-300 hover:shadow-2xl shadow-lg shadow-black/20 hover:shadow-black/40 transform hover:-translate-y-1 hover:scale-[1.01]">
               <div className="mb-6">
                 <h3 className="text-2xl font-bold text-violet mb-2 ">Free</h3>
                 <p className="text-gray-600">Perfect for getting started</p>
@@ -191,7 +191,7 @@ export default function PremiumSupport() {
             </div>
 
             {/* Pro Plan */}
-            <div className="bg-white border-2 border-violet hover:border-pink rounded-2xl p-8 text-center shadow-xl relative">
+            <div className="bg-white rounded-2xl p-8 text-center shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/40 relative transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01]">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2"><span className="bg-violet text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg">Most Popular</span></div>
               <div className="mb-6"><h3 className="text-2xl font-bold text-violet mb-2">Pro</h3><p className="text-gray-600">For serious founders</p></div>
               <div className="mb-8"><span className="text-4xl font-bold text-violet">₹999</span><span className="text-gray-600">/month</span></div>
@@ -206,7 +206,7 @@ export default function PremiumSupport() {
             </div>
 
             {/* Enterprise Plan */}
-            <div className="bg-white border-2 border-violet rounded-2xl p-8 text-center hover:border-pink transition-all duration-300 hover:shadow-xl shadow-lg">
+            <div className="bg-white rounded-2xl p-8 text-center transition-all duration-300 hover:shadow-2xl shadow-lg shadow-black/20 hover:shadow-black/40 transform hover:-translate-y-1 hover:scale-[1.01]">
               <div className="mb-6"><h3 className="text-2xl font-bold text-violet mb-2">Enterprise</h3><p className="text-gray-600">For teams & incubators</p></div>
               <div className="mb-8"><span className="text-4xl font-bold text-violet">₹2,999</span><span className="text-gray-600">/month</span></div>
               <ul className="text-left space-y-4 mb-8">
@@ -226,17 +226,17 @@ export default function PremiumSupport() {
       {/* Signup Modal */}
       {isSignupModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
-          <div className="bg-white p-8 rounded-2xl shadow-2xl relative w-full max-w-md" style={{ background: 'linear-gradient(135deg, hsl(60, 30%, 95%) 0%, hsl(30, 60%, 90%) 100%)' }}>
+          <div className="bg-white p-8 rounded-2xl shadow-2xl relative w-full max-w-md">
             <Button variant="ghost" size="icon" onClick={() => setIsSignupModalOpen(false)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 hover:bg-gray-200 rounded-full">
               <X size={24} />
             </Button>
             <h3 className="text-2xl font-bold text-violet mb-6 text-center">Join Our Community</h3>
             <form className="space-y-4">
-                <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="text" placeholder="Name" className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet focus:border-violet"/></div>
-                <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="email" placeholder="Email" className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet focus:border-violet"/></div>
-                <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="tel" placeholder="Mobile No." className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet focus:border-violet"/></div>
-                <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="password" placeholder="Password" className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet focus:border-violet"/></div>
-                <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="password" placeholder="Confirm Password" className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet focus:border-violet"/></div>
+                <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="text" placeholder="Name" className="w-full p-3 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"/></div>
+                <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="email" placeholder="Email" className="w-full p-3 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"/></div>
+                <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="tel" placeholder="Mobile No." className="w-full p-3 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"/></div>
+                <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="password" placeholder="Password" className="w-full p-3 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"/></div>
+                <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="password" placeholder="Confirm Password" className="w-full p-3 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"/></div>
                 <Button type="submit" className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold py-3 text-lg">Continue</Button>
             </form>
           </div>

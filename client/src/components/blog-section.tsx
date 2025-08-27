@@ -89,7 +89,7 @@ export function BlogSection() {
               {visiblePosts.map((post) => (
                 <article
                   key={post.id}
-                  className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border-2 border-violet hover:border-pink"
+                  className="bg-white rounded-2xl shadow-lg shadow-black/20 hover:shadow-2xl hover:shadow-black/40 transition-all duration-300 overflow-hidden transform hover:-translate-y-1 hover:scale-[1.01]"
                 >
                   <img
                     src={

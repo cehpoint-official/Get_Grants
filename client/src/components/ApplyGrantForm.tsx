@@ -94,8 +94,7 @@ export const GrantApplicationForm = () => {
 
   return (
     <div 
-      className="shadow-2xl rounded-2xl p-6 md:p-10 max-w-3xl mx-auto mt-10 border-2 border-violet"
-    
+      className="shadow-2xl rounded-2xl p-6 md:p-10 max-w-3xl mx-auto mt-10"
     >
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-violet mb-2">Grants Support Form</h2>
@@ -121,10 +120,10 @@ export const GrantApplicationForm = () => {
             <input
               {...register("name")}
               type="text"
-              className={`w-full px-4 py-2 border-2 rounded-lg transition-colors focus:outline-none ${
+              className={`w-full px-4 py-3 border-2 rounded-lg transition-colors focus:outline-none ${
                 errors.name 
                   ? 'border-red-400 bg-red-50' 
-                  : 'border-violet bg-white focus:border-pink'
+                  : 'border-gray-400 bg-white focus:border-gray-500'
               }`}
               placeholder="Enter your full name"
             />
@@ -141,10 +140,10 @@ export const GrantApplicationForm = () => {
             <input
               {...register("phone")}
               type="tel"
-              className={`w-full px-4 py-2 border-2 rounded-lg transition-colors focus:outline-none ${
+              className={`w-full px-4 py-3 border-2 rounded-lg transition-colors focus:outline-none ${
                 errors.phone 
                   ? 'border-red-400 bg-red-50' 
-                  : 'border-violet bg-white focus:border-pink'
+                  : 'border-gray-400 bg-white focus:border-gray-500'
               }`}
               placeholder="Enter 10-digit mobile number"
               maxLength={10}
@@ -162,10 +161,10 @@ export const GrantApplicationForm = () => {
             <input
               {...register("email")}
               type="email"
-              className={`w-full px-4 py-2 border-2 rounded-lg transition-colors focus:outline-none ${
+              className={`w-full px-4 py-3 border-2 rounded-lg transition-colors focus:outline-none ${
                 errors.email 
                   ? 'border-red-400 bg-red-50' 
-                  : 'border-violet bg-white focus:border-pink'
+                  : 'border-gray-400 bg-white focus:border-gray-500'
               }`}
               placeholder="Enter your email address"
             />
@@ -184,10 +183,10 @@ export const GrantApplicationForm = () => {
               {...register("helpDescription")}
               rows={4}
               placeholder="Please describe in detail what kind of support your startup is looking for..."
-              className={`mt-1 block w-full rounded-lg border-2 shadow-sm sm:text-sm px-4 py-2 transition-colors focus:outline-none ${
+              className={`mt-1 block w-full rounded-lg border-2 shadow-sm sm:text-sm px-4 py-3 transition-colors focus:outline-none ${
                 errors.helpDescription 
                   ? 'border-red-400 bg-red-50' 
-                  : 'border-violet bg-white focus:border-pink'
+                  : 'border-gray-400 bg-white focus:border-gray-500'
               }`}
               maxLength={500}
             />
@@ -201,7 +200,7 @@ export const GrantApplicationForm = () => {
 
           {/* Support Areas Checkboxes */}
           <div className={`border-2 rounded-lg p-4 transition-colors ${
-            errors.supportAreas ? 'bg-red-50 border-red-400' : 'bg-white border-violet'
+            errors.supportAreas ? 'bg-red-50 border-red-400' : 'bg-white border-gray-400'
           }`}>
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Select areas where you need support <span className="text-red-500">*</span>
@@ -214,7 +213,7 @@ export const GrantApplicationForm = () => {
                     id={area}
                     checked={selectedAreas.includes(area)}
                     onChange={() => handleCheckboxChange(area)}
-                    className="h-4 w-4 text-violet focus:ring-violet border-gray-300 rounded transition-colors cursor-pointer"
+                    className="h-4 w-4 text-violet focus:ring-violet border-violet rounded transition-colors cursor-pointer"
                   />
                   <label htmlFor={area} className="ml-2 text-sm text-gray-700 cursor-pointer select-none">
                     {area}
@@ -222,7 +221,7 @@ export const GrantApplicationForm = () => {
                 </div>
               ))}
             </div>
-            <div className="text-right mt-2 text-xs text-gray-500">
+            <div className="text-right mt-2 text-xs text-violet">
               {selectedAreas.length}/7 selected
             </div>
             {errors.supportAreas && (

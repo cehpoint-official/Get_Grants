@@ -117,15 +117,15 @@ export default function PremiumSupport() {
       {/* Contact Modal */}
       {isContactModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
-          <div className="bg-white p-8 rounded-2xl shadow-2xl relative w-full max-w-md" style={{ background: 'linear-gradient(135deg, hsl(60, 30%, 95%) 0%, hsl(30, 60%, 90%) 100%)' }}>
+          <div className="bg-white p-8 rounded-2xl shadow-2xl relative w-full max-w-md">
             <Button variant="ghost" size="icon" onClick={() => setIsContactModalOpen(false)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 hover:bg-gray-200 rounded-full">
               <X size={24} />
             </Button>
             <h3 className="text-2xl font-bold text-violet mb-6 text-center">Send us a message</h3>
             <form className="space-y-4">
-                <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="text" placeholder="Your Name" className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet focus:border-violet"/></div>
-                <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="email" placeholder="Your Email" className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet focus:border-violet"/></div>
-                <textarea placeholder="Your Message" rows={4} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet focus:border-violet"></textarea>
+                <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="text" placeholder="Your Name" className="w-full p-3 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"/></div>
+                <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="email" placeholder="Your Email" className="w-full p-3 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"/></div>
+                <textarea placeholder="Your Message" rows={4} className="w-full p-3 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"></textarea>
                 <Button type="submit" className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold py-3 text-lg">Send Message</Button>
             </form>
           </div>
