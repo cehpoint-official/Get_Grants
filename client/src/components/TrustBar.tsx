@@ -1,23 +1,23 @@
 import React from 'react';
-import iitd from '../assets/logos/IIT-D.png.png';
-import nit from '../assets/logos/NIT.png.png';
-import nsrcel from '../assets/logos/NSRCEL.png.png';
-import nuc from '../assets/logos/NUC.png.png';
-import startupIndia from '../assets/logos/startup-india.png.png';
-import startGujarat from '../assets/logos/start-gujarat.png.png';
+import l1 from '../assets/logos/logo1.png';
+import l2 from '../assets/logos/logo2.png';
+import l3 from '../assets/logos/logo3.png';
+import l4 from '../assets/logos/logo4.png';
+import l5 from '../assets/logos/logo5.png';
+import l6 from '../assets/logos/logo6.png';
 
 export default function App() {
   return <TrustBar />;
 }
 
 export function TrustBar() {
-  const grantLogos  = [
-    { name: 'IIT-D', url: iitd },
-    { name: 'NIT-A', url: nit },
-    { name: 'NSRCEL', url: nsrcel },
-    { name: 'NCU', url: nuc },
-    { name: 'Startup India', url: startupIndia },
-    { name: 'Start Gujarat', url: startGujarat },
+  const grantLogos = [
+    { name: 'IIT-D', url: l1 },
+    { name: 'NIT-A', url: l2 },
+    { name: 'NSRCEL', url: l3 },
+    { name: 'NCU', url: l4 },
+    { name: 'Startup India', url: l5 },
+    { name: 'Start Gujarat', url: l6 },
   ];
 
   const duplicatedLogos = [...grantLogos, ...grantLogos];
@@ -31,7 +31,7 @@ export function TrustBar() {
             100% { transform: translateX(-50%); }
           }
           .animate-marquee {
-            animation: marquee 45s linear infinite;
+            animation: marquee 15s linear infinite;
           }
           .marquee-container:hover .animate-marquee {
             animation-play-state: paused;
@@ -48,17 +48,17 @@ export function TrustBar() {
           </div>
           
           <div className="relative w-full overflow-hidden marquee-container">
-            <div className="flex items-center animate-marquee">
+            <div className="flex items-center animate-marquee gap-16">
               {duplicatedLogos.map((logo, idx) => (
-                <div key={`${logo.name}-${idx}`} className="flex-shrink-0 mx-8">
+                <div key={`${logo.name}-${idx}`} className="flex-shrink-0 w-44">
                   <img
                     src={logo.url}
                     alt={`${logo.name} logo`}
-                    className="h-30 object-contain transition-all duration-400"
+                    className="h-16 w-full object-contain transition-all duration-300"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.onerror = null;
-                      target.src = `https://placehold.co/160x64/f0f0f0/333333?text=${logo.name.replace(/\s/g, '+')}`;
+                      target.src = `https://placehold.co/176x64/f0f0f0/333333?text=${logo.name.replace(/\s/g, '+')}`;
                     }}
                   />
                 </div>

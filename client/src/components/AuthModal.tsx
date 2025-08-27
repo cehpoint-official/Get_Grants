@@ -1,30 +1,46 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
-import { User, Mail, Lock } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, Phone } from "lucide-react";
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialMode?: 'login' | 'signup';
 }
 
-export function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [mobile, setMobile] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { login, signup } = useAuth();
   const [, navigate] = useLocation();
 
+  // Sync mode when modal opens or initialMode changes
+  useEffect(() => {
+    if (isOpen) setAuthMode(initialMode);
+  }, [isOpen, initialMode]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (authMode === 'signup' && password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -33,6 +49,12 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
       } else {
         await signup(email, password, fullName);
       }
+      // Clear input fields on successful login/signup
+      setFullName('');
+      setEmail('');
+      setMobile('');
+      setPassword('');
+      setConfirmPassword('');
       onClose(); 
       navigate('/'); 
     } catch (err: any) {
@@ -65,7 +87,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   value={fullName} 
                   onChange={(e) => setFullName(e.target.value)} 
                   required 
-                  className="w-full p-3 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"
+                  className="w-full p-3 pl-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"
                 />
               </div>
             )}
@@ -78,21 +100,63 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)} 
                 required 
-                className="w-full p-3 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"
+                className="w-full p-3 pl-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"
               />
             </div>
+             {authMode === 'signup' && (
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/>
+                <Input 
+                  id="mobile-modal" 
+                  type="tel" 
+                  placeholder="Mobile Number" 
+                  value={mobile} 
+                  onChange={(e) => setMobile(e.target.value)} 
+                  required 
+                  className="w-full p-3 pl-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"
+                />
+              </div>
+            )}
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/>
               <Input 
                 id="password-modal" 
-                type="password" 
+                type={showPassword ? "text" : "password"} 
                 placeholder="Password" 
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)} 
                 required 
-                className="w-full p-3 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"
+                className="w-full p-3 pl-10 pr-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
+            {authMode === 'signup' && (
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/>
+                <Input 
+                  id="confirm-password-modal" 
+                  type={showConfirmPassword ? "text" : "password"} 
+                  placeholder="Confirm Password" 
+                  value={confirmPassword} 
+                  onChange={(e) => setConfirmPassword(e.target.value)} 
+                  required 
+                  className="w-full p-3 pl-10 pr-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"
+                />
+                 <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            )}
             {error && <p className="text-sm text-red-500 text-center pt-2">{error}</p>}
           </div>
           <Button type="submit" className="w-full mt-6 bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold py-3 text-lg" disabled={loading}>
@@ -103,7 +167,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           {authMode === 'login' ? "Don't have an account? " : "Already have an account? "}
           <button
             type="button"
-            onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
+            onClick={() => {
+              setAuthMode(authMode === 'login' ? 'signup' : 'login');
+              setError('');
+            }}
             className="font-medium text-violet hover:text-pink hover:underline transition-colors"
           >
             {authMode === 'login' ? 'Sign up' : 'Login'}

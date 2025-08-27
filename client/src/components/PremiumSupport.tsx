@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronDown, CheckCircle2, X, User, Mail, Phone, Lock } from "lucide-react";
+import { Check, ChevronDown, CheckCircle2 } from "lucide-react";
 import { Link } from "wouter";
+import { AuthModal } from "./AuthModal";
 
 export default function PremiumSupport() {
   // State to manage which FAQ is open
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
-  // State for Signup Modal
-  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
+  // Auth modal state
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authInitialMode, setAuthInitialMode] = useState<'login' | 'signup'>('login');
 
 
   const scrollToSection = (sectionId: string) => {
@@ -187,7 +189,7 @@ export default function PremiumSupport() {
                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Email notifications</span></li>
                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Community forum access</span></li>
               </ul>
-              <Button onClick={() => setIsSignupModalOpen(true)} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Get Started Free</Button>
+              <Button onClick={() => { setAuthInitialMode('signup'); setIsAuthModalOpen(true); }} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Get Started Free</Button>
             </div>
 
             {/* Pro Plan */}
@@ -202,7 +204,7 @@ export default function PremiumSupport() {
                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">WhatsApp & SMS alerts</span></li>
                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Grant deadline tracking</span></li>
               </ul>
-              <Button className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Choose Pro Plan</Button>
+              <Button onClick={() => { setAuthInitialMode('login'); setIsAuthModalOpen(true); }} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Choose Pro Plan</Button>
             </div>
 
             {/* Enterprise Plan */}
@@ -216,32 +218,15 @@ export default function PremiumSupport() {
                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Pitch deck review</span></li>
                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Team collaboration tools</span></li>
               </ul>
-              <Button className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Contact Sales</Button>
+              <Button onClick={() => { setAuthInitialMode('login'); setIsAuthModalOpen(true); }} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Contact Sales</Button>
             </div>
           </div>
         </div>
       </section>
 
       
-      {/* Signup Modal */}
-      {isSignupModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
-          <div className="bg-white p-8 rounded-2xl shadow-2xl relative w-full max-w-md">
-            <Button variant="ghost" size="icon" onClick={() => setIsSignupModalOpen(false)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 hover:bg-gray-200 rounded-full">
-              <X size={24} />
-            </Button>
-            <h3 className="text-2xl font-bold text-violet mb-6 text-center">Join Our Community</h3>
-            <form className="space-y-4">
-                <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="text" placeholder="Name" className="w-full p-3 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"/></div>
-                <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="email" placeholder="Email" className="w-full p-3 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"/></div>
-                <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="tel" placeholder="Mobile No." className="w-full p-3 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"/></div>
-                <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="password" placeholder="Password" className="w-full p-3 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"/></div>
-                <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/><input type="password" placeholder="Confirm Password" className="w-full p-3 pl-10 border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"/></div>
-                <Button type="submit" className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold py-3 text-lg">Continue</Button>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Auth Modal unified for pricing actions */}
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} initialMode={authInitialMode} />
 
    
     </div>

@@ -59,15 +59,15 @@ export function Navbar() {
       if (isAdmin) {
         return (
           <>
-            <Button onClick={() => navigate("/admin")} className="hidden lg:block bg-violet hover:bg-pink text-white text-sm rounded-xl shadow-lg font-semibold">Admin Dashboard</Button>
-            <Button onClick={handleLogout} variant="destructive" className="hidden lg:block text-sm rounded-xl shadow-lg font-semibold">Logout</Button>
+            <Button size="lg" onClick={() => navigate("/admin")} className="hidden lg:block bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Admin Dashboard</Button>
+            <Button size="lg" onClick={handleLogout} variant="destructive" className="hidden lg:block rounded-xl shadow-lg font-semibold">Logout</Button>
           </>
         );
       } else {
-        return <Button onClick={handleLogout} variant="destructive" className="hidden lg:block text-sm rounded-xl shadow-lg font-semibold">Logout</Button>;
+        return <Button size="lg" onClick={handleLogout} variant="destructive" className="hidden lg:block rounded-xl shadow-lg font-semibold">Logout</Button>;
       }
     } else {
-      return <Button onClick={() => setIsAuthModalOpen(true)} className="hidden lg:block bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Login</Button>;
+      return <Button size="lg" onClick={() => setIsAuthModalOpen(true)} className="hidden lg:block bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Login</Button>;
     }
   };
 
@@ -76,15 +76,15 @@ export function Navbar() {
       if (isAdmin) {
         return (
           <>
-            <Button onClick={() => navigate("/admin")} className="w-full bg-violet hover:bg-pink text-white text-sm rounded-xl shadow-lg font-semibold">Admin Dashboard</Button>
-            <Button onClick={handleLogout} variant="destructive" className="w-full mt-2 text-sm rounded-xl shadow-lg font-semibold">Logout</Button>
+            <Button size="lg" onClick={() => navigate("/admin")} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Admin Dashboard</Button>
+            <Button size="lg" onClick={handleLogout} variant="destructive" className="w-full mt-2 rounded-xl shadow-lg font-semibold">Logout</Button>
           </>
         );
       } else {
-        return <Button onClick={handleLogout} variant="destructive" className="w-full mt-2 text-sm rounded-xl shadow-lg font-semibold">Logout</Button>;
+        return <Button size="lg" onClick={handleLogout} variant="destructive" className="w-full mt-2 rounded-xl shadow-lg font-semibold">Logout</Button>;
       }
     } else {
-      return <Button onClick={() => setIsAuthModalOpen(true)} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Login/Signup</Button>;
+      return <Button size="lg" onClick={() => setIsAuthModalOpen(true)} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Login/Signup</Button>;
     }
   };
 
@@ -100,15 +100,13 @@ export function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14 sm:h-16">
             <Link href="/" className="flex items-center gap-2 text-violet hover:text-pink transition-colors">
-              <Rocket className="h-6 w-6 sm:h-7 sm:w-7" />
-              <span className="text-lg sm:text-xl font-bold">Get Grants</span>
+              <Rocket className="h-8 w-8 sm:h-9 sm:w-9" />
+              <span className="text-xl sm:text-2xl font-bold">Get Grants</span>
             </Link>
             <div className="hidden lg:block">
               <div className="ml-10 flex items-baseline space-x-6 xl:space-x-8">
                 {navItems.map((item) => (
-                    item.href ?
-                  <Link key={item.name} href={item.href} className="text-violet hover:text-pink font-medium text-sm transition-colors">{item.name}</Link>
-                  : <button key={item.name} onClick={item.action} className="text-violet hover:text-pink font-medium text-sm transition-colors">{item.name}</button>
+                  <button key={item.name} onClick={item.action} className="text-violet hover:text-pink font-medium text-base xl:text-lg transition-colors">{item.name}</button>
                 ))}
               </div>
             </div>
@@ -126,9 +124,7 @@ export function Navbar() {
           <div className="lg:hidden border-t-2 border-pink">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-yellowish-white">
               {navItems.map((item) => (
-                 item.href ?
-                 <Link key={item.name} href={item.href} className="block w-full text-left px-3 py-2 text-violet hover:text-pink text-sm transition-colors" onClick={() => setIsOpen(false)}>{item.name}</Link>
-                 : <button key={item.name} onClick={item.action} className="block w-full text-left px-3 py-2 text-violet hover:text-pink text-sm transition-colors">{item.name}</button>
+                <button key={item.name} onClick={item.action} className="block w-full text-left px-3 py-2 text-violet hover:text-pink text-sm transition-colors">{item.name}</button>
               ))}
               <div className="px-3 py-2 border-t-2 border-pink mt-2 pt-3">
                 {renderMobileAuthButtons()}
