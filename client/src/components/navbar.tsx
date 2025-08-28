@@ -31,8 +31,8 @@ export function Navbar() {
 
   const navItems = [
     { name: 'Home', action: () => scrollToSection('home') },
-    { name: 'Explore Grants', action: () => scrollToSection('grants') },
-    // { name: 'Founders Area', action: () => scrollToSection('founders-area') },
+   
+    { name: 'Explore Grants', action: () => navigate('/grants')},
     { name: 'Blog', action: () => scrollToSection('blog') },
     { name: 'Premium Support', action: () => scrollToSection('premium-support') },
   ];

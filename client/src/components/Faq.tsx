@@ -65,7 +65,7 @@ export default function PremiumSupport() {
      
      
       {/* Your New FAQ Section */}
-      <section id="faq" classNampremium-supporte="py-16 md:py-24" >
+      <section id="faq" className="py-16 md:py-24" >
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-center text-3xl font-bold text-violet mb-8">

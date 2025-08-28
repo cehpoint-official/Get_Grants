@@ -3,7 +3,8 @@ import { User } from "firebase/auth";
 
 // List of admin emails - only these can access admin dashboard
 const ADMIN_EMAILS = [
-  'admin@getgrants.in'
+  'admin@getgrants.in',
+  'kamini9926@gmail.com'
 ];
 
 export function isAdminEmail(email: string | null | undefined): boolean {

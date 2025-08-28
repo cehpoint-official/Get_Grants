@@ -9,11 +9,17 @@ import BlogDetail from "@/pages/blog-detail";
 import NotFound from "@/pages/not-found";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 
+
+import GrantsPage from "./pages/GrantsPage";
+import GrantDetailPage from "./pages/GrantDetailPage";
+
 import { useAuth } from "@/hooks/use-auth";
 import { Navbar } from "@/components/navbar";
 import ApplyPage from "./pages/ApplyPage";
 import ApplyIncubator from "./pages/ApplyIncubator";
-// 🔐 Protected Route Component
+import { ProtectedAdminRoute } from "./components/ProtectedAdminRoute";
+
+// Protected Route Component
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
 
@@ -34,6 +40,10 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/blog" component={BlogDetail} />
       <Route path="/apply" component={ApplyPage} />
+ 
+      <Route path="/grants" component={GrantsPage} />
+      <Route path="/grant/:id" component={GrantDetailPage} />
+
       <Route path="/applyincubator">
         <ProtectedRoute>
           <ApplyIncubator />
@@ -41,9 +51,10 @@ function Router() {
       </Route>
 
       <Route path="/admin">
-        <ProtectedRoute>
+       
+        <ProtectedAdminRoute>
           <AdminDashboard />
-        </ProtectedRoute>
+        </ProtectedAdminRoute>
       </Route>
       <Route component={NotFound} />
     </Switch>
