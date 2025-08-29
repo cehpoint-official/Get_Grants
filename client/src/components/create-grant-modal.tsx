@@ -78,6 +78,9 @@ export function CreateGrantModal({ isOpen, onClose, onSubmit, initialData }: Cre
     }
   }, [initialData, form, isOpen]);
 
+  const categories = ['Technology', 'Healthcare', 'Education', 'Environment', 'Sustainability', 'Fintech', 'Agriculture', 'Retail', 'Diversity', 'Social'];
+  const statuses = ["Active", "Expired", "Upcoming", "Closing Soon"];
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -95,8 +98,8 @@ export function CreateGrantModal({ isOpen, onClose, onSubmit, initialData }: Cre
 
             {/* Status & Category */}
             <div className="grid md:grid-cols-2 gap-4">
-              <FormField name="status" control={form.control} render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Active">Active</SelectItem><SelectItem value="Expired">Expired</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
-              <FormField name="category" control={form.control} render={({ field }) => (<FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Category..." /></SelectTrigger></FormControl><SelectContent><SelectItem value="Technology">Technology</SelectItem><SelectItem value="Healthcare">Healthcare</SelectItem><SelectItem value="Fintech">Fintech</SelectItem><SelectItem value="Agriculture">Agriculture</SelectItem><SelectItem value="Deeptech">Deeptech</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+              <FormField name="status" control={form.control} render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{statuses.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+              <FormField name="category" control={form.control} render={({ field }) => (<FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Category..." /></SelectTrigger></FormControl><SelectContent>{categories.map(category => <SelectItem key={category} value={category}>{category}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
             </div>
             
             <FormField name="description" control={form.control} render={({ field }) => (<FormItem><FormLabel>Short Description (for card)</FormLabel><FormControl><Textarea placeholder="A brief summary of the grant..." {...field} /></FormControl><FormMessage /></FormItem>)} />

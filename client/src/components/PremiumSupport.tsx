@@ -1,21 +1,24 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, ChevronDown, CheckCircle2 } from "lucide-react";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 import { AuthModal } from "./AuthModal";
+import { useAuth } from "@/hooks/use-auth"; // Import the useAuth hook
 
 export default function PremiumSupport() {
-  // State to manage which FAQ is open
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
-  // Auth modal state
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'signup'>('login');
+  
+  const { user } = useAuth(); // Get user from auth hook
+  const [, navigate] = useLocation();
 
-
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+  const handlePlanClick = (mode: 'login' | 'signup') => {
+    if (user) {
+      navigate("/apply"); // Redirect to apply page if user is logged in
+    } else {
+      setAuthInitialMode(mode);
+      setIsAuthModalOpen(true);
     }
   };
 
@@ -36,27 +39,6 @@ export default function PremiumSupport() {
       icon: <Check className="h-6 w-6 text-white" />,
     },
   ];
-
-  // FAQ Data
-  const faqs = [
-    {
-      question: "What kind of support can I expect?",
-      answer: "Our premium support includes end-to-end grant application assistance, professional review of your pitch deck and compliance documents, and direct 1:1 access to our grant experts for personalized advice.",
-    },
-    {
-      question: "Who are the experts I will be consulting with?",
-      answer: "Our experts are seasoned professionals with years of experience in the venture capital and grant funding sectors. They have a proven track record of helping startups secure funding.",
-    },
-    {
-      question: "What if I don't get the grant after using the service?",
-      answer: "While we cannot guarantee funding, our service significantly increases your chances by ensuring your application is professional, compliant, and compelling. We focus on perfecting your submission to meet the highest standards.",
-    },
-    {
-      question: "How do I schedule my 1:1 consultation?",
-      answer: "Once you sign up for a plan, you will receive access to a private booking calendar where you can schedule your consultation calls at a time that is convenient for you.",
-    },
-  ];
-
 
   return (
     <div id="premium-support" className="bg-white py-10">
@@ -139,27 +121,6 @@ export default function PremiumSupport() {
         </div>
       </section>
 
-      {/* Action Buttons Section */}
-      {/* <section className="bg-white py-12">
-        <div className="container mx-auto px-4 text-center">
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-                <Button 
-                    onClick={() => setIsSignupModalOpen(true)}
-                    className="w-full sm:w-auto bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold px-8 py-6 text-lg"
-                >
-                    Signup for Free
-                </Button>
-                <Button 
-                    onClick={() => scrollToSection('pricing')}
-                    variant="outline"
-                    className="w-full sm:w-auto border-2 border-violet text-violet hover:bg-violet hover:text-white rounded-xl shadow-lg font-semibold px-8 py-6 text-lg"
-                >
-                    View Pricing Plans
-                </Button>
-            </div>
-        </div>
-      </section> */}
-
       {/* Pricing Section */}
       <section id="pricing" className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -189,7 +150,7 @@ export default function PremiumSupport() {
                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Email notifications</span></li>
                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Community forum access</span></li>
               </ul>
-              <Button onClick={() => { setAuthInitialMode('signup'); setIsAuthModalOpen(true); }} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Get Started Free</Button>
+              <Button onClick={() => handlePlanClick('signup')} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Get Started Free</Button>
             </div>
 
             {/* Pro Plan */}
@@ -204,7 +165,7 @@ export default function PremiumSupport() {
                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">WhatsApp & SMS alerts</span></li>
                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Grant deadline tracking</span></li>
               </ul>
-              <Button onClick={() => { setAuthInitialMode('login'); setIsAuthModalOpen(true); }} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Choose Pro Plan</Button>
+              <Button onClick={() => handlePlanClick('login')} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Choose Pro Plan</Button>
             </div>
 
             {/* Enterprise Plan */}
@@ -218,17 +179,14 @@ export default function PremiumSupport() {
                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Pitch deck review</span></li>
                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Team collaboration tools</span></li>
               </ul>
-              <Button onClick={() => { setAuthInitialMode('login'); setIsAuthModalOpen(true); }} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Contact Sales</Button>
+              <Button onClick={() => handlePlanClick('login')} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Contact Sales</Button>
             </div>
           </div>
         </div>
       </section>
-
       
       {/* Auth Modal unified for pricing actions */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} initialMode={authInitialMode} />
-
-   
     </div>
   );
 }

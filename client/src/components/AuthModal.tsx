@@ -10,9 +10,10 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialMode?: 'login' | 'signup';
+  onSuccessRedirectTo?: string; // New prop for redirection path
 }
 
-export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRedirectTo = '/' }: AuthModalProps) {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -56,7 +57,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
       setPassword('');
       setConfirmPassword('');
       onClose(); 
-      navigate('/'); 
+      navigate(onSuccessRedirectTo); // Use the prop for redirection
     } catch (err: any) {
       setError(err.message || "An error occurred.");
     } finally {

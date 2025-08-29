@@ -25,7 +25,7 @@ export const grantSchema = z.object({
   id: z.string(),
   title: z.string(),
   organization: z.string(),
-  status: z.enum(["Active", "Expired"]),
+  status: z.enum(["Active", "Expired", "Upcoming", "Closing Soon"]),
   description: z.string(),
   overview: z.string(),
   deadline: z.date(),
@@ -58,7 +58,7 @@ export const insertPostSchema = z.object({
 export const insertGrantSchema = z.object({
   title: z.string().min(3, "Title is required"),
   organization: z.string().min(3, "Organization is required"),
-  status: z.enum(["Active", "Expired"]),
+  status: z.enum(["Active", "Expired", "Upcoming", "Closing Soon"]),
   description: z.string().min(20, "Short description is required (min 20 chars)"),
   overview: z.string().min(50, "Grant overview is required (min 50 chars)"),
   deadline: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date" }),
