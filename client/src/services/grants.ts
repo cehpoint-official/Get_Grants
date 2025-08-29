@@ -15,19 +15,55 @@ import { InsertGrant, Grant } from "@shared/schema";
 
 const grantsCollection = collection(db, "grants");
 
+// Helper function to calculate the status of a grant
+const getGrantStatus = (grant: Grant): Grant['status'] => {
+    const now = new Date();
+    const deadline = new Date(grant.deadline);
+    const startDate = grant.startDate ? new Date(grant.startDate) : new Date(grant.createdAt);
+    
+    // Set time to 0 to compare dates only
+    now.setHours(0, 0, 0, 0);
+    deadline.setHours(0, 0, 0, 0);
+    startDate.setHours(0, 0, 0, 0);
+
+    if (now > deadline) {
+        return "Expired";
+    }
+
+    if (now < startDate) {
+        return "Upcoming";
+    }
+
+    // Closing soon if deadline is within 7 days
+    const sevenDaysFromNow = new Date(now);
+    sevenDaysFromNow.setDate(now.getDate() + 7);
+    if (deadline <= sevenDaysFromNow) {
+        return "Closing Soon";
+    }
+
+    return "Active";
+};
+
+
 // Function to fetch all grants from Firestore, ordered by deadline
 export const fetchGrants = async (): Promise<Grant[]> => {
   const q = query(grantsCollection, orderBy("deadline", "desc"));
   const snapshot = await getDocs(q);
   return snapshot.docs.map((doc) => {
     const data = doc.data();
-    return {
+    const grantData = {
       id: doc.id,
       ...data,
       // Convert Firestore Timestamp to JS Date object
+      startDate: data.startDate ? (data.startDate as Timestamp).toDate() : undefined,
       deadline: (data.deadline as Timestamp).toDate(), 
       createdAt: data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date()
     } as Grant;
+
+    // Calculate and override the status
+    grantData.status = getGrantStatus(grantData);
+
+    return grantData;
   });
 };
 
@@ -35,6 +71,7 @@ export const fetchGrants = async (): Promise<Grant[]> => {
 export const createGrant = async (data: InsertGrant) => {
   await addDoc(grantsCollection, {
     ...data,
+    startDate: data.startDate ? new Date(data.startDate) : null,
     deadline: new Date(data.deadline),
     createdAt: serverTimestamp(),
   });
@@ -50,6 +87,11 @@ export const updateGrant = async (id: string, data: Partial<InsertGrant>) => {
   // If deadline is a string, convert it to a Date object for Firestore
   if (data.deadline && typeof data.deadline === 'string') {
     dataToUpdate.deadline = new Date(data.deadline);
+  }
+  
+  // If startDate is a string, convert it to a Date object for Firestore
+  if (data.startDate && typeof data.startDate === 'string') {
+    dataToUpdate.startDate = new Date(data.startDate);
   }
 
   await updateDoc(grantRef, dataToUpdate);
