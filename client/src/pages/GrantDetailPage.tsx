@@ -4,8 +4,9 @@ import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Grant } from '@shared/schema';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Mail, FileText, Building, Award, CheckCircle, Share2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Calendar, Mail, Building, Award, CheckCircle, Share2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { Footer } from '@/components/footer';
 
 export default function GrantDetailPage() {
   const [grant, setGrant] = useState<Grant | null>(null);
@@ -108,15 +109,14 @@ export default function GrantDetailPage() {
 
             <div className="mt-10">
                 <h2 className="text-xl font-bold text-violet mb-4">Required Documents</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-4">
                     {grant.documents.map((doc, index) => (
-                    <div key={index} className="bg-gray-50 border rounded-lg p-4">
-                        <div className="flex items-center gap-3">
-                        <FileText className="h-6 w-6 text-violet"/>
+                    <div key={index} className="flex items-start gap-3">
+                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-1" />
                         <div>
-                            <p className="font-semibold text-gray-800">{doc.name}</p>
-                            {doc.required && <span className="text-xs text-red-600 font-medium">(Required)</span>}
-                        </div>
+                            <p className="font-semibold text-gray-800">{doc.title}</p>
+                            <p className="text-sm text-gray-600">{doc.description}</p>
+                            {doc.required && <p className="text-xs text-gray-500 mt-1">(Required)</p>}
                         </div>
                     </div>
                     ))}
@@ -185,6 +185,7 @@ export default function GrantDetailPage() {
         </div>
 
       </div>
+      <Footer/>
     </div>
   );
 }

@@ -7,6 +7,8 @@ import { LoaderCircle, Lock, Zap, Bell, AlertTriangle, Search, SlidersHorizontal
 import { useAuth } from '@/hooks/use-auth';
 import { AuthModal } from '@/components/AuthModal';
 import { Input } from '@/components/ui/input';
+import { Footer } from '@/components/footer';
+ 
 
 // Single Grant Card component
 const GrantCard = ({ grant, onDetailsClick }: { grant: Grant, onDetailsClick: (grantId: string) => void }) => (
@@ -305,6 +307,7 @@ export default function GrantsPage() {
         onClose={() => setIsAuthModalOpen(false)}
         onSuccessRedirectTo="/grants"
       />
+      <Footer/>
     </>
   );
 }

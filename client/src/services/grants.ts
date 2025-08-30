@@ -36,7 +36,7 @@ const getGrantStatus = (grant: Grant): Grant['status'] => {
 
     // Closing soon if deadline is within 7 days
     const sevenDaysFromNow = new Date(now);
-    sevenDaysFromNow.setDate(now.getDate() + 7);
+    sevenDaysFromNow.setDate(now.getDate() + 3);
     if (deadline <= sevenDaysFromNow) {
         return "Closing Soon";
     }
@@ -69,8 +69,27 @@ export const fetchGrants = async (): Promise<Grant[]> => {
 
 // Function to create a new grant in Firestore
 export const createGrant = async (data: InsertGrant) => {
+  const now = new Date();
+  const deadline = new Date(data.deadline);
+  const startDate = data.startDate ? new Date(data.startDate) : now;
+
+  let status: Grant['status'] = "Active";
+
+  if (now > deadline) {
+      status = "Expired";
+  } else if (now < startDate) {
+      status = "Upcoming";
+  } else {
+      const sevenDaysFromNow = new Date();
+      sevenDaysFromNow.setDate(now.getDate() + 7);
+      if (deadline <= sevenDaysFromNow) {
+          status = "Closing Soon";
+      }
+  }
+
   await addDoc(grantsCollection, {
     ...data,
+    status: status,
     startDate: data.startDate ? new Date(data.startDate) : null,
     deadline: new Date(data.deadline),
     createdAt: serverTimestamp(),

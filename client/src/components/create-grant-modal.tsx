@@ -28,14 +28,13 @@ export function CreateGrantModal({ isOpen, onClose, onSubmit, initialData }: Cre
     defaultValues: {
       title: "",
       organization: "",
-      status: "Active",
       description: "",
       overview: "",
       startDate: "",
       deadline: "",
       fundingAmount: "",
       eligibility: "",
-      documents: [{ name: "", required: true }],
+      documents: [{ title: "", description: "", required: true }],
       faqs: [],
       contactEmail: "",
       applyLink: "",
@@ -64,9 +63,9 @@ export function CreateGrantModal({ isOpen, onClose, onSubmit, initialData }: Cre
         });
       } else {
         form.reset({
-            title: "", organization: "", status: "Active", description: "",
+            title: "", organization: "", description: "",
             overview: "", startDate: "", deadline: "", fundingAmount: "", eligibility: "",
-            documents: [{ name: "", required: true }], faqs: [],
+            documents: [{ title: "", description: "", required: true }], faqs: [],
             contactEmail: "", applyLink: "", category: "",
         });
       }
@@ -74,7 +73,6 @@ export function CreateGrantModal({ isOpen, onClose, onSubmit, initialData }: Cre
   }, [initialData, form, isOpen]);
 
   const categories = ['Technology', 'Healthcare', 'Education', 'Environment', 'Sustainability', 'Fintech', 'Agriculture', 'Retail', 'Diversity', 'Social'];
-  const statuses = ["Active", "Expired", "Upcoming", "Closing Soon"];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -91,7 +89,6 @@ export function CreateGrantModal({ isOpen, onClose, onSubmit, initialData }: Cre
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
-              <FormField name="status" control={form.control} render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{statuses.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
               <FormField name="category" control={form.control} render={({ field }) => (<FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Category..." /></SelectTrigger></FormControl><SelectContent>{categories.map(category => <SelectItem key={category} value={category}>{category}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
             </div>
             
@@ -106,12 +103,21 @@ export function CreateGrantModal({ isOpen, onClose, onSubmit, initialData }: Cre
             
             <FormField name="eligibility" control={form.control} render={({ field }) => (<FormItem><FormLabel>Eligibility Criteria</FormLabel><FormControl><Textarea placeholder="Describe the eligibility criteria..." rows={4} {...field} /></FormControl><FormMessage /></FormItem>)} />
             
-            <div className="space-y-2 rounded-md border p-4">
+            <div className="space-y-4 rounded-md border p-4">
               <Label>Required Documents</Label>
               {docFields.map((field, index) => (
-                <div key={field.id} className="flex items-center gap-2"><Input {...form.register(`documents.${index}.name`)} placeholder="Document name"/><label className="flex items-center gap-1.5 text-sm"><input type="checkbox" {...form.register(`documents.${index}.required`)} defaultChecked/> Required</label><Button type="button" variant="destructive" size="icon" onClick={() => removeDoc(index)}><X className="h-4 w-4"/></Button></div>
+                <div key={field.id} className="space-y-2 border-t pt-3">
+                  <div className="flex items-center gap-2">
+                    <Input {...form.register(`documents.${index}.title`)} placeholder="Document Title (e.g., Business Plan)" className="flex-grow"/>
+                    <label className="flex items-center gap-1.5 text-sm">
+                      <input type="checkbox" {...form.register(`documents.${index}.required`)} defaultChecked/> Required
+                    </label>
+                    <Button type="button" variant="destructive" size="icon" onClick={() => removeDoc(index)}><X className="h-4 w-4"/></Button>
+                  </div>
+                  <Textarea {...form.register(`documents.${index}.description`)} placeholder="Document description (e.g., Detailed business plan for healthcare...)" />
+                </div>
               ))}
-              <Button type="button" variant="outline" size="sm" onClick={() => appendDoc({ name: '', required: true })}><Plus className="h-4 w-4 mr-2"/>Add Document</Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => appendDoc({ title: "", description: "", required: true })}><Plus className="h-4 w-4 mr-2"/>Add Document</Button>
             </div>
 
             <div className="space-y-2 rounded-md border p-4">
