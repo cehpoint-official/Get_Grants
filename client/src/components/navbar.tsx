@@ -1,11 +1,21 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Rocket } from "lucide-react";
+import { Menu, X, Rocket, User as UserIcon, LogOut, Crown, UserCircle } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { AdminModal } from "./admin-modal";
 import { IncubatorSignupModal } from "./ui/IncubatorSignupModal";
 import { Link, useLocation } from "wouter";
 import { AuthModal } from "./AuthModal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,10 +38,8 @@ export function Navbar() {
     setIsOpen(false);
   };
 
-
   const navItems = [
     { name: 'Home', action: () => scrollToSection('home') },
-   
     { name: 'Explore Grants', action: () => navigate('/grants')},
     { name: 'Blog', action: () => scrollToSection('blog') },
     { name: 'Premium Support', action: () => scrollToSection('premium-support') },
@@ -64,7 +72,40 @@ export function Navbar() {
           </>
         );
       } else {
-        return <Button size="lg" onClick={handleLogout} variant="destructive" className="hidden lg:block rounded-xl shadow-lg font-semibold">Logout</Button>;
+        return (
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                        <Avatar className="h-10 w-10 border-2 border-violet/50">
+                            <AvatarFallback className="bg-violet/20 text-violet font-bold">
+                                {user.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || <UserIcon />}
+                            </AvatarFallback>
+                        </Avatar>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-60" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">{user.fullName}</p>
+                            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                        </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                        <Link href="/profile">
+                            <UserCircle className="mr-2 h-4 w-4" />
+                            <span>My Profile</span>
+                        </Link>
+                    </DropdownMenuItem>
+                   
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-600">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Log out</span>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        );
       }
     } else {
       return <Button size="lg" onClick={() => setIsAuthModalOpen(true)} className="hidden lg:block bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Login</Button>;
@@ -81,7 +122,13 @@ export function Navbar() {
           </>
         );
       } else {
-        return <Button size="lg" onClick={handleLogout} variant="destructive" className="w-full mt-2 rounded-xl shadow-lg font-semibold">Logout</Button>;
+        return (
+            <>
+                <p className="px-3 py-2 font-semibold text-violet">{user.fullName}</p>
+                <Button onClick={() => navigate('/profile')} variant="ghost" className="w-full justify-start text-violet">My Profile</Button>
+                <Button onClick={handleLogout} variant="ghost" className="w-full justify-start text-red-600">Logout</Button>
+            </>
+        );
       }
     } else {
       return <Button size="lg" onClick={() => setIsAuthModalOpen(true)} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Login/Signup</Button>;

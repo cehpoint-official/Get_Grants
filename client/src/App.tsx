@@ -8,29 +8,24 @@ import Home from "@/pages/home";
 import BlogDetail from "@/pages/blog-detail";
 import NotFound from "@/pages/not-found";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
-
-
 import GrantsPage from "./pages/GrantsPage";
 import GrantDetailPage from "./pages/GrantDetailPage";
+import ApplyPage from "./pages/ApplyPage";
+import ApplyIncubator from "./pages/ApplyIncubator";
+import ProfilePage from "./pages/ProfilePage"; // <-- नई फ़ाइल इम्पोर्ट करें
 
 import { useAuth } from "@/hooks/use-auth";
 import { Navbar } from "@/components/navbar";
-import ApplyPage from "./pages/ApplyPage";
-import ApplyIncubator from "./pages/ApplyIncubator";
 import { ProtectedAdminRoute } from "./components/ProtectedAdminRoute";
 
-// Protected Route Component
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
-
   if (loading) {
     return <div className="p-4">Loading...</div>;
   }
-
   if (!user) {
     return <Redirect to="/" />;
   }
-
   return children;
 }
 
@@ -40,9 +35,15 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/blog" component={BlogDetail} />
       <Route path="/apply" component={ApplyPage} />
- 
       <Route path="/grants" component={GrantsPage} />
       <Route path="/grant/:id" component={GrantDetailPage} />
+
+      {/* --- नया रूट जोड़ें --- */}
+      <Route path="/profile">
+        <ProtectedRoute>
+          <ProfilePage />
+        </ProtectedRoute>
+      </Route>
 
       <Route path="/applyincubator">
         <ProtectedRoute>
@@ -51,7 +52,6 @@ function Router() {
       </Route>
 
       <Route path="/admin">
-       
         <ProtectedAdminRoute>
           <AdminDashboard />
         </ProtectedAdminRoute>

@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox"; // <-- 1. Checkbox इम्पोर्ट करें
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertGrantSchema, Grant } from "@shared/schema";
@@ -39,6 +40,7 @@ export function CreateGrantModal({ isOpen, onClose, onSubmit, initialData }: Cre
       contactEmail: "",
       applyLink: "",
       category: "",
+      isPremium: false, // <-- 2. isPremium को डिफ़ॉल्ट वैल्यू दें
     },
   });
 
@@ -60,6 +62,7 @@ export function CreateGrantModal({ isOpen, onClose, onSubmit, initialData }: Cre
           startDate: initialData.startDate ? format(new Date(initialData.startDate), "yyyy-MM-dd") : "",
           deadline: format(new Date(initialData.deadline), "yyyy-MM-dd"),
           faqs: initialData.faqs || [],
+          isPremium: initialData.isPremium || false, // <-- 3. एडिट मोड में isPremium को सेट करें
         });
       } else {
         form.reset({
@@ -67,6 +70,7 @@ export function CreateGrantModal({ isOpen, onClose, onSubmit, initialData }: Cre
             overview: "", startDate: "", deadline: "", fundingAmount: "", eligibility: "",
             documents: [{ title: "", description: "", required: true }], faqs: [],
             contactEmail: "", applyLink: "", category: "",
+            isPremium: false, // <-- 4. नया grant बनाने पर isPremium को रीसेट करें
         });
       }
     }
@@ -88,8 +92,29 @@ export function CreateGrantModal({ isOpen, onClose, onSubmit, initialData }: Cre
               <FormField name="organization" control={form.control} render={({ field }) => (<FormItem><FormLabel>Organization</FormLabel><FormControl><Input placeholder="e.g., iCreate" {...field} /></FormControl><FormMessage /></FormItem>)} />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-4 items-center">
               <FormField name="category" control={form.control} render={({ field }) => (<FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Category..." /></SelectTrigger></FormControl><SelectContent>{categories.map(category => <SelectItem key={category} value={category}>{category}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+              
+              {/* --- 5. Premium चेकबॉक्स जोड़ें --- */}
+              <FormField
+                control={form.control}
+                name="isPremium"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-start rounded-lg border p-3 shadow-sm mt-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none ml-2">
+                      <FormLabel>
+                        Mark as Premium
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
             </div>
             
             <FormField name="description" control={form.control} render={({ field }) => (<FormItem><FormLabel>Short Description (for card)</FormLabel><FormControl><Textarea placeholder="A brief summary of the grant..." {...field} /></FormControl><FormMessage /></FormItem>)} />

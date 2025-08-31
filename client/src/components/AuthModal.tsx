@@ -10,7 +10,7 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialMode?: 'login' | 'signup';
-  onSuccessRedirectTo?: string; // New prop for redirection path
+  onSuccessRedirectTo?: string;
 }
 
 export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRedirectTo = '/' }: AuthModalProps) {
@@ -28,7 +28,6 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRed
   const { login, signup } = useAuth();
   const [, navigate] = useLocation();
 
-  // Sync mode when modal opens or initialMode changes
   useEffect(() => {
     if (isOpen) setAuthMode(initialMode);
   }, [isOpen, initialMode]);
@@ -48,16 +47,15 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRed
       if (authMode === 'login') {
         await login(email, password);
       } else {
-        await signup(email, password, fullName);
+        await signup(email, password, fullName, mobile);
       }
-      // Clear input fields on successful login/signup
       setFullName('');
       setEmail('');
       setMobile('');
       setPassword('');
       setConfirmPassword('');
       onClose(); 
-      navigate(onSuccessRedirectTo); // Use the prop for redirection
+      navigate(onSuccessRedirectTo);
     } catch (err: any) {
       setError(err.message || "An error occurred.");
     } finally {
@@ -104,7 +102,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRed
                 className="w-full p-3 pl-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"
               />
             </div>
-             {authMode === 'signup' && (
+              {authMode === 'signup' && (
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/>
                 <Input 
@@ -149,13 +147,13 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRed
                   required 
                   className="w-full p-3 pl-10 pr-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"
                 />
-                 <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
               </div>
             )}
             {error && <p className="text-sm text-red-500 text-center pt-2">{error}</p>}

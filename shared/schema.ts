@@ -5,6 +5,7 @@ export const userSchema = z.object({
   id: z.string(),
   email: z.string().email(),
   displayName: z.string().optional(),
+  phone: z.string().optional(),
   createdAt: z.date(),
 });
 
@@ -38,6 +39,7 @@ export const grantSchema = z.object({
   applyLink: z.string().url(),
   category: z.string(),
   createdAt: z.date(),
+  isPremium: z.boolean().default(false),
 });
 
 // Insert schemas for form validation 
@@ -70,6 +72,7 @@ export const insertGrantSchema = z.object({
   contactEmail: z.string().email("A valid contact email is required"),
   applyLink: z.string().url("A valid application URL is required"),
   category: z.string().min(1, "Category is required"),
+  isPremium: z.boolean().optional(),
 });
 
 //  Updated Firebase Grant Application Schema 

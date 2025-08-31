@@ -1,28 +1,28 @@
-// src/lib/userService.ts
 import { db } from './firebase';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { UserProfile, CreateUserData } from './types';
-import { User } from 'firebase/auth';
+import { User as FirebaseUser } from 'firebase/auth';
 
 export async function createUserProfile(
-  user: User, 
-  additionalData: Partial<CreateUserData> = {}
+  user: FirebaseUser,
+  additionalData: CreateUserData
 ): Promise<UserProfile> {
   const userRef = doc(db, 'users', user.uid);
   
   const userProfile: UserProfile = {
-    uid: user.uid,
+    id: user.uid,
     email: user.email!,
-    role: additionalData.role || 'incubator',
+    fullName: additionalData.fullName,
+    phone: additionalData.phone || '',
+    role: additionalData.role,
     createdAt: new Date(),
-    updatedAt: new Date(),
-    ...additionalData
+    subscriptionStatus: 'free',
+    savedGrants: [],
   };
 
   await setDoc(userRef, {
     ...userProfile,
     createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
   });
 
   return userProfile;
@@ -35,11 +35,18 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
     
     if (userSnap.exists()) {
       const data = userSnap.data();
-      return {
-        ...data,
+      const profile: UserProfile = {
+        id: uid,
+        fullName: data.fullName,
+        email: data.email,
+        role: data.role,
+        subscriptionStatus: data.subscriptionStatus || 'free',
+        subscriptionEndDate: data.subscriptionEndDate?.toDate() || null,
+        savedGrants: data.savedGrants || [],
+        phone: data.phone || '',
         createdAt: data.createdAt?.toDate() || new Date(),
-        updatedAt: data.updatedAt?.toDate() || new Date()
-      } as UserProfile;
+      };
+      return profile;
     }
     
     return null;
@@ -50,12 +57,12 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
 }
 
 export async function updateUserProfile(
-  uid: string, 
+  uid: string,
   updates: Partial<UserProfile>
 ): Promise<void> {
   const userRef = doc(db, 'users', uid);
-  await setDoc(userRef, {
+  await updateDoc(userRef, {
     ...updates,
     updatedAt: serverTimestamp()
-  }, { merge: true });
+  });
 }
