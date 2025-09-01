@@ -46,7 +46,7 @@ const logoMap: { [key: string]: string } = {
     'manipal-gok bioincubator': manipalGokBioincubatorLogo
 };
 
-const GrantCard = ({ grant, user, onCardClick }: { grant: Grant, user: AppUser | null, onCardClick: (grant: Grant) => void }) => {
+export const GrantCard = ({ grant, user, onCardClick }: { grant: Grant, user: AppUser | null, onCardClick: (grant: Grant) => void }) => {
     const organizationKey = grant.organization?.trim().toLowerCase();
     const logo = organizationKey ? logoMap[organizationKey] : undefined;
     const isLocked = !!user && grant.isPremium && user.subscriptionStatus !== 'premium';
@@ -56,8 +56,6 @@ const GrantCard = ({ grant, user, onCardClick }: { grant: Grant, user: AppUser |
             onClick={() => onCardClick(grant)}
             className="relative bg-white rounded-xl border shadow-md hover:shadow-xl transition-shadow flex flex-col cursor-pointer overflow-hidden"
         >
-            {/* Main content container - Apply subtle blur here */}
-            {/* Updated: `filter: blur(1px)` for subtle blur */}
             <div className={isLocked ? "filter blur-[1px] pointer-events-none" : ""}>
                 {logo && (
                     <div className="flex justify-center items-center h-20 p-2 border-b">
@@ -89,11 +87,10 @@ const GrantCard = ({ grant, user, onCardClick }: { grant: Grant, user: AppUser |
                 </div>
             </div>
 
-            {/* Lock Overlay - Reduced opacity for subtle overlay */}
             {isLocked && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 bg-gray-900/10 group"> {/* Changed /60 to /10 */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 bg-gray-900/10 group">
                     <Lock className="h-10 w-10 text-gray-600 transform transition-transform group-hover:scale-110" />
-                    <p className="text-gray-600 font-semibold mt-4 text-lg text-shadow-sm">Upgrade to View</p> {/* Added text-shadow for readability */}
+                    <p className="text-gray-600 font-semibold mt-4 text-lg text-shadow-sm">Upgrade to View</p>
                 </div>
             )}
         </article>
@@ -114,6 +111,16 @@ export default function GrantsPage() {
     const [activeCategory, setActiveCategory] = useState('All Grants');
     const [currentPage, setCurrentPage] = useState(1);
     const grantsPerPage = 9;
+
+    // URL से search query को पढ़ें
+    useEffect(() => {
+        // **यहाँ बदलाव किया गया है**
+        const params = new URLSearchParams(window.location.search);
+        const query = params.get('q');
+        if (query) {
+            setSearchTerm(query);
+        }
+    }, []); // इसे सिर्फ एक बार चलाने के लिए dependency array खाली रखें
 
     const handleCardClick = (grant: Grant) => {
         if (!user) {
@@ -149,10 +156,15 @@ export default function GrantsPage() {
     const filteredGrants = useMemo(() => {
         let filtered = grants;
 
+        // Search logic को बेहतर बनाएँ
         if (searchTerm) {
+            const lowercasedSearchTerm = searchTerm.toLowerCase();
             filtered = filtered.filter(grant =>
-                grant.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                grant.description.toLowerCase().includes(searchTerm.toLowerCase())
+                grant.title.toLowerCase().includes(lowercasedSearchTerm) ||
+                grant.description.toLowerCase().includes(lowercasedSearchTerm) ||
+                grant.organization.toLowerCase().includes(lowercasedSearchTerm) ||
+                (grant.category && grant.category.toLowerCase().includes(lowercasedSearchTerm)) ||
+                grant.fundingAmount.toLowerCase().includes(lowercasedSearchTerm)
             );
         }
 

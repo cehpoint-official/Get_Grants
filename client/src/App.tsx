@@ -12,7 +12,8 @@ import GrantsPage from "./pages/GrantsPage";
 import GrantDetailPage from "./pages/GrantDetailPage";
 import ApplyPage from "./pages/ApplyPage";
 import ApplyIncubator from "./pages/ApplyIncubator";
-import ProfilePage from "./pages/ProfilePage"; // <-- नई फ़ाइल इम्पोर्ट करें
+import ProfilePage from "./pages/ProfilePage";
+import SavedGrantsPage from "./pages/SavedGrantsPage"; // <-- इसे इम्पोर्ट करें
 
 import { useAuth } from "@/hooks/use-auth";
 import { Navbar } from "@/components/navbar";
@@ -38,10 +39,16 @@ function Router() {
       <Route path="/grants" component={GrantsPage} />
       <Route path="/grant/:id" component={GrantDetailPage} />
 
-      {/* --- नया रूट जोड़ें --- */}
       <Route path="/profile">
         <ProtectedRoute>
           <ProfilePage />
+        </ProtectedRoute>
+      </Route>
+      
+      {/* --- नया रूट जोड़ें --- */}
+      <Route path="/saved-grants">
+        <ProtectedRoute>
+          <SavedGrantsPage />
         </ProtectedRoute>
       </Route>
 

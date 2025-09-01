@@ -3,35 +3,25 @@ import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, where, documentId } from 'firebase/firestore';
 import { Grant } from '@shared/schema';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { LoaderCircle, BookmarkX } from 'lucide-react';
-
-// यह GrantCard का एक simplified version है
-const SavedGrantCard = ({ grant }: { grant: Grant }) => (
-    <article className="bg-white rounded-xl border shadow-md hover:shadow-xl transition-shadow flex flex-col">
-        <div className="p-5 flex-grow">
-            <h3 className="text-lg font-bold text-violet line-clamp-2">{grant.title}</h3>
-            <p className="text-sm font-semibold text-gray-800 my-2">{grant.organization}</p>
-            <p className="text-sm text-gray-600 line-clamp-3 flex-grow">{grant.description}</p>
-        </div>
-        <div className="p-5 border-t bg-gray-50/70 rounded-b-xl mt-auto">
-            <Link href={`/grant/${grant.id}`}>
-                <Button className="w-full bg-violet hover:bg-pink text-white">
-                    View Details
-                </Button>
-            </Link>
-        </div>
-    </article>
-);
-
+import { GrantCard } from '@/pages/GrantsPage'; // GrantCard को GrantsPage से इम्पोर्ट करें
+import { AuthModal } from '@/components/AuthModal';
 
 export default function SavedGrantsPage() {
     const { user } = useAuth();
+    const [, navigate] = useLocation();
     const [savedGrants, setSavedGrants] = useState<Grant[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+    // यह handleCardClick फ़ंक्शन GrantCard को प्रॉप के रूप में चाहिए
+    const handleCardClick = (grant: Grant) => {
+        // Saved grants page पर, user हमेशा logged in होगा, तो सीधा navigate करें
+        navigate(`/grant/${grant.id}`);
+    };
 
     useEffect(() => {
         const fetchSavedGrants = async () => {
@@ -41,7 +31,6 @@ export default function SavedGrantsPage() {
             }
 
             try {
-                // Firestore से उन सभी grants को लाएँ जिनकी ID यूज़र के savedGrants array में है
                 const grantsRef = collection(db, 'grants');
                 const q = query(grantsRef, where(documentId(), 'in', user.savedGrants));
                 const querySnapshot = await getDocs(q);
@@ -59,7 +48,11 @@ export default function SavedGrantsPage() {
             }
         };
 
-        fetchSavedGrants();
+        if (user) {
+            fetchSavedGrants();
+        } else {
+            setLoading(false);
+        }
     }, [user]);
 
     if (loading) {
@@ -72,7 +65,6 @@ export default function SavedGrantsPage() {
 
     return (
         <>
-            <Navbar />
             <div className="bg-gray-50 min-h-screen">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                     <div className="text-center mb-12">
@@ -87,7 +79,13 @@ export default function SavedGrantsPage() {
                     {savedGrants.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {savedGrants.map((grant) => (
-                                <SavedGrantCard key={grant.id} grant={grant} />
+                                // अब GrantCard का इस्तेमाल करें
+                                <GrantCard 
+                                    key={grant.id} 
+                                    grant={grant} 
+                                    user={user} 
+                                    onCardClick={handleCardClick} 
+                                />
                             ))}
                         </div>
                     ) : (
@@ -106,6 +104,10 @@ export default function SavedGrantsPage() {
                     )}
                 </div>
             </div>
+             <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+            />
             <Footer />
         </>
     );

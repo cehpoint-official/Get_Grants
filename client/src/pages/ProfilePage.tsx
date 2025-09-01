@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-
 import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Shield, CreditCard, LogOut, LoaderCircle, ExternalLink } from 'lucide-react';
+import { User, Shield, CreditCard, LogOut, LoaderCircle, Bookmark } from 'lucide-react'; // <-- Bookmark icon import करें
 import { Redirect, useLocation } from 'wouter';
 import { updateUserProfile } from '@/lib/userService';
 import { useToast } from '@/hooks/use-toast';
@@ -72,6 +71,8 @@ const ProfilePage = () => {
                             </div>
                             <nav className="flex flex-col space-y-1">
                                 <Button variant={activeTab === 'profile' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('profile')} className="justify-start"><User className="mr-2 h-4 w-4" /> My Profile</Button>
+                                {/* --- Saved Grants बटन जोड़ें --- */}
+                                <Button variant={'ghost'} onClick={() => navigate('/saved-grants')} className="justify-start"><Bookmark className="mr-2 h-4 w-4" /> Saved Grants</Button>
                                 <Button variant={activeTab === 'subscription' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('subscription')} className="justify-start"><CreditCard className="mr-2 h-4 w-4" /> Subscription</Button>
                                 <Button variant={activeTab === 'security' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('security')} className="justify-start"><Shield className="mr-2 h-4 w-4" /> Account Settings</Button>
                                 <Button variant={'ghost'} onClick={logout} className="justify-start text-red-600 hover:bg-red-50 hover:text-red-600"><LogOut className="mr-2 h-4 w-4" /> Logout</Button>
@@ -87,6 +88,8 @@ const ProfilePage = () => {
         </div>
     );
 };
+
+// ... (बाकी का ProfileInformation, SubscriptionDetails, और SecuritySettings कंपोनेंट्स वैसे ही रहेंगे)
 
 const ProfileInformation = () => {
     const { user } = useAuth();

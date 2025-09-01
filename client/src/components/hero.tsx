@@ -1,21 +1,26 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CheckCircle, MapPin, Search } from "lucide-react";
+import { useLocation } from "wouter";
 
 export function Hero() {
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+  // 1. सर्च के लिए state बनाएँ
+  const [searchTerm, setSearchTerm] = useState("");
+  const [, navigate] = useLocation();
+
+  // 2. सर्च करने पर /grants पेज पर जाएँ
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/grants?q=${encodeURIComponent(searchTerm.trim())}`);
+    } else {
+      navigate('/grants');
     }
   };
 
   return (
-    // The outer section provides the full-width background color.
-    <section id="home" className="py-20" style={{
-      background: 'white'
-    }}>
-      {/* This inner div centers the content and sets a max-width. */}
+    <section id="home" className="py-20" style={{ background: 'white' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
           <div className="mb-12 lg:mb-0">
@@ -26,20 +31,20 @@ export function Hero() {
               India's go-to platform for early-stage funding and acceleration.
             </p>
 
-            {/* Search Bar */}
+            {/* -- Search Bar -- */}
             <div className="w-full mb-6">
               <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  scrollToSection('grants');
-                }}
+                onSubmit={handleSearchSubmit}
                 className="flex flex-col sm:flex-row gap-0"
               >
                 <div className="relative flex w-full sm:flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
                   <Input
-                    placeholder="Search grants by sector, state, or amount"
+                    placeholder="Search by sector, state, amount, or keyword"
                     className="pl-10 h-12 text-base bg-yellowish-white rounded-l-xl rounded-r-none shadow-lg shadow-black/20 focus-visible:ring-0 focus:outline-none"
+                    // Input को state से जोड़ें
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                   />
                   <Button
                     type="submit"
@@ -52,17 +57,17 @@ export function Hero() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
+              {/* 3. "Find Grant" बटन को /grants पेज पर भेजें */}
               <Button
-                onClick={() => scrollToSection('explore-grants')}
+                onClick={() => navigate('/grants')}
                 className="bg-violet hover:bg-pink text-white px-6 py-3 font-medium text-base rounded-xl shadow-lg"
               >
                 Find Grants
               </Button>
-          
-             
+              
               <Button
                 variant="outline"
-                onClick={() => scrollToSection('grants')}
+                 onClick={() => navigate('/grants')}
                 className="bg-yellowish-white text-violet hover:bg-pink hover:text-white px-6 py-3 font-medium text-base rounded-xl shadow-lgk"
               >
                 Explore Grant Library
