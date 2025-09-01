@@ -131,7 +131,7 @@ export function Navbar() {
         );
       }
     } else {
-      return <Button size="lg" onClick={() => setIsAuthModalOpen(true)} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Login/Signup</Button>;
+      return <Button size="lg" onClick={() => setIsAuthModalOpen(true)} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Login</Button>;
     }
   };
 
