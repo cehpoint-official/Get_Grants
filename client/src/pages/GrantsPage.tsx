@@ -114,13 +114,12 @@ export default function GrantsPage() {
 
     // URL से search query को पढ़ें
     useEffect(() => {
-        // **यहाँ बदलाव किया गया है**
         const params = new URLSearchParams(window.location.search);
         const query = params.get('q');
         if (query) {
             setSearchTerm(query);
         }
-    }, []); // इसे सिर्फ एक बार चलाने के लिए dependency array खाली रखें
+    }, []);
 
     const handleCardClick = (grant: Grant) => {
         if (!user) {
@@ -138,8 +137,7 @@ export default function GrantsPage() {
     };
     
     const handleViewPricing = () => {
-        localStorage.setItem("scrollTo", "pricing");
-        navigate("/");
+        navigate("/premium-support");
     };
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -156,7 +154,6 @@ export default function GrantsPage() {
     const filteredGrants = useMemo(() => {
         let filtered = grants;
 
-        // Search logic को बेहतर बनाएँ
         if (searchTerm) {
             const lowercasedSearchTerm = searchTerm.toLowerCase();
             filtered = filtered.filter(grant =>

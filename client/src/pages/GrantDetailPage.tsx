@@ -74,8 +74,7 @@ export default function GrantDetailPage() {
     };
 
     const handleViewPricing = () => {
-        localStorage.setItem("scrollTo", "pricing");
-        navigate("/");
+        navigate("/premium-support");
     };
 
     useEffect(() => {

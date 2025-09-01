@@ -1,24 +1,32 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronDown, CheckCircle2 } from "lucide-react";
+import { Check, ChevronDown, CheckCircle2, ArrowDown } from "lucide-react";
 import { useLocation } from "wouter";
-import { AuthModal } from "./AuthModal";
-import { useAuth } from "@/hooks/use-auth"; // Import the useAuth hook
+import { AuthModal } from "../components/AuthModal";
+import { useAuth } from "@/hooks/use-auth";
+import { Footer } from "@/components/footer";
 
-export default function PremiumSupport() {
+export default function PremiumSupportPage() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'signup'>('login');
   
-  const { user } = useAuth(); // Get user from auth hook
+  const { user } = useAuth(); 
   const [, navigate] = useLocation();
 
   const handlePlanClick = (mode: 'login' | 'signup') => {
     if (user) {
-      navigate("/apply"); // Redirect to apply page if user is logged in
+      navigate("/apply"); 
     } else {
       setAuthInitialMode(mode);
       setIsAuthModalOpen(true);
+    }
+  };
+
+  const scrollToPricing = () => {
+    const pricingSection = document.getElementById("pricing");
+    if (pricingSection) {
+      pricingSection.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -47,12 +55,23 @@ export default function PremiumSupport() {
         background: 'white'
       }} className="text-violet">
         <div className="container mx-auto px-4 py-5 md:py-10 text-center">
+
+          {/* --- बटन को हेडिंग के ऊपर यहाँ रख दिया गया है --- */}
+          <Button 
+            onClick={scrollToPricing} 
+            className="mb-8 bg-violet-100 text-black hover:bg-violet-200 rounded-full px-6 py-3 text-base font-semibold shadow-sm transition-colors group"
+          >
+            View Pricing Plans
+            <ArrowDown className="ml-2 h-5 w-5 transition-transform group-hover:translate-y-1" />
+          </Button>
+
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl drop-shadow-lg">
             Want to Increase Your Chances of Getting Funded?
           </h1>
           <p className="mt-4 text-lg max-w-2xl mx-auto text-gray-700 drop-shadow-md">
             Let our experts guide you through every step of the application process.
           </p>
+        
         </div>
       </section>
 
@@ -187,6 +206,7 @@ export default function PremiumSupport() {
       
       {/* Auth Modal unified for pricing actions */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} initialMode={authInitialMode} />
+        <Footer/>
     </div>
   );
 }

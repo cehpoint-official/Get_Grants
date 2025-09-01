@@ -4,7 +4,7 @@ import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Shield, CreditCard, LogOut, LoaderCircle, Bookmark } from 'lucide-react'; // <-- Bookmark icon import करें
+import { User, Shield, CreditCard, LogOut, LoaderCircle, Bookmark } from 'lucide-react';
 import { Redirect, useLocation } from 'wouter';
 import { updateUserProfile } from '@/lib/userService';
 import { useToast } from '@/hooks/use-toast';
@@ -36,8 +36,12 @@ const ProfilePage = () => {
     }
     
     const scrollToSection = (sectionId: string) => {
-        localStorage.setItem("scrollTo", sectionId);
-        navigate("/");
+        if (sectionId === 'premium-support') {
+            navigate("/premium-support");
+        } else {
+            localStorage.setItem("scrollTo", sectionId);
+            navigate("/");
+        }
     };
 
     const renderContent = () => {
@@ -55,7 +59,7 @@ const ProfilePage = () => {
 
     return (
         <div className="flex flex-col min-h-screen">
-         
+          
             <main className="flex-grow bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
@@ -71,7 +75,6 @@ const ProfilePage = () => {
                             </div>
                             <nav className="flex flex-col space-y-1">
                                 <Button variant={activeTab === 'profile' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('profile')} className="justify-start"><User className="mr-2 h-4 w-4" /> My Profile</Button>
-                                {/* --- Saved Grants बटन जोड़ें --- */}
                                 <Button variant={'ghost'} onClick={() => navigate('/saved-grants')} className="justify-start"><Bookmark className="mr-2 h-4 w-4" /> Saved Grants</Button>
                                 <Button variant={activeTab === 'subscription' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('subscription')} className="justify-start"><CreditCard className="mr-2 h-4 w-4" /> Subscription</Button>
                                 <Button variant={activeTab === 'security' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('security')} className="justify-start"><Shield className="mr-2 h-4 w-4" /> Account Settings</Button>
@@ -89,7 +92,7 @@ const ProfilePage = () => {
     );
 };
 
-// ... (बाकी का ProfileInformation, SubscriptionDetails, और SecuritySettings कंपोनेंट्स वैसे ही रहेंगे)
+// ... (ProfileInformation, SubscriptionDetails, and SecuritySettings components remain the same)
 
 const ProfileInformation = () => {
     const { user } = useAuth();

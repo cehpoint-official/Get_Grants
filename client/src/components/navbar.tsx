@@ -41,8 +41,8 @@ export function Navbar() {
   const navItems = [
     { name: 'Home', action: () => scrollToSection('home') },
     { name: 'Explore Grants', action: () => navigate('/grants')},
+    { name: 'Premium Support', action: () => navigate('/premium-support') },
     { name: 'Blog', action: () => scrollToSection('blog') },
-    { name: 'Premium Support', action: () => scrollToSection('premium-support') },
   ];
 
   const handleLogout = async () => {
