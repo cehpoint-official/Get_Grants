@@ -12,9 +12,8 @@ import GrantsPage from "./pages/GrantsPage";
 import GrantDetailPage from "./pages/GrantDetailPage";
 import ApplyPage from "./pages/ApplyPage";
 import ApplyIncubator from "./pages/ApplyIncubator";
-import ProfilePage from "./pages/ProfilePage";
-import SavedGrantsPage from "./pages/SavedGrantsPage";
-import PremiumSupportPage from "./pages/PremiumSupportPage"; 
+import PremiumSupportPage from "./pages/PremiumSupportPage";
+import DashboardPage from "./pages/DashboardPage";
 import { useAuth } from "@/hooks/use-auth";
 import { Navbar } from "@/components/navbar";
 import { ProtectedAdminRoute } from "./components/ProtectedAdminRoute";
@@ -38,17 +37,11 @@ function Router() {
       <Route path="/apply" component={ApplyPage} />
       <Route path="/grants" component={GrantsPage} />
       <Route path="/grant/:id" component={GrantDetailPage} />
-      <Route path="/premium-support" component={PremiumSupportPage} /> 
+      <Route path="/premium-support" component={PremiumSupportPage} />
 
-      <Route path="/profile">
+      <Route path="/dashboard">
         <ProtectedRoute>
-          <ProfilePage />
-        </ProtectedRoute>
-      </Route>
-      
-      <Route path="/saved-grants">
-        <ProtectedRoute>
-          <SavedGrantsPage />
+          <DashboardPage />
         </ProtectedRoute>
       </Route>
 

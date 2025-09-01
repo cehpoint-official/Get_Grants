@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import {
   fetchPosts,
@@ -13,70 +12,307 @@ import {
   updateGrant,
   deleteGrant,
 } from "@/services/grants";
-import { Grant, InsertGrant, Post, InsertPost } from "@shared/schema";
+import {
+  fetchApplications as fetchAllApplications,
+  updateApplicationStatus
+} from "@/services/applications";
+import { fetchAllUsers } from "@/services/users"; // Import the new user service
+import { Grant, InsertGrant, Post, InsertPost, Application, User } from "@shared/schema";
 import { CreatePostModal } from "@/components/create-post-modal";
 import { CreateGrantModal } from "@/components/create-grant-modal";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import {
-  Calendar as CalendarIcon, 
-  Mail, 
-  Trash, 
-  Phone, 
-  Building,
-  X 
+  X, ChevronDown, LayoutDashboard, FileText, Inbox, Home, BookOpen, Menu as MenuIcon,
+  Users, FileCheck, Award, LoaderCircle, Calendar as CalendarIcon, Briefcase, Share2
 } from "lucide-react";
-import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { fetchDashboardStats, DashboardStats } from "@/services/admin";
 
-// Interface Definitions
-interface Application { id: string; name: string; phone: string; email: string; helpAreas: string[]; submittedAt?: any; }
-interface IncubatorApplication { id: string; name: string; email: string; phoneNumber: string; sectors: { label: string; value: string }[]; programName?: string; deadlineDate: string; programDetails: string; applicationFormLink: string; }
+// --- ALL SIDEBAR ITEMS ARE HERE ---
+const sidebarItems = [
+  { name: "Dashboard", icon: <LayoutDashboard className="w-4 h-4 mr-2" /> },
+  { name: "Grants", icon: <FileText className="w-4 h-4 mr-2" /> },
+  { name: "Applications", icon: <Inbox className="w-4 h-4 mr-2" /> },
+  { name: "Users", icon: <Users className="w-4 h-4 mr-2" /> },
+  { name: "Posts", icon: <BookOpen className="w-4 h-4 mr-2" /> },
+  { name: "Incubators", icon: <Briefcase className="w-4 h-4 mr-2" /> },
+  { name: "Calendar", icon: <CalendarIcon className="w-4 h-4 mr-2" /> },
+  { name: "Social Apps", icon: <Share2 className="w-4 h-4 mr-2" /> },
+  { name: "Home", icon: <Home className="w-4 h-4 mr-2" /> },
+];
 
-// Sidebar Items
-const sidebarItems = ["Dashboard", "Grants", "Inbox", "Incubators", "Calendar", "Social Apps", "Home"];
+// --- INTERACTIVE DASHBOARD ANALYTICS ---
+const DashboardAnalytics = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) => {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardStats().then(data => {
+      setStats(data);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) {
+    return <div className="flex justify-center p-8"><LoaderCircle className="w-8 h-8 animate-spin text-violet" /></div>;
+  }
+
+  return (
+    <div>
+        <h2 className="text-2xl font-bold mb-4">Dashboard Overview</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card onClick={() => setActiveTab('Users')} className="cursor-pointer hover:border-violet transition-colors">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{stats?.totalUsers}</div>
+                    <p className="text-xs text-muted-foreground">Click to view all users</p>
+                </CardContent>
+            </Card>
+            <Card onClick={() => setActiveTab('Applications')} className="cursor-pointer hover:border-violet transition-colors">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
+                    <FileCheck className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{stats?.totalApplications}</div>
+                    <p className="text-xs text-muted-foreground">Click to view applications</p>
+                </CardContent>
+            </Card>
+            <Card onClick={() => setActiveTab('Grants')} className="cursor-pointer hover:border-violet transition-colors">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Grants</CardTitle>
+                    <Award className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{stats?.totalGrants}</div>
+                    <p className="text-xs text-muted-foreground">Click to manage grants</p>
+                </CardContent>
+            </Card>
+        </div>
+    </div>
+  );
+};
+
+// Placeholder for sections that are not yet built
+const PlaceholderContent = ({ title }: { title: string }) => (
+    <div>
+      <h2 className="text-2xl font-bold mb-4">{title}</h2>
+      <div className="bg-white p-8 rounded-lg shadow-sm border text-center text-gray-500">
+        <p>Content for the <span className="font-semibold text-violet">{title}</span> section will be displayed here.</p>
+        <p className="text-sm mt-2">This feature is currently under construction.</p>
+      </div>
+    </div>
+);
+
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [posts, setPosts] = useState<Post[]>([]);
   const [grants, setGrants] = useState<Grant[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
-  const [incubatorApplications, setIncubatorApplications] = useState<IncubatorApplication[]>([]);
-  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
-  const [selectedIncubator, setSelectedIncubator] = useState<IncubatorApplication | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [editingGrant, setEditingGrant] = useState<Grant | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showGrantModal, setShowGrantModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const [, navigate] = useLocation();
 
   useEffect(() => {
-    if (activeTab === "Dashboard") loadPosts();
+    if (activeTab === "Posts") loadPosts();
     if (activeTab === "Grants") loadGrants();
-    if (activeTab === "Inbox") listenToApplications();
-    if (activeTab === "Incubators") listenToIncubatorApplications();
+    if (activeTab === "Applications") loadApplications();
+    if (activeTab === "Users") loadUsers();
     if (activeTab === "Home") navigate("/");
   }, [activeTab]);
 
   const loadPosts = async () => setPosts(await fetchPosts() as Post[]);
+  const loadGrants = async () => setGrants(await fetchGrants() as Grant[]);
+  const loadApplications = async () => setApplications(await fetchAllApplications());
+  const loadUsers = async () => setUsers(await fetchAllUsers());
+
   const handleDeletePost = async (id: string) => { await deletePost(id); loadPosts(); };
   const handleCreatePost = async (formData: InsertPost) => { await createPost(formData); loadPosts(); setShowModal(false); };
   const handleUpdatePost = async (updated: InsertPost & { id: string }) => { if(editingPost) {await updatePost(editingPost.id, updated); loadPosts(); setEditingPost(null); setShowModal(false); } };
 
-  const loadGrants = async () => setGrants(await fetchGrants() as Grant[]);
   const handleCreateGrant = async (formData: InsertGrant) => { await createGrant(formData); loadGrants(); setShowGrantModal(false); };
   const handleUpdateGrant = async (updatedData: InsertGrant) => { if (editingGrant) { await updateGrant(editingGrant.id, updatedData); loadGrants(); setEditingGrant(null); setShowGrantModal(false); } };
   const handleDeleteGrant = async (id: string) => { if (window.confirm("Sure you want to delete?")) { await deleteGrant(id); loadGrants(); } };
 
-  const listenToApplications = () => onSnapshot(collection(db, "grant_applications"), (s) => setApplications(s.docs.map(d => ({id: d.id, ...d.data()})) as any));
-  const deleteApplication = async (id: string) => { await deleteDoc(doc(db, "grant_applications", id)); if (selectedApplication?.id === id) setSelectedApplication(null); };
-  const listenToIncubatorApplications = () => onSnapshot(collection(db, "incubator_requests"), (s) => setIncubatorApplications(s.docs.map(d => ({id: d.id, ...d.data()})) as any));
-  const deleteIncubatorApplication = async (id: string) => { await deleteDoc(doc(db, "incubator_requests", id)); if (selectedIncubator?.id === id) setSelectedIncubator(null); };
+  const handleStatusChange = async (appId: string, status: string) => {
+    await updateApplicationStatus(appId, status);
+    loadApplications();
+  };
 
   const handleSidebarItemClick = (item: string) => { setActiveTab(item); setSidebarOpen(false); };
+  
+  const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'Pending': return 'bg-yellow-100 text-yellow-800';
+            case 'Reviewed': return 'bg-blue-100 text-blue-800';
+            case 'Approved': return 'bg-green-100 text-green-800';
+            case 'Rejected': return 'bg-red-100 text-red-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+  };
+  
+  const renderContent = () => {
+    switch(activeTab) {
+      case "Dashboard": return <DashboardAnalytics setActiveTab={setActiveTab} />;
+      case "Grants": return (
+        <>
+          <div className="bg-white border rounded-lg shadow-sm mb-6 p-4">
+              <div className="flex justify-between items-center">
+                  <div>
+                      <h2 className="text-xl font-semibold text-gray-800">Manage Grants</h2>
+                      <p className="text-sm text-gray-500 mt-1">Add, edit, or delete grant listings.</p>
+                  </div>
+                  <Button onClick={() => { setEditingGrant(null); setShowGrantModal(true); }} className="bg-violet text-white hover:bg-pink font-medium">
+                      + Create Grant
+                  </Button>
+              </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {grants.map((grant) => (
+                  <article key={grant.id} className="bg-white rounded-lg border shadow hover:shadow-lg transition-shadow flex flex-col">
+                      <div className="p-5 flex-grow">
+                          <div className="flex justify-between items-start mb-2">
+                              <h3 className="text-lg font-bold text-gray-800 line-clamp-2">{grant.title}</h3>
+                              <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${grant.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'}`}>{grant.status}</span>
+                          </div>
+                          <p className="text-sm text-gray-500 mb-3">{grant.organization}</p>
+                          <p className="text-sm text-gray-600 mb-4 line-clamp-3">{grant.description}</p>
+                      </div>
+                      <div className="p-5 border-t bg-gray-50 rounded-b-lg">
+                          <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                              <span className="truncate">Funding: <span className="font-semibold text-gray-700">{grant.fundingAmount}</span></span>
+                              <span className="truncate">Deadline: <span className="font-semibold text-gray-700">{grant.deadline.toLocaleDateString()}</span></span>
+                          </div>
+                          <div className="flex gap-2">
+                              <Button size="sm" className="w-full" onClick={() => { setEditingGrant(grant); setShowGrantModal(true); }}>Edit</Button>
+                              <Button size="sm" variant="destructive" className="w-full" onClick={() => handleDeleteGrant(grant.id)}>Delete</Button>
+                          </div>
+                      </div>
+                  </article>
+              ))}
+          </div>
+        </>
+      );
+      case "Applications": return (
+        <div>
+          <h2 className="text-2xl font-bold mb-4">Grant Applications</h2>
+          <div className="bg-white p-4 rounded-lg shadow-sm border overflow-x-auto">
+            <table className="w-full text-sm text-left text-gray-500">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3">Applicant Name</th>
+                  <th scope="col" className="px-6 py-3">Email</th>
+                  <th scope="col" className="px-6 py-3">Phone</th>
+                  <th scope="col" className="px-6 py-3">Status</th>
+                  <th scope="col" className="px-6 py-3">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {applications.map(app => (
+                  <tr key={app.id} className="bg-white border-b">
+                    <td className="px-6 py-4 font-medium text-gray-900">{app.name}</td>
+                    <td className="px-6 py-4">{app.email}</td>
+                    <td className="px-6 py-4">{app.phone}</td>
+                    <td className="px-6 py-4">
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(app.status || 'Pending')}`}>
+                            {app.status || 'Pending'}
+                        </span>
+                    </td>
+                    <td className="px-6 py-4">
+                       <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              Change Status <ChevronDown className="ml-2 h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => handleStatusChange(app.id, 'Reviewed')}>Reviewed</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleStatusChange(app.id, 'Approved')}>Approved</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleStatusChange(app.id, 'Rejected')}>Rejected</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+       case "Users": return (
+        <div>
+            <h2 className="text-2xl font-bold mb-4">All Users</h2>
+            <Card>
+                <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-gray-50"><tr className="text-xs text-gray-700 uppercase"><th className="px-6 py-3">Full Name</th><th className="px-6 py-3">Email</th><th className="px-6 py-3">Phone Number</th><th className="px-6 py-3">Joined On</th></tr></thead>
+                            <tbody>
+                                {users.map(user => (
+                                    <tr key={user.id} className="border-b"><td className="px-6 py-4 font-medium">{user.fullName}</td><td className="px-6 py-4">{user.email}</td><td className="px-6 py-4">{user.phoneNumber || 'N/A'}</td><td className="px-6 py-4">{user.createdAt.toLocaleDateString()}</td></tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+      );
+      case "Posts": return (
+        <>
+          <div className="bg-white border rounded-lg shadow-sm mb-6 p-4">
+              <div className="flex justify-between items-center">
+                  <div>
+                      <h2 className="text-xl font-semibold text-gray-800">Manage Posts</h2>
+                      <p className="text-sm text-gray-500 mt-1">Add, edit, or delete blog posts.</p>
+                  </div>
+                  <Button onClick={() => { setEditingPost(null); setShowModal(true); }} className="bg-violet text-white hover:bg-pink font-medium">
+                      + Create Post
+                  </Button>
+              </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {posts.map((post) => (
+                  <article key={post.id} className="bg-white rounded-lg border shadow hover:shadow-lg transition-shadow flex flex-col">
+                      <img src={post.imageUrl || 'https://placehold.co/600x400'} alt={post.title} className="w-full h-40 object-cover rounded-t-lg" />
+                      <div className="p-5 flex-grow">
+                          <h3 className="text-lg font-bold text-gray-800 line-clamp-2">{post.title}</h3>
+                          <p className="text-sm text-gray-500 mt-1">{post.category}</p>
+                      </div>
+                      <div className="p-5 border-t bg-gray-50 rounded-b-lg">
+                          <div className="flex gap-2">
+                              <Button size="sm" className="w-full" onClick={() => { setEditingPost(post); setShowModal(true); }}>Edit</Button>
+                              <Button size="sm" variant="destructive" className="w-full" onClick={() => handleDeletePost(post.id)}>Delete</Button>
+                          </div>
+                      </div>
+                  </article>
+              ))}
+          </div>
+        </>
+      );
+      case "Incubators": return <PlaceholderContent title="Incubators" />;
+      case "Calendar": return <PlaceholderContent title="Calendar" />;
+      case "Social Apps": return <PlaceholderContent title="Social Apps" />;
+      default: return <DashboardAnalytics setActiveTab={setActiveTab} />;
+    }
+  };
 
   return (
     <div className="min-h-screen flex bg-gray-50">
@@ -88,10 +324,10 @@ export default function AdminDashboard() {
               <X className="w-5 h-5" />
             </button>
           </div>
-          <nav className="flex flex-col gap-2 mt-6 px-4 text-sm text-gray-700">
+          <nav className="flex flex-col gap-1 mt-6 px-4 text-sm text-gray-700">
             {sidebarItems.map((item) => (
-              <div key={item} className={`px-3 py-2 rounded-md cursor-pointer transition-all ${activeTab === item ? "bg-violet/10 text-violet" : "hover:bg-violet/5"}`} onClick={() => handleSidebarItemClick(item)}>
-                {item}
+              <div key={item.name} className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === item.name ? "bg-violet/10 text-violet font-semibold" : "hover:bg-violet/5"}`} onClick={() => handleSidebarItemClick(item.name)}>
+                {item.icon} {item.name}
               </div>
             ))}
           </nav>
@@ -100,111 +336,20 @@ export default function AdminDashboard() {
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0">
-        
         <div className="md:hidden bg-gray-100 border-b px-4 py-3 flex items-center justify-between sticky top-0 z-40">
           <button 
             onClick={() => setSidebarOpen(true)} 
             className="p-2 rounded-md text-gray-800 hover:bg-gray-100"
             aria-label="Open menu"
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="24" 
-              height="24" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-            >
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
+            <MenuIcon className="w-6 h-6" />
           </button>
           <h1 className="font-semibold text-gray-800">{activeTab}</h1>
           <div className="w-9"></div>
         </div>
 
         <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
-          {activeTab === "Dashboard" && (
-            <>
-              <div className="bg-white border rounded-lg shadow-sm mb-6 p-4">
-                  <div className="flex justify-between items-center">
-                      <div>
-                          <h2 className="text-xl font-semibold text-gray-800">Manage Posts</h2>
-                          <p className="text-sm text-gray-500 mt-1">Add, edit, or delete blog posts.</p>
-                      </div>
-                      <Button onClick={() => { setEditingPost(null); setShowModal(true); }} className="bg-violet text-white hover:bg-pink font-medium">
-                          + Create Post
-                      </Button>
-                  </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {posts.map((post) => (
-                      <article key={post.id} className="bg-white rounded-lg border shadow hover:shadow-lg transition-shadow flex flex-col">
-                          <img src={post.imageUrl || 'https://placehold.co/600x400'} alt={post.title} className="w-full h-40 object-cover rounded-t-lg" />
-                          <div className="p-5 flex-grow">
-                              <h3 className="text-lg font-bold text-gray-800 line-clamp-2">{post.title}</h3>
-                              <p className="text-sm text-gray-500 mt-1">{post.category}</p>
-                          </div>
-                          <div className="p-5 border-t bg-gray-50 rounded-b-lg">
-                              <div className="flex gap-2">
-                                  <Button size="sm" className="w-full" onClick={() => { setEditingPost(post); setShowModal(true); }}>Edit</Button>
-                                  <Button size="sm" variant="destructive" className="w-full" onClick={() => handleDeletePost(post.id)}>Delete</Button>
-                              </div>
-                          </div>
-                      </article>
-                  ))}
-              </div>
-            </>
-          )}
-
-          {activeTab === "Grants" && (
-            <>
-              <div className="bg-white border rounded-lg shadow-sm mb-6 p-4">
-                  <div className="flex justify-between items-center">
-                      <div>
-                          <h2 className="text-xl font-semibold text-gray-800">Manage Grants</h2>
-                          <p className="text-sm text-gray-500 mt-1">Add, edit, or delete grant listings.</p>
-                      </div>
-                      <Button onClick={() => { setEditingGrant(null); setShowGrantModal(true); }} className="bg-violet text-white hover:bg-pink font-medium">
-                          + Create Grant
-                      </Button>
-                  </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {grants.map((grant) => (
-                      <article key={grant.id} className="bg-white rounded-lg border shadow hover:shadow-lg transition-shadow flex flex-col">
-                          <div className="p-5 flex-grow">
-                              <div className="flex justify-between items-start mb-2">
-                                  <h3 className="text-lg font-bold text-gray-800 line-clamp-2">{grant.title}</h3>
-                                  <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${grant.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'}`}>{grant.status}</span>
-                              </div>
-                              <p className="text-sm text-gray-500 mb-3">{grant.organization}</p>
-                              <p className="text-sm text-gray-600 mb-4 line-clamp-3">{grant.description}</p>
-                          </div>
-                          <div className="p-5 border-t bg-gray-50 rounded-b-lg">
-                              <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                                  <span className="truncate">Funding: <span className="font-semibold text-gray-700">{grant.fundingAmount}</span></span>
-                                  <span className="truncate">Deadline: <span className="font-semibold text-gray-700">{grant.deadline.toLocaleDateString()}</span></span>
-                              </div>
-                              <div className="flex gap-2">
-                                  <Button size="sm" className="w-full" onClick={() => { setEditingGrant(grant); setShowGrantModal(true); }}>Edit</Button>
-                                  <Button size="sm" variant="destructive" className="w-full" onClick={() => handleDeleteGrant(grant.id)}>Delete</Button>
-                              </div>
-                          </div>
-                      </article>
-                  ))}
-              </div>
-            </>
-          )}
-
-          {activeTab === "Inbox" && ( <div className="text-center p-4">Your Inbox UI Here</div> )}
-          {activeTab === "Incubators" && ( <div className="text-center p-4">Your Incubators UI Here</div> )}
-          {activeTab === "Calendar" && ( <div className="text-center p-4">Your Calendar UI Here</div> )}
-          {activeTab === "Social Apps" && ( <div className="text-center p-4">Your Social Apps UI Here</div> )}
+            {renderContent()}
         </div>
       </main>
       

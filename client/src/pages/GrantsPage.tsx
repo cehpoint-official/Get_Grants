@@ -112,7 +112,7 @@ export default function GrantsPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const grantsPerPage = 9;
 
-    // URL से search query को पढ़ें
+    
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const query = params.get('q');

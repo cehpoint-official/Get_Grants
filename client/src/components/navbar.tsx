@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Rocket, User as UserIcon, LogOut, Crown, UserCircle } from "lucide-react";
+import { Menu, X, Rocket, User as UserIcon, LogOut, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { AdminModal } from "./admin-modal";
 import { IncubatorSignupModal } from "./ui/IncubatorSignupModal";
@@ -14,8 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -92,12 +91,11 @@ export function Navbar() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild className="cursor-pointer">
-                        <Link href="/profile">
-                            <UserCircle className="mr-2 h-4 w-4" />
-                            <span>My Profile</span>
+                        <Link href="/dashboard">
+                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                            <span>My Dashboard</span>
                         </Link>
                     </DropdownMenuItem>
-                   
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-600">
                         <LogOut className="mr-2 h-4 w-4" />
@@ -125,7 +123,7 @@ export function Navbar() {
         return (
             <>
                 <p className="px-3 py-2 font-semibold text-violet">{user.fullName}</p>
-                <Button onClick={() => navigate('/profile')} variant="ghost" className="w-full justify-start text-violet">My Profile</Button>
+                <Button onClick={() => navigate('/dashboard')} variant="ghost" className="w-full justify-start text-violet">My Dashboard</Button>
                 <Button onClick={handleLogout} variant="ghost" className="w-full justify-start text-red-600">Logout</Button>
             </>
         );

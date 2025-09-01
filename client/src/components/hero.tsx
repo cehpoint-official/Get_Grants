@@ -5,17 +5,22 @@ import { CheckCircle, MapPin, Search } from "lucide-react";
 import { useLocation } from "wouter";
 
 export function Hero() {
-  
   const [searchTerm, setSearchTerm] = useState("");
   const [, navigate] = useLocation();
 
- 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
       navigate(`/grants?q=${encodeURIComponent(searchTerm.trim())}`);
     } else {
       navigate('/grants');
+    }
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -31,7 +36,6 @@ export function Hero() {
               India's go-to platform for early-stage funding and acceleration.
             </p>
 
-            {/* -- Search Bar -- */}
             <div className="w-full mb-6">
               <form
                 onSubmit={handleSearchSubmit}
@@ -42,7 +46,6 @@ export function Hero() {
                   <Input
                     placeholder="Search by sector, state, amount, or keyword"
                     className="pl-10 h-12 text-base bg-yellowish-white rounded-l-xl rounded-r-none shadow-lg shadow-black/20 focus-visible:ring-0 focus:outline-none"
-                   
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -57,7 +60,6 @@ export function Hero() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-             
               <Button
                 onClick={() => navigate('/grants')}
                 className="bg-violet hover:bg-pink text-white px-6 py-3 font-medium text-base rounded-xl shadow-lg"
@@ -67,7 +69,7 @@ export function Hero() {
               
               <Button
                 variant="outline"
-                 onClick={() => navigate('/grants')}
+                onClick={() => scrollToSection('grant-library')}
                 className="bg-yellowish-white text-violet hover:bg-pink hover:text-white px-6 py-3 font-medium text-base rounded-xl shadow-lgk"
               >
                 Explore Grant Library

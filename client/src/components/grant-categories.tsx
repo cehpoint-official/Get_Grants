@@ -1590,7 +1590,7 @@ export function GrantCategories() {
   };
   
   return (
-    <section id="grants" className="py-10 sm:py-20 min-h-screen" style={{
+    <section id="grant-library" className="py-10 sm:py-20 min-h-screen" style={{
         background: 'white'
       }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

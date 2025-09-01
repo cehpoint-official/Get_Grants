@@ -1,15 +1,30 @@
 import { z } from "zod";
 
-// Firebase User schema 
+// --- User & Payment Schemas ---
+
 export const userSchema = z.object({
   id: z.string(),
   email: z.string().email(),
-  displayName: z.string().optional(),
-  phone: z.string().optional(),
+  fullName: z.string().optional(),
+  phoneNumber: z.string().optional(),
   createdAt: z.date(),
+  savedGrants: z.array(z.string()).optional(),
+  subscriptionPlan: z.string().optional().default('Free'),
+  subscriptionStatus: z.string().optional().default('Inactive'),
+  subscriptionExpiresOn: z.date().optional().nullable(),
 });
 
-// Firebase Post schema 
+export const paymentSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  date: z.date(),
+  amount: z.number(),
+  status: z.string(),
+  plan: z.string(),
+});
+
+// --- Blog Post Schemas ---
+
 export const postSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -21,7 +36,17 @@ export const postSchema = z.object({
   published: z.boolean().default(true),
 });
 
-// Grant structure
+export const insertPostSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  content: z.string().min(1, "Content is required"),
+  category: z.string().min(1, "Category is required"),
+  author: z.string().min(1, "Author is required"),
+  imageUrl: z.string().optional(),
+});
+
+
+// --- Grant & Application Schemas ---
+
 export const grantSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -42,22 +67,7 @@ export const grantSchema = z.object({
   isPremium: z.boolean().default(false),
 });
 
-// Insert schemas for form validation 
-export const insertUserSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  displayName: z.string().optional(),
-});
-
-export const insertPostSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  content: z.string().min(1, "Content is required"),
-  category: z.string().min(1, "Category is required"),
-  author: z.string().min(1, "Author is required"),
-  imageUrl: z.string().optional(),
-});
-
-//  validate  schema
+// THIS IS THE FIX - insertGrantSchema is now back
 export const insertGrantSchema = z.object({
   title: z.string().min(3, "Title is required"),
   organization: z.string().min(3, "Organization is required"),
@@ -75,25 +85,29 @@ export const insertGrantSchema = z.object({
   isPremium: z.boolean().optional(),
 });
 
-//  Updated Firebase Grant Application Schema 
 export const applicationSchema = z.object({
   id: z.string(),
-  startupName: z.string(),
-  founderName: z.string(),
+  name: z.string(),
   phone: z.string(),
   email: z.string().email(),
-  stage: z.string(),
-  sector: z.string(),
-  dpiit: z.string(),
   helpDescription: z.string().min(1, "This field is required"),
+  supportAreas: z.array(z.string()),
   submittedAt: z.union([z.date(), z.any()]),
+  status: z.string().optional().default('Pending'),
+  userId: z.string().optional(),
+  startupName: z.string().optional(),
+  founderName: z.string().optional(),
+  stage: z.string().optional(),
+  sector: z.string().optional(),
+  dpiit: z.string().optional(),
 });
 
-// Types 
-export type Application = z.infer<typeof applicationSchema>;
+
+// --- All Types ---
 export type User = z.infer<typeof userSchema>;
+export type Payment = z.infer<typeof paymentSchema>;
 export type Post = z.infer<typeof postSchema>;
-export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertPost = z.infer<typeof insertPostSchema>;
-export type Grant = z.infer<typeof grantSchema>; 
-export type InsertGrant = z.infer<typeof insertGrantSchema>;
+export type Application = z.infer<typeof applicationSchema>;
+export type Grant = z.infer<typeof grantSchema>;
+export type InsertGrant = z.infer<typeof insertGrantSchema>; // Type is also back

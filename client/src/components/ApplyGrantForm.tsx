@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { submitApplication } from "@/services/applications";
+import { useAuth } from "@/hooks/use-auth";
 
 const formSchema = z.object({
   name: z.string()
@@ -33,6 +34,7 @@ type FormValues = z.infer<typeof formSchema>;
 export const GrantApplicationForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const [_, navigate] = useLocation();
+  const { user } = useAuth();
 
   const {
     register,
@@ -41,7 +43,7 @@ export const GrantApplicationForm = () => {
     watch,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>({ 
+  } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       supportAreas: []
@@ -76,13 +78,15 @@ export const GrantApplicationForm = () => {
         email: data.email,
         helpDescription: data.helpDescription,
         supportAreas: data.supportAreas,
+        userId: user?.uid,
+        status: "Pending",
         startupName: "",
         founderName: "",
         stage: "",
         sector: "",
         dpiit: "",
       };
-      
+
       await submitApplication(submissionData);
       setSubmitted(true);
       reset();
@@ -93,7 +97,7 @@ export const GrantApplicationForm = () => {
   };
 
   return (
-    <div 
+    <div
       className="shadow-2xl rounded-2xl p-6 md:p-10 max-w-3xl mx-auto mt-10"
     >
       <div className="text-center mb-8">
@@ -112,7 +116,6 @@ export const GrantApplicationForm = () => {
         </div>
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Name <span className="text-red-500">*</span>
@@ -121,8 +124,8 @@ export const GrantApplicationForm = () => {
               {...register("name")}
               type="text"
               className={`w-full px-4 py-3 border-2 rounded-lg transition-colors focus:outline-none ${
-                errors.name 
-                  ? 'border-red-400 bg-red-50' 
+                errors.name
+                  ? 'border-red-400 bg-red-50'
                   : 'border-gray-400 bg-white focus:border-gray-500'
               }`}
               placeholder="Enter your full name"
@@ -132,7 +135,6 @@ export const GrantApplicationForm = () => {
             )}
           </div>
 
-          {/* Phone Number */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Phone Number <span className="text-red-500">*</span>
@@ -141,8 +143,8 @@ export const GrantApplicationForm = () => {
               {...register("phone")}
               type="tel"
               className={`w-full px-4 py-3 border-2 rounded-lg transition-colors focus:outline-none ${
-                errors.phone 
-                  ? 'border-red-400 bg-red-50' 
+                errors.phone
+                  ? 'border-red-400 bg-red-50'
                   : 'border-gray-400 bg-white focus:border-gray-500'
               }`}
               placeholder="Enter 10-digit mobile number"
@@ -153,7 +155,6 @@ export const GrantApplicationForm = () => {
             )}
           </div>
 
-          {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Email <span className="text-red-500">*</span>
@@ -162,8 +163,8 @@ export const GrantApplicationForm = () => {
               {...register("email")}
               type="email"
               className={`w-full px-4 py-3 border-2 rounded-lg transition-colors focus:outline-none ${
-                errors.email 
-                  ? 'border-red-400 bg-red-50' 
+                errors.email
+                  ? 'border-red-400 bg-red-50'
                   : 'border-gray-400 bg-white focus:border-gray-500'
               }`}
               placeholder="Enter your email address"
@@ -173,7 +174,6 @@ export const GrantApplicationForm = () => {
             )}
           </div>
 
-          {/* What do you need help with? */}
           <div>
             <label htmlFor="helpDescription" className="block text-sm font-medium text-gray-700 mb-1">
               What do you need help with? <span className="text-red-500">*</span>
@@ -184,8 +184,8 @@ export const GrantApplicationForm = () => {
               rows={4}
               placeholder="Please describe in detail what kind of support your startup is looking for..."
               className={`mt-1 block w-full rounded-lg border-2 shadow-sm sm:text-sm px-4 py-3 transition-colors focus:outline-none ${
-                errors.helpDescription 
-                  ? 'border-red-400 bg-red-50' 
+                errors.helpDescription
+                  ? 'border-red-400 bg-red-50'
                   : 'border-gray-400 bg-white focus:border-gray-500'
               }`}
               maxLength={500}
@@ -198,7 +198,6 @@ export const GrantApplicationForm = () => {
             )}
           </div>
 
-          {/* Support Areas Checkboxes */}
           <div className={`border-2 rounded-lg p-4 transition-colors ${
             errors.supportAreas ? 'bg-red-50 border-red-400' : 'bg-white border-gray-400'
           }`}>
