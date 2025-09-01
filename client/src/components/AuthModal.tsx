@@ -5,8 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { User, Mail, Lock, Eye, EyeOff, Phone } from "lucide-react";
-import { useToast } from "@/hooks/use-toast"; // 1. useToast को इम्पोर्ट करें
-
+import { useToast } from "@/hooks/use-toast"; 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -28,7 +27,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRed
 
   const { login, signup } = useAuth();
   const [, navigate] = useLocation();
-  const { toast } = useToast(); // 2. toast फ़ंक्शन को initialize करें
+  const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen) setAuthMode(initialMode);
@@ -48,7 +47,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRed
     try {
       if (authMode === 'login') {
         await login(email, password);
-        // Login सफल होने पर modal बंद करें और redirect करें
+       
         setFullName('');
         setEmail('');
         setMobile('');
@@ -59,20 +58,20 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRed
       } else { // Signup Mode
         await signup(email, password, fullName, mobile);
         
-        // 3. Signup सफल होने पर मैसेज दिखाएँ
+       
         toast({
           title: "Account Created Successfully!",
           description: "Please log in to continue.",
         });
 
-        // 4. फॉर्म फ़ील्ड्स को रीसेट करें
+        
         setFullName('');
-        // email को रहने दें ताकि user को दोबारा न भरना पड़े
+       
         setMobile('');
         setPassword('');
         setConfirmPassword('');
 
-        // 5. Modal को login mode में बदलें
+       
         setAuthMode('login');
       }
     } catch (err: any) {

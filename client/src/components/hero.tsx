@@ -5,11 +5,11 @@ import { CheckCircle, MapPin, Search } from "lucide-react";
 import { useLocation } from "wouter";
 
 export function Hero() {
-  // 1. सर्च के लिए state बनाएँ
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [, navigate] = useLocation();
 
-  // 2. सर्च करने पर /grants पेज पर जाएँ
+ 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
@@ -42,7 +42,7 @@ export function Hero() {
                   <Input
                     placeholder="Search by sector, state, amount, or keyword"
                     className="pl-10 h-12 text-base bg-yellowish-white rounded-l-xl rounded-r-none shadow-lg shadow-black/20 focus-visible:ring-0 focus:outline-none"
-                    // Input को state से जोड़ें
+                   
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -57,7 +57,7 @@ export function Hero() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              {/* 3. "Find Grant" बटन को /grants पेज पर भेजें */}
+             
               <Button
                 onClick={() => navigate('/grants')}
                 className="bg-violet hover:bg-pink text-white px-6 py-3 font-medium text-base rounded-xl shadow-lg"

@@ -85,7 +85,7 @@ export function GrantCategories() {
   const isMobile = useMobile();
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>("stage");
 
-  // --- DATA & FILTER OPTIONS (Unchanged) ---
+  // --- DATA & FILTER OPTIONS
   const filterOptions = {
     stage: ["Idea", "MVP", "Revenue", "Scaling"],
     fundingType: ["Grant", "Equity", "Fellowship", "Others"],
@@ -319,7 +319,7 @@ export function GrantCategories() {
          },
       ],
      },
-    // ... (rest of the categories data is unchanged)
+   
     {
       id: "sector",
       icon: Building,

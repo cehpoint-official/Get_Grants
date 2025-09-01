@@ -81,7 +81,7 @@ export const createGrant = async (data: InsertGrant) => {
       status = "Upcoming";
   } else {
       const sevenDaysFromNow = new Date();
-      sevenDaysFromNow.setDate(now.getDate() + 7);
+      sevenDaysFromNow.setDate(now.getDate() + 3);
       if (deadline <= sevenDaysFromNow) {
           status = "Closing Soon";
       }

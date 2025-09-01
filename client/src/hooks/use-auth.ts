@@ -55,10 +55,10 @@ export function useAuth() {
       phone,
       role: 'founder',
     };
-    // Create the user profile but don't set the user in state
+   
     await createUserProfile(userCredential.user, profileData);
     
-    // Sign the user out immediately after profile creation
+   
     await signOut(auth);
 
     return userCredential.user;

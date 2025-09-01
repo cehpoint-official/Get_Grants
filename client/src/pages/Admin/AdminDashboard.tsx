@@ -13,7 +13,7 @@ import {
   updateGrant,
   deleteGrant,
 } from "@/services/grants";
-import { Grant, InsertGrant } from "@shared/schema";
+import { Grant, InsertGrant, Post, InsertPost } from "@shared/schema";
 import { CreatePostModal } from "@/components/create-post-modal";
 import { CreateGrantModal } from "@/components/create-grant-modal";
 import { useAuth } from "@/hooks/use-auth";
@@ -31,7 +31,6 @@ import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 // Interface Definitions
-interface Post { id: string; title: string; content?: string; category?: string; imageUrl: string; }
 interface Application { id: string; name: string; phone: string; email: string; helpAreas: string[]; submittedAt?: any; }
 interface IncubatorApplication { id: string; name: string; email: string; phoneNumber: string; sectors: { label: string; value: string }[]; programName?: string; deadlineDate: string; programDetails: string; applicationFormLink: string; }
 
@@ -64,8 +63,8 @@ export default function AdminDashboard() {
 
   const loadPosts = async () => setPosts(await fetchPosts() as Post[]);
   const handleDeletePost = async (id: string) => { await deletePost(id); loadPosts(); };
-  const handleCreatePost = async (formData: any) => { /* Placeholder for your logic */ setShowModal(false); };
-  const handleUpdatePost = async (updated: any) => { /* Placeholder for your logic */ setShowModal(false); };
+  const handleCreatePost = async (formData: InsertPost) => { await createPost(formData); loadPosts(); setShowModal(false); };
+  const handleUpdatePost = async (updated: InsertPost & { id: string }) => { if(editingPost) {await updatePost(editingPost.id, updated); loadPosts(); setEditingPost(null); setShowModal(false); } };
 
   const loadGrants = async () => setGrants(await fetchGrants() as Grant[]);
   const handleCreateGrant = async (formData: InsertGrant) => { await createGrant(formData); loadGrants(); setShowGrantModal(false); };
@@ -102,14 +101,12 @@ export default function AdminDashboard() {
 
       <main className="flex-1 flex flex-col min-w-0">
         
-        {/* === MOBILE HEADER YAHAN FIX KIYA GAYA HAI === */}
         <div className="md:hidden bg-gray-100 border-b px-4 py-3 flex items-center justify-between sticky top-0 z-40">
           <button 
             onClick={() => setSidebarOpen(true)} 
             className="p-2 rounded-md text-gray-800 hover:bg-gray-100"
             aria-label="Open menu"
           >
-            {/* Corrected SVG Icon for React */}
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
               width="24" 
@@ -117,8 +114,6 @@ export default function AdminDashboard() {
               viewBox="0 0 24 24" 
               fill="none" 
               stroke="currentColor" 
-              
-              /* YEH LINES THEEK KI GAYI HAIN */
               strokeWidth="2" 
               strokeLinecap="round" 
               strokeLinejoin="round"
@@ -129,13 +124,41 @@ export default function AdminDashboard() {
             </svg>
           </button>
           <h1 className="font-semibold text-gray-800">{activeTab}</h1>
-          <div className="w-9"></div> {/* Spacer */}
+          <div className="w-9"></div>
         </div>
-        {/* === FIX ENDS HERE === */}
 
         <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
           {activeTab === "Dashboard" && (
-            <div className="text-center p-4">Your Posts Dashboard Content Here...</div>
+            <>
+              <div className="bg-white border rounded-lg shadow-sm mb-6 p-4">
+                  <div className="flex justify-between items-center">
+                      <div>
+                          <h2 className="text-xl font-semibold text-gray-800">Manage Posts</h2>
+                          <p className="text-sm text-gray-500 mt-1">Add, edit, or delete blog posts.</p>
+                      </div>
+                      <Button onClick={() => { setEditingPost(null); setShowModal(true); }} className="bg-violet text-white hover:bg-pink font-medium">
+                          + Create Post
+                      </Button>
+                  </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {posts.map((post) => (
+                      <article key={post.id} className="bg-white rounded-lg border shadow hover:shadow-lg transition-shadow flex flex-col">
+                          <img src={post.imageUrl || 'https://placehold.co/600x400'} alt={post.title} className="w-full h-40 object-cover rounded-t-lg" />
+                          <div className="p-5 flex-grow">
+                              <h3 className="text-lg font-bold text-gray-800 line-clamp-2">{post.title}</h3>
+                              <p className="text-sm text-gray-500 mt-1">{post.category}</p>
+                          </div>
+                          <div className="p-5 border-t bg-gray-50 rounded-b-lg">
+                              <div className="flex gap-2">
+                                  <Button size="sm" className="w-full" onClick={() => { setEditingPost(post); setShowModal(true); }}>Edit</Button>
+                                  <Button size="sm" variant="destructive" className="w-full" onClick={() => handleDeletePost(post.id)}>Delete</Button>
+                              </div>
+                          </div>
+                      </article>
+                  ))}
+              </div>
+            </>
           )}
 
           {activeTab === "Grants" && (
@@ -185,8 +208,7 @@ export default function AdminDashboard() {
         </div>
       </main>
       
-      {/* Modals */}
-      <CreatePostModal isOpen={showModal} onClose={() => setShowModal(false)} initialData={editingPost as any} onSubmit={editingPost ? handleUpdatePost : handleCreatePost} />
+      <CreatePostModal isOpen={showModal} onClose={() => {setEditingPost(null); setShowModal(false);}} initialData={editingPost} onSubmit={editingPost ? handleUpdatePost : handleCreatePost} />
       <CreateGrantModal isOpen={showGrantModal} onClose={() => { setEditingGrant(null); setShowGrantModal(false); }} initialData={editingGrant} onSubmit={editingGrant ? handleUpdateGrant : handleCreateGrant}/>
     </div>
   );

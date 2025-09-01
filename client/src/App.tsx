@@ -14,8 +14,7 @@ import ApplyPage from "./pages/ApplyPage";
 import ApplyIncubator from "./pages/ApplyIncubator";
 import ProfilePage from "./pages/ProfilePage";
 import SavedGrantsPage from "./pages/SavedGrantsPage";
-import PremiumSupportPage from "./pages/PremiumSupportPage"; // <-- इसे इम्पोर्ट करें
-
+import PremiumSupportPage from "./pages/PremiumSupportPage"; 
 import { useAuth } from "@/hooks/use-auth";
 import { Navbar } from "@/components/navbar";
 import { ProtectedAdminRoute } from "./components/ProtectedAdminRoute";
@@ -39,7 +38,7 @@ function Router() {
       <Route path="/apply" component={ApplyPage} />
       <Route path="/grants" component={GrantsPage} />
       <Route path="/grant/:id" component={GrantDetailPage} />
-      <Route path="/premium-support" component={PremiumSupportPage} /> {/* <-- नया रूट जोड़ें */}
+      <Route path="/premium-support" component={PremiumSupportPage} /> 
 
       <Route path="/profile">
         <ProtectedRoute>

@@ -10,7 +10,7 @@ export function BlogSection() {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const { posts, loading } = usePosts();
   const [showAllPosts, setShowAllPosts] = useState(false);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [, setLocation] = useLocation();
 
   const defaultPosts = [
@@ -77,6 +77,11 @@ export function BlogSection() {
                   startup grants and funding in India
                 </p>
               </div>
+              {isAdmin && (
+                <Button onClick={() => setShowCreatePost(true)} className="ml-4">
+                  <Plus className="mr-2 h-4 w-4" /> Create Post
+                </Button>
+              )}
             </div>
           </div>
 

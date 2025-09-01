@@ -39,7 +39,6 @@ export function usePosts() {
         createdAt: serverTimestamp(),
         published: true,
       });
-      // Refresh posts after creation
       await fetchPosts();
     } catch (error) {
       console.error("Error creating post:", error);

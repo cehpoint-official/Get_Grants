@@ -18,9 +18,9 @@ export const getGrantStatus = (grant: Grant): Grant['status'] => {
         return "Upcoming";
     }
 
-    // Closing soon if deadline is within 7 days
+    
     const sevenDaysFromNow = new Date(now);
-    sevenDaysFromNow.setDate(now.getDate() + 7);
+    sevenDaysFromNow.setDate(now.getDate() + 3);
     if (deadline <= sevenDaysFromNow) {
         return "Closing Soon";
     }

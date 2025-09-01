@@ -92,7 +92,7 @@ const ProfilePage = () => {
     );
 };
 
-// ... (ProfileInformation, SubscriptionDetails, and SecuritySettings components remain the same)
+
 
 const ProfileInformation = () => {
     const { user } = useAuth();

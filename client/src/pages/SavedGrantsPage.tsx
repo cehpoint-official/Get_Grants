@@ -7,7 +7,7 @@ import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Footer } from '@/components/footer';
 import { LoaderCircle, BookmarkX } from 'lucide-react';
-import { GrantCard } from '@/pages/GrantsPage'; // GrantCard को GrantsPage से इम्पोर्ट करें
+import { GrantCard } from '@/pages/GrantsPage';
 import { AuthModal } from '@/components/AuthModal';
 
 export default function SavedGrantsPage() {
@@ -17,9 +17,8 @@ export default function SavedGrantsPage() {
     const [loading, setLoading] = useState(true);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-    // यह handleCardClick फ़ंक्शन GrantCard को प्रॉप के रूप में चाहिए
     const handleCardClick = (grant: Grant) => {
-        // Saved grants page पर, user हमेशा logged in होगा, तो सीधा navigate करें
+       
         navigate(`/grant/${grant.id}`);
     };
 
@@ -79,7 +78,7 @@ export default function SavedGrantsPage() {
                     {savedGrants.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {savedGrants.map((grant) => (
-                                // अब GrantCard का इस्तेमाल करें
+                               
                                 <GrantCard 
                                     key={grant.id} 
                                     grant={grant} 

@@ -25,7 +25,7 @@ interface CreatePostModalProps {
     content: string;
     category: string;
     imageUrl?: string;
-  };
+  } | null;
 }
 
 export function CreatePostModal({
@@ -54,11 +54,9 @@ export function CreatePostModal({
     },
   });
 
-  // Handle modal open/close and data initialization
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
-        // Editing mode
         const formData = {
           title: initialData.title || "",
           content: initialData.content || "",
@@ -72,10 +70,7 @@ export function CreatePostModal({
         setImagePreview(initialData.imageUrl || null);
         setSelectedImage(null);
         
-        console.log("Edit mode - Initial data:", initialData);
-        console.log("Edit mode - Form reset with:", formData);
       } else {
-        // Create mode
         const formData = {
           title: "",
           content: "",
@@ -89,7 +84,6 @@ export function CreatePostModal({
         setImagePreview(null);
         setSelectedImage(null);
         
-        console.log("Create mode - Form reset");
       }
     }
   }, [isOpen, initialData, form, user]);
@@ -103,7 +97,6 @@ export function CreatePostModal({
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
-      console.log("New image selected:", file.name);
     }
   };
 
@@ -111,31 +104,20 @@ export function CreatePostModal({
     setSelectedImage(null);
     setImagePreview(null);
     form.setValue("imageUrl", "");
-    console.log("Image removed");
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmitForm = async (data: any) => {
     if (!user) return;
-
-    console.log("Submit started with data:", data);
-    console.log("Current image URL:", currentImageUrl);
-    console.log("Selected image:", selectedImage?.name);
 
     try {
       let finalImageUrl = currentImageUrl;
 
-      // If a new image was selected, upload it
       if (selectedImage) {
-        console.log("Uploading new image to Cloudinary...");
         setUploadingImage(true);
         finalImageUrl = await uploadToCloudinary(selectedImage);
-        console.log("New image uploaded:", finalImageUrl);
       } else if (!imagePreview) {
-        // If no preview and no selected image, user removed the image
         finalImageUrl = "";
-        console.log("Image was removed, setting empty URL");
       }
-      // If no new image selected and preview exists, keep current image
 
       const payload = {
         ...data,
@@ -143,13 +125,9 @@ export function CreatePostModal({
         imageUrl: finalImageUrl,
       };
 
-      console.log("Final payload:", payload);
-
       if (initialData && onSubmit) {
-        console.log("Calling onSubmit for edit...");
-        await onSubmit(payload);
+        await onSubmit({ ...payload, id: initialData.id });
       } else {
-        console.log("Calling createPost for new post...");
         await createPost(payload);
       }
 
@@ -160,7 +138,6 @@ export function CreatePostModal({
 
       handleClose();
     } catch (error) {
-      console.error("Submit error:", error);
       toast({
         title: "Error",
         description: `Failed to ${initialData ? "update" : "create"} post.`,
@@ -172,7 +149,6 @@ export function CreatePostModal({
   };
 
   const handleClose = () => {
-    console.log("Modal closing...");
     form.reset();
     setSelectedImage(null);
     setImagePreview(null);
@@ -189,7 +165,7 @@ export function CreatePostModal({
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmitForm)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"

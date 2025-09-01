@@ -56,7 +56,7 @@ export default function PremiumSupportPage() {
       }} className="text-violet">
         <div className="container mx-auto px-4 py-5 md:py-10 text-center">
 
-          {/* --- बटन को हेडिंग के ऊपर यहाँ रख दिया गया है --- */}
+         
           <Button 
             onClick={scrollToPricing} 
             className="mb-8 bg-violet-100 text-black hover:bg-violet-200 rounded-full px-6 py-3 text-base font-semibold shadow-sm transition-colors group"
