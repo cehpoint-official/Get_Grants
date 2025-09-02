@@ -5,6 +5,7 @@ import { useLocation } from "wouter";
 import { AuthModal } from "../components/AuthModal";
 import { useAuth } from "@/hooks/use-auth";
 import { Footer } from "@/components/footer";
+import Faq from "@/components/Faq";
 
 export default function PremiumSupportPage() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
@@ -50,48 +51,6 @@ export default function PremiumSupportPage() {
 
   return (
     <div id="premium-support" className="bg-white py-10">
-      {/* Hero Section */}
-      <section style={{
-        background: 'white'
-      }} className="text-violet">
-        <div className="container mx-auto px-4 py-5 md:py-10 text-center">
-
-         
-          <Button 
-            onClick={scrollToPricing} 
-            className="mb-8 bg-violet-100 text-black hover:bg-violet-200 rounded-full px-6 py-3 text-base font-semibold shadow-sm transition-colors group"
-          >
-            View Pricing Plans
-            <ArrowDown className="ml-2 h-5 w-5 transition-transform group-hover:translate-y-1" />
-          </Button>
-
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl drop-shadow-lg">
-            Want to Increase Your Chances of Getting Funded?
-          </h1>
-          <p className="mt-4 text-lg max-w-2xl mx-auto text-gray-700 drop-shadow-md">
-            Let our experts guide you through every step of the application process.
-          </p>
-        
-        </div>
-      </section>
-
-      {/* Services Section */}
-      <section className="py-10 md:py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8">
-            {services.map((service) => (
-              <div key={service.name} className="bg-white p-8 rounded-2xl text-center shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/40 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01]">
-                <div className="mx-auto bg-violet rounded-full h-12 w-12 flex items-center justify-center mb-4 shadow-lg">
-                  {service.icon}
-                </div>
-                <h3 className="text-xl font-semibold text-violet">{service.name}</h3>
-                <p className="mt-2 text-gray-700">{service.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* How It Works Section */}
       <section id="how-it-works" className="py-15" style={{
         background: 'white'
@@ -152,9 +111,9 @@ export default function PremiumSupportPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
             {/* Free Plan */}
-            <div className="bg-white rounded-2xl p-8 text-center transition-all duration-300 hover:shadow-2xl shadow-lg shadow-black/20 hover:shadow-black/40 transform hover:-translate-y-1 hover:scale-[1.01]">
+            {/* <div className="bg-white rounded-2xl p-8 text-center transition-all duration-300 hover:shadow-2xl shadow-lg shadow-black/20 hover:shadow-black/40 transform hover:-translate-y-1 hover:scale-[1.01]">
               <div className="mb-6">
                 <h3 className="text-2xl font-bold text-violet mb-2 ">Free</h3>
                 <p className="text-gray-600">Perfect for getting started</p>
@@ -170,7 +129,7 @@ export default function PremiumSupportPage() {
                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Community forum access</span></li>
               </ul>
               <Button onClick={() => handlePlanClick('signup')} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Get Started Free</Button>
-            </div>
+            </div> */}
 
             {/* Pro Plan */}
             <div className="bg-white rounded-2xl p-8 text-center shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/40 relative transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01]">
@@ -203,9 +162,50 @@ export default function PremiumSupportPage() {
           </div>
         </div>
       </section>
+         {/* Services Section */}
+         <section style={{
+        background: 'white'
+      }} className="text-violet">
+        <div className="container mx-auto px-4 py-5 md:py-10 text-center">
+
+{/*          
+          <Button 
+            onClick={scrollToPricing} 
+            className="mb-8 bg-violet-100 text-black hover:bg-violet-200 rounded-full px-6 py-3 text-base font-semibold shadow-sm transition-colors group"
+          >
+            View Pricing Plans
+            <ArrowDown className="ml-2 h-5 w-5 transition-transform group-hover:translate-y-1" />
+          </Button> */}
+
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl drop-shadow-lg">
+            Want to Increase Your Chances of Getting Funded?
+          </h1>
+          <p className="mt-4 text-lg max-w-2xl mx-auto text-gray-700 drop-shadow-md">
+            Let our experts guide you through every step of the application process.
+          </p>
+        
+        </div>
+      </section>
+         <section className="py-10 md:py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-3 gap-8">
+            {services.map((service) => (
+              <div key={service.name} className="bg-white p-8 rounded-2xl text-center shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/40 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01]">
+                <div className="mx-auto bg-violet rounded-full h-12 w-12 flex items-center justify-center mb-4 shadow-lg">
+                  {service.icon}
+                </div>
+                <h3 className="text-xl font-semibold text-violet">{service.name}</h3>
+                <p className="mt-2 text-gray-700">{service.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
       
       {/* Auth Modal unified for pricing actions */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} initialMode={authInitialMode} />
+      <Faq />
+       
         <Footer/>
     </div>
   );

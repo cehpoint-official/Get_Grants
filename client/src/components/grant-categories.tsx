@@ -1543,7 +1543,7 @@ export function GrantCategories() {
           <a href={grant.website} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-violet hover:text-pink inline-flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
             <ExternalLink className="h-4 w-4" /> Website
           </a>
-          <Button size="sm" className="bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold" onClick={(e) => {e.stopPropagation(); navigate("/apply"); }}>Apply</Button>
+          <Button size="sm" className="bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold" onClick={(e) => {e.stopPropagation(); navigate("/apply"); }}>Need Help?</Button>
         </div>
       </div>
     </div>

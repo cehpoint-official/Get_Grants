@@ -6,7 +6,7 @@ import { BlogSection } from "../components/blog-section";
 import { Footer } from "../components/footer";
 import { TrustBar } from "../components/TrustBar";
 
-import Faq from "../components/Faq";
+
 
 export default function Home() {
   
@@ -33,7 +33,6 @@ export default function Home() {
       <section id="blog">
         <BlogSection />
       </section>
-      <Faq />
       <Footer />
     </main>
   );

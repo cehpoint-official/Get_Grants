@@ -17,9 +17,10 @@ import {
   updateApplicationStatus
 } from "@/services/applications";
 import { fetchAllUsers } from "@/services/users"; // Import the new user service
-import { Grant, InsertGrant, Post, InsertPost, Application, User } from "@shared/schema";
+import { Grant, InsertGrant, Post, InsertPost, Application, User, CalendarEvent, InsertEvent } from "@shared/schema";
 import { CreatePostModal } from "@/components/create-post-modal";
 import { CreateGrantModal } from "@/components/create-grant-modal";
+import { EventModal } from "@/components/ui/EventModal";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
@@ -35,6 +36,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchDashboardStats, DashboardStats } from "@/services/admin";
+import { Calendar } from "@/components/ui/calendar";
+import { fetchEvents, createEvent as createCalendarEvent, updateEvent as updateCalendarEvent, deleteEvent as deleteCalendarEvent } from "@/services/events";
 
 // --- ALL SIDEBAR ITEMS ARE HERE ---
 const sidebarItems = [
@@ -42,7 +45,7 @@ const sidebarItems = [
   { name: "Grants", icon: <FileText className="w-4 h-4 mr-2" /> },
   { name: "Applications", icon: <Inbox className="w-4 h-4 mr-2" /> },
   { name: "Users", icon: <Users className="w-4 h-4 mr-2" /> },
-  { name: "Posts", icon: <BookOpen className="w-4 h-4 mr-2" /> },
+  { name: "Blogs", icon: <BookOpen className="w-4 h-4 mr-2" /> },
   { name: "Incubators", icon: <Briefcase className="w-4 h-4 mr-2" /> },
   { name: "Calendar", icon: <CalendarIcon className="w-4 h-4 mr-2" /> },
   { name: "Social Apps", icon: <Share2 className="w-4 h-4 mr-2" /> },
@@ -126,13 +129,18 @@ export default function AdminDashboard() {
   const [editingGrant, setEditingGrant] = useState<Grant | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showGrantModal, setShowGrantModal] = useState(false);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { logout } = useAuth();
   const [, navigate] = useLocation();
 
   useEffect(() => {
-    if (activeTab === "Posts") loadPosts();
+    if (activeTab === "Blogs") loadPosts();
     if (activeTab === "Grants") loadGrants();
+    if (activeTab === "Calendar") loadEvents();
     if (activeTab === "Applications") loadApplications();
     if (activeTab === "Users") loadUsers();
     if (activeTab === "Home") navigate("/");
@@ -142,6 +150,7 @@ export default function AdminDashboard() {
   const loadGrants = async () => setGrants(await fetchGrants() as Grant[]);
   const loadApplications = async () => setApplications(await fetchAllApplications());
   const loadUsers = async () => setUsers(await fetchAllUsers());
+  const loadEvents = async () => setEvents(await fetchEvents());
 
   const handleDeletePost = async (id: string) => { await deletePost(id); loadPosts(); };
   const handleCreatePost = async (formData: InsertPost) => { await createPost(formData); loadPosts(); setShowModal(false); };
@@ -168,6 +177,43 @@ export default function AdminDashboard() {
         }
   };
   
+  const eventsForSelectedDate = () => {
+    const y = selectedDate.getFullYear();
+    const m = selectedDate.getMonth();
+    const d = selectedDate.getDate();
+    return events.filter(ev => {
+      const start = new Date(ev.start);
+      return start.getFullYear() === y && start.getMonth() === m && start.getDate() === d;
+    });
+  };
+
+  const formatEventTime = (ev: CalendarEvent) => {
+    if (ev.allDay) return "All day";
+    const start = new Date(ev.start);
+    const end = new Date(ev.end);
+    return `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  };
+
+  const handleCreateEvent = async (data: InsertEvent) => {
+    await createCalendarEvent(data);
+    await loadEvents();
+    setShowEventModal(false);
+  };
+
+  const handleUpdateEvent = async (data: InsertEvent & { id: string }) => {
+    await updateCalendarEvent(data.id, data);
+    await loadEvents();
+    setEditingEvent(null);
+    setShowEventModal(false);
+  };
+
+  const handleDeleteEvent = async (id: string) => {
+    if (window.confirm("Delete this event?")) {
+      await deleteCalendarEvent(id);
+      await loadEvents();
+    }
+  };
+
   const renderContent = () => {
     switch(activeTab) {
       case "Dashboard": return <DashboardAnalytics setActiveTab={setActiveTab} />;
@@ -275,16 +321,16 @@ export default function AdminDashboard() {
             </Card>
         </div>
       );
-      case "Posts": return (
+      case "Blogs": return (
         <>
           <div className="bg-white border rounded-lg shadow-sm mb-6 p-4">
               <div className="flex justify-between items-center">
                   <div>
-                      <h2 className="text-xl font-semibold text-gray-800">Manage Posts</h2>
-                      <p className="text-sm text-gray-500 mt-1">Add, edit, or delete blog posts.</p>
+                      <h2 className="text-xl font-semibold text-gray-800">Manage Blogs</h2>
+                      <p className="text-sm text-gray-500 mt-1">Add, edit, or delete blogs.</p>
                   </div>
                   <Button onClick={() => { setEditingPost(null); setShowModal(true); }} className="bg-violet text-white hover:bg-pink font-medium">
-                      + Create Post
+                      + Create Blog
                   </Button>
               </div>
           </div>
@@ -308,7 +354,80 @@ export default function AdminDashboard() {
         </>
       );
       case "Incubators": return <PlaceholderContent title="Incubators" />;
-      case "Calendar": return <PlaceholderContent title="Calendar" />;
+      case "Calendar": return (
+        <>
+          <div className="bg-white border rounded-lg shadow-sm mb-6 p-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">Calendar</h2>
+                <p className="text-sm text-gray-500 mt-1">Add, view, and manage events.</p>
+              </div>
+              <Button onClick={() => { setEditingEvent(null); setShowEventModal(true); }} className="bg-violet text-white hover:bg-pink font-medium">
+                + Add Event
+              </Button>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="bg-white border rounded-lg shadow-sm p-4 lg:col-span-1">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(d: any) => setSelectedDate(d || new Date())}
+                className="rounded-md"
+                modifiers={{ hasEvent: events.map(ev => new Date(ev.start)) }}
+                modifiersClassNames={{ hasEvent: "bg-violet/20 text-violet rounded-full" }}
+              />
+            </div>
+            <div className="bg-white border rounded-lg shadow-sm p-4 lg:col-span-2">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Events on {selectedDate.toLocaleDateString()}</h3>
+                <Button size="sm" onClick={() => { setEditingEvent(null); setShowEventModal(true); }}>Add</Button>
+              </div>
+              <div className="space-y-3">
+                {eventsForSelectedDate().length === 0 && (
+                  <p className="text-sm text-gray-500">No events for this day.</p>
+                )}
+                {eventsForSelectedDate().map((ev) => (
+                  <div key={ev.id} className="border rounded-md p-3 flex items-start justify-between">
+                    <div>
+                      <div className="font-medium">{ev.title}</div>
+                      <div className="text-xs text-gray-500">{formatEventTime(ev)}</div>
+                      {ev.location && <div className="text-xs text-gray-500">{ev.location}</div>}
+                      {ev.description && <div className="text-sm text-gray-700 mt-1">{ev.description}</div>}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => { setEditingEvent(ev); setShowEventModal(true); }}>Edit</Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleDeleteEvent(ev.id)}>Delete</Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="bg-white border rounded-lg shadow-sm p-4 mt-6">
+            <h3 className="text-lg font-semibold mb-3">All Events</h3>
+            {events.length === 0 ? (
+              <p className="text-sm text-gray-500">No events added yet.</p>
+            ) : (
+              <div className="divide-y">
+                {events.map((ev) => (
+                  <div key={ev.id} className="py-3 flex items-start justify-between">
+                    <div>
+                      <div className="font-medium">{ev.title}</div>
+                      <div className="text-xs text-gray-500">{new Date(ev.start).toLocaleDateString()} • {formatEventTime(ev)}</div>
+                      {ev.location && <div className="text-xs text-gray-500">{ev.location}</div>}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => { setEditingEvent(ev); setShowEventModal(true); }}>Edit</Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleDeleteEvent(ev.id)}>Delete</Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      );
       case "Social Apps": return <PlaceholderContent title="Social Apps" />;
       default: return <DashboardAnalytics setActiveTab={setActiveTab} />;
     }
@@ -355,6 +474,17 @@ export default function AdminDashboard() {
       
       <CreatePostModal isOpen={showModal} onClose={() => {setEditingPost(null); setShowModal(false);}} initialData={editingPost} onSubmit={editingPost ? handleUpdatePost : handleCreatePost} />
       <CreateGrantModal isOpen={showGrantModal} onClose={() => { setEditingGrant(null); setShowGrantModal(false); }} initialData={editingGrant} onSubmit={editingGrant ? handleUpdateGrant : handleCreateGrant}/>
+      <EventModal
+        isOpen={showEventModal}
+        onClose={() => { setEditingEvent(null); setShowEventModal(false); }}
+        initialData={editingEvent ? { id: editingEvent.id, title: editingEvent.title, description: editingEvent.description, start: editingEvent.start, end: editingEvent.end, allDay: editingEvent.allDay, location: editingEvent.location } : null}
+        onSubmit={(data: InsertEvent & { id?: string }) => {
+          if (editingEvent) {
+            return handleUpdateEvent({ ...(data as InsertEvent), id: editingEvent.id });
+          }
+          return handleCreateEvent(data as InsertEvent);
+        }}
+      />
     </div>
   );
 }

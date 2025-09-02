@@ -103,6 +103,29 @@ export const applicationSchema = z.object({
 });
 
 
+// --- Calendar Event Schemas ---
+
+export const eventSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().optional().default(""),
+  start: z.date(),
+  end: z.date(),
+  allDay: z.boolean().default(false),
+  location: z.string().optional(),
+  createdAt: z.date(),
+});
+
+export const insertEventSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  start: z.union([z.date(), z.string()]),
+  end: z.union([z.date(), z.string()]),
+  allDay: z.boolean().optional(),
+  location: z.string().optional(),
+});
+
+
 // --- All Types ---
 export type User = z.infer<typeof userSchema>;
 export type Payment = z.infer<typeof paymentSchema>;
@@ -111,3 +134,5 @@ export type InsertPost = z.infer<typeof insertPostSchema>;
 export type Application = z.infer<typeof applicationSchema>;
 export type Grant = z.infer<typeof grantSchema>;
 export type InsertGrant = z.infer<typeof insertGrantSchema>; // Type is also back
+export type CalendarEvent = z.infer<typeof eventSchema>;
+export type InsertEvent = z.infer<typeof insertEventSchema>;

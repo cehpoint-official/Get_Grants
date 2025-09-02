@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Rocket, User as UserIcon, LogOut, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { AdminModal } from "./admin-modal";
-import { IncubatorSignupModal } from "./ui/IncubatorSignupModal";
+// import { IncubatorSignupModal } from "./ui/IncubatorSignupModal";
 import { Link, useLocation } from "wouter";
 import { AuthModal } from "./AuthModal";
 import {
@@ -39,7 +39,7 @@ export function Navbar() {
 
   const navItems = [
     { name: 'Home', action: () => scrollToSection('home') },
-    { name: 'Explore Grants', action: () => navigate('/grants')},
+    { name: 'Find Grants', action: () => navigate('/grants')},
     { name: 'Premium Support', action: () => navigate('/premium-support') },
     { name: 'Blog', action: () => scrollToSection('blog') },
   ];
@@ -135,11 +135,11 @@ export function Navbar() {
 
   return (
     <>
-      {!isAdmin && (
+      {/* {!isAdmin && (
         <div onClick={handleIncubatorClick} className="bg-rose-gold text-violet text-xs sm:text-sm text-center py-2 cursor-pointer hover:bg-pink transition-all font-semibold">
           🚀 Apply as an Incubator — Click here to get started!
         </div>
-      )}
+      )} */}
 
       <nav className="bg-yellowish-white shadow-lg border-b-2 border-pink sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -181,7 +181,7 @@ export function Navbar() {
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <AdminModal isOpen={showAdminModal} onClose={() => setShowAdminModal(false)} />
-      <IncubatorSignupModal isOpen={showIncubatorModal} onClose={() => setShowIncubatorModal(false)} />
+      {/* <IncubatorSignupModal isOpen={showIncubatorModal} onClose={() => setShowIncubatorModal(false)} /> */}
     </>
   );
 }
