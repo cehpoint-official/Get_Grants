@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Rocket, User as UserIcon, LogOut, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { NotificationConsentModal } from "@/components/ui/NotificationConsentModal";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,7 +23,16 @@ export function Navbar() {
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [showIncubatorModal, setShowIncubatorModal] = useState(false);
   const { user, isAdmin, logout } = useAuth();
+  const [showNotifyModal, setShowNotifyModal] = useState(false);
   const [location, navigate] = useLocation();
+
+  useEffect(() => {
+    if (user && localStorage.getItem('grant_notify_consent') !== 'granted') {
+      setShowNotifyModal(true);
+    } else {
+      setShowNotifyModal(false);
+    }
+  }, [user]);
 
   const scrollToSection = (sectionId: string) => {
     if (location !== "/") {
@@ -182,6 +192,7 @@ export function Navbar() {
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <AdminModal isOpen={showAdminModal} onClose={() => setShowAdminModal(false)} />
       {/* <IncubatorSignupModal isOpen={showIncubatorModal} onClose={() => setShowIncubatorModal(false)} /> */}
+      <NotificationConsentModal isOpen={showNotifyModal && !!user && localStorage.getItem('grant_notify_consent') !== 'granted'} onClose={() => setShowNotifyModal(false)} />
     </>
   );
 }

@@ -3,10 +3,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ✅ Public can read blog posts
+    // Blog posts: Public can read only published; users can create pending; only admin can publish/reject/delete
     match /posts/{postId} {
-      allow read: if true;
-      allow create, update, delete: if request.auth != null && request.auth.token.admin == true;
+      allow get: if resource.data.status == 'published';
+      allow list: if true; // listing is allowed, but client should filter to published via queries
+      allow create: if request.auth != null && request.resource.data.status == 'pending';
+      allow update, delete: if request.auth != null && request.auth.token.admin == true;
     }
 
     // ✅ NAYA RULE: Grants collection ke liye
@@ -31,9 +33,9 @@ service cloud.firestore {
       allow read, update, delete: if request.auth != null && request.auth.token.admin == true;
     }
 
-    // ❌ Fallback deny after 14 Aug 2025
+    // Fallback deny
     match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2025, 8, 14);
+      allow read, write: if false;
     }
   }
 }

@@ -22,6 +22,9 @@ export function usePosts() {
           imageUrl: data.imageUrl || "",
           createdAt: data.createdAt?.toDate() || new Date(),
           published: data.published ?? true,
+          status: data.status || (data.published ? "published" : "pending"),
+          authorName: data.authorName,
+          authorEmail: data.authorEmail,
         };
       }) as Post[];
       setPosts(postsData);
@@ -38,6 +41,7 @@ export function usePosts() {
         ...post,
         createdAt: serverTimestamp(),
         published: true,
+        status: "published",
       });
       await fetchPosts();
     } catch (error) {

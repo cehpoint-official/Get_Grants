@@ -53,13 +53,15 @@ export function useAuth() {
     await signInWithEmailAndPassword(auth, email, password);
   };
 
-  const signup = async (email: string, password: string, fullName: string, phone: string) => {
+  const signup = async (email: string, password: string, fullName: string, phone: string, opts?: { notifyEmail?: boolean; notifyWhatsapp?: boolean }) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const profileData: CreateUserData = {
       fullName,
       email,
       phone,
       role: 'founder',
+      notifyEmail: opts?.notifyEmail ?? true,
+      notifyWhatsapp: opts?.notifyWhatsapp ?? true,
     };
     await createUserProfile(userCredential.user, profileData);
     await signOut(auth);

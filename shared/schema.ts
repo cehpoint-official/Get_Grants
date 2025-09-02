@@ -34,6 +34,9 @@ export const postSchema = z.object({
   imageUrl: z.string().optional(),
   createdAt: z.date(),
   published: z.boolean().default(true),
+  status: z.enum(["pending", "published", "rejected"]).optional().default("published"),
+  authorName: z.string().optional(),
+  authorEmail: z.string().email().optional(),
 });
 
 export const insertPostSchema = z.object({
@@ -42,6 +45,9 @@ export const insertPostSchema = z.object({
   category: z.string().min(1, "Category is required"),
   author: z.string().min(1, "Author is required"),
   imageUrl: z.string().optional(),
+  status: z.enum(["pending", "published", "rejected"]).optional(),
+  authorName: z.string().optional(),
+  authorEmail: z.string().email().optional(),
 });
 
 

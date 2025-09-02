@@ -5,6 +5,9 @@ import {
   createPost,
   updatePost,
   deletePost,
+  fetchPendingPosts,
+  approvePost,
+  rejectPost,
 } from "@/services/firebase";
 import {
   fetchGrants,
@@ -38,6 +41,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchDashboardStats, DashboardStats } from "@/services/admin";
 import { Calendar } from "@/components/ui/calendar";
 import { fetchEvents, createEvent as createCalendarEvent, updateEvent as updateCalendarEvent, deleteEvent as deleteCalendarEvent } from "@/services/events";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // --- ALL SIDEBAR ITEMS ARE HERE ---
 const sidebarItems = [
@@ -129,6 +133,9 @@ export default function AdminDashboard() {
   const [editingGrant, setEditingGrant] = useState<Grant | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showGrantModal, setShowGrantModal] = useState(false);
+  const [pendingPosts, setPendingPosts] = useState<Post[]>([]);
+  const [showPendingModal, setShowPendingModal] = useState(false);
+  const [activePendingPost, setActivePendingPost] = useState<Post | null>(null);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showEventModal, setShowEventModal] = useState(false);
@@ -138,7 +145,7 @@ export default function AdminDashboard() {
   const [, navigate] = useLocation();
 
   useEffect(() => {
-    if (activeTab === "Blogs") loadPosts();
+    if (activeTab === "Blogs") { loadPosts(); loadPending(); }
     if (activeTab === "Grants") loadGrants();
     if (activeTab === "Calendar") loadEvents();
     if (activeTab === "Applications") loadApplications();
@@ -147,6 +154,7 @@ export default function AdminDashboard() {
   }, [activeTab]);
 
   const loadPosts = async () => setPosts(await fetchPosts() as Post[]);
+  const loadPending = async () => setPendingPosts(await fetchPendingPosts() as Post[]);
   const loadGrants = async () => setGrants(await fetchGrants() as Grant[]);
   const loadApplications = async () => setApplications(await fetchAllApplications());
   const loadUsers = async () => setUsers(await fetchAllUsers());
@@ -327,20 +335,43 @@ export default function AdminDashboard() {
               <div className="flex justify-between items-center">
                   <div>
                       <h2 className="text-xl font-semibold text-gray-800">Manage Blogs</h2>
-                      <p className="text-sm text-gray-500 mt-1">Add, edit, or delete blogs.</p>
+                      <p className="text-sm text-gray-500 mt-1">Add, edit, delete, and approve user-submitted blogs.</p>
                   </div>
                   <Button onClick={() => { setEditingPost(null); setShowModal(true); }} className="bg-violet text-white hover:bg-pink font-medium">
                       + Create Blog
                   </Button>
               </div>
           </div>
+          {pendingPosts.length > 0 && (
+            <div className="bg-white border rounded-lg shadow-sm mb-6 p-4">
+              <h3 className="text-lg font-semibold mb-3">Pending Approval</h3>
+              <div className="space-y-3">
+                {pendingPosts.map((p) => (
+                  <div key={p.id} className="border rounded-md p-3">
+                    <div className="flex items-start justify-between">
+                      <div className="pr-4">
+                        <div className="font-medium">{p.title}</div>
+                        <div className="text-xs text-gray-500">By {p.authorName || p.author} • {p.authorEmail || ""}</div>
+                        <p className="text-sm text-gray-700 mt-2 line-clamp-3">{p.content}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" onClick={() => { setActivePendingPost(p); setShowPendingModal(true); }}>View</Button>
+                        <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={async () => { await approvePost(p.id); await loadPending(); await loadPosts(); }}>Approve</Button>
+                        <Button size="sm" variant="destructive" onClick={async () => { await rejectPost(p.id); await loadPending(); }}>Reject</Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.map((post) => (
                   <article key={post.id} className="bg-white rounded-lg border shadow hover:shadow-lg transition-shadow flex flex-col">
                       <img src={post.imageUrl || 'https://placehold.co/600x400'} alt={post.title} className="w-full h-40 object-cover rounded-t-lg" />
                       <div className="p-5 flex-grow">
                           <h3 className="text-lg font-bold text-gray-800 line-clamp-2">{post.title}</h3>
-                          <p className="text-sm text-gray-500 mt-1">{post.category}</p>
+                          <p className="text-sm text-gray-500 mt-1">{post.category} {post.status ? `• ${post.status}` : ''}</p>
                       </div>
                       <div className="p-5 border-t bg-gray-50 rounded-b-lg">
                           <div className="flex gap-2">
@@ -485,6 +516,45 @@ export default function AdminDashboard() {
           return handleCreateEvent(data as InsertEvent);
         }}
       />
+
+      <Dialog open={showPendingModal} onOpenChange={() => { setShowPendingModal(false); setActivePendingPost(null); }}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Pending Blog Preview</DialogTitle>
+          </DialogHeader>
+          {activePendingPost && (
+            <div className="space-y-4">
+              {activePendingPost.imageUrl && (
+                <img src={activePendingPost.imageUrl} alt={activePendingPost.title} className="w-full h-64 object-cover rounded-md" />
+              )}
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">{activePendingPost.title}</h2>
+                <p className="text-sm text-gray-500 mt-1">Category: {activePendingPost.category || 'General'}</p>
+                <p className="text-sm text-gray-500">By {activePendingPost.authorName || activePendingPost.author} {activePendingPost.authorEmail ? `• ${activePendingPost.authorEmail}` : ''}</p>
+              </div>
+              <div className="prose max-w-none whitespace-pre-wrap">{activePendingPost.content}</div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => { setShowPendingModal(false); setActivePendingPost(null); }}>Close</Button>
+                <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={async () => {
+                  if (!activePendingPost) return;
+                  await approvePost(activePendingPost.id);
+                  await loadPending();
+                  await loadPosts();
+                  setShowPendingModal(false);
+                  setActivePendingPost(null);
+                }}>Approve</Button>
+                <Button variant="destructive" onClick={async () => {
+                  if (!activePendingPost) return;
+                  await rejectPost(activePendingPost.id);
+                  await loadPending();
+                  setShowPendingModal(false);
+                  setActivePendingPost(null);
+                }}>Reject</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

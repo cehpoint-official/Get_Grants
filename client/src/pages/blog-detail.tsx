@@ -6,6 +6,7 @@ import { Button } from "../components/ui/button";
 import { ArrowLeft, Calendar, User, ArrowRight, LoaderCircle } from "lucide-react";
 import { usePosts } from "../hooks/use-posts";
 import type { Post } from "shared/schema";
+import { fetchPublishedPosts } from "@/services/firebase";
 
 export default function BlogDetail() {
   const [, navigate] = useLocation();
@@ -16,9 +17,16 @@ export default function BlogDetail() {
     const urlParams = new URLSearchParams(window.location.search);
     const postId = urlParams.get("id");
     
-    if (!loading && postId && posts.length > 0) {
-      const foundPost = posts.find(p => p.id === postId);
-      setPost(foundPost || null);
+    if (!loading && postId) {
+      const foundPost = posts.find(p => p.id === postId && (p.status === 'published' || p.published));
+      if (foundPost) {
+        setPost(foundPost);
+      } else {
+        fetchPublishedPosts().then((list: any[]) => {
+          const matched = list.find((p: any) => p.id === postId);
+          setPost(matched || null);
+        });
+      }
     }
   }, [posts, loading]);
 

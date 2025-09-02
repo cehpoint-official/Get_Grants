@@ -116,7 +116,9 @@ export function CreatePostModal({
         setUploadingImage(true);
         finalImageUrl = await uploadToCloudinary(selectedImage);
       } else if (!imagePreview) {
-        finalImageUrl = "";
+        // No image provided
+        toast({ title: "Image required", description: "Please upload a featured image.", variant: "destructive" });
+        return;
       }
 
       const payload = {
@@ -140,7 +142,7 @@ export function CreatePostModal({
     } catch (error) {
       toast({
         title: "Error",
-        description: `Failed to ${initialData ? "update" : "create"} post.`,
+        description: error instanceof Error ? error.message : `Failed to ${initialData ? "update" : "create"} post.`,
         variant: "destructive",
       });
     } finally {

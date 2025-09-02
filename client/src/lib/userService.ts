@@ -18,6 +18,8 @@ export async function createUserProfile(
     createdAt: new Date(),
     subscriptionStatus: 'free',
     savedGrants: [],
+    notifyEmail: additionalData.notifyEmail ?? true,
+    notifyWhatsapp: additionalData.notifyWhatsapp ?? true,
   };
 
   await setDoc(userRef, {

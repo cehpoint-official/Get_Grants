@@ -11,6 +11,8 @@ export interface UserProfile {
   savedGrants?: string[];
   createdAt: Date;
   phone?: string; 
+  notifyEmail?: boolean;
+  notifyWhatsapp?: boolean;
 }
 
 // Data needed to create a new user profile
@@ -19,4 +21,6 @@ export interface CreateUserData {
   email: string;
   phone?: string;
   role: 'founder' | 'incubator';
+  notifyEmail?: boolean;
+  notifyWhatsapp?: boolean;
 }
