@@ -12,7 +12,7 @@ export interface PremiumInquiry {
   timeline: string;
   specificNeeds: string;
   message?: string;
-  status: 'new' | 'in_progress' | 'responded' | 'closed';
+  status: 'new' | 'in_progress' | 'meeting_scheduled' | 'meeting_done' | 'responded' | 'closed';
   adminResponse?: string;
   createdAt: Date;
   updatedAt: Date;

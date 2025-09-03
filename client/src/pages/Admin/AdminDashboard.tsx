@@ -20,7 +20,7 @@ import {
   updateApplicationStatus
 } from "@/services/applications";
 import { fetchAllUsers } from "@/services/users"; 
-import { fetchPremiumInquiries, PremiumInquiry } from "@/services/premiumSupport";
+import { fetchPremiumInquiries, PremiumInquiry, updateInquiryStatus as updatePremiumInquiryStatus } from "@/services/premiumSupport";
 import { Grant, InsertGrant, Post, InsertPost, Application, User, CalendarEvent, InsertEvent } from "@shared/schema";
 import { CreatePostModal } from "@/components/create-post-modal";
 import { CreateGrantModal } from "@/components/create-grant-modal";
@@ -145,6 +145,7 @@ export default function AdminDashboard() {
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [scheduleInquiry, setScheduleInquiry] = useState<PremiumInquiry | null>(null);
+  const [inquiryStatusFilter, setInquiryStatusFilter] = useState<'all' | 'meeting_scheduled' | 'meeting_done'>('all');
   const { logout } = useAuth();
   const [, navigate] = useLocation();
 
@@ -182,6 +183,12 @@ export default function AdminDashboard() {
     loadApplications();
   };
 
+  const handleInquiryStatusChange = async (inquiryId: string, status: PremiumInquiry['status']) => {
+    if (!inquiryId) return;
+    await updatePremiumInquiryStatus(inquiryId, status);
+    loadPremiumInquiries();
+  };
+
   const handleScheduleMeeting = () => {
     if (!scheduleInquiry) return;
     const params = new URLSearchParams();
@@ -189,7 +196,10 @@ export default function AdminDashboard() {
     params.append('email', scheduleInquiry.email);
     const scheduleUrl = `${meetingScheduleLink}?${params.toString()}`;
     window.open(scheduleUrl, '_blank');
-    setScheduleInquiry(null); // Close modal after opening link
+    if (scheduleInquiry.id) {
+      handleInquiryStatusChange(scheduleInquiry.id, 'meeting_scheduled');
+    }
+    setScheduleInquiry(null);
   };
 
   const handleSidebarItemClick = (item: string) => { setActiveTab(item); setSidebarOpen(false); };
@@ -202,6 +212,8 @@ export default function AdminDashboard() {
             case 'Rejected': return 'bg-red-100 text-red-800';
             case 'new': return 'bg-blue-100 text-blue-800';
             case 'responded': return 'bg-green-100 text-green-800';
+            case 'meeting_scheduled': return 'bg-purple-100 text-purple-800';
+            case 'meeting_done': return 'bg-green-100 text-green-800';
             default: return 'bg-gray-100 text-gray-800';
         }
   };
@@ -354,6 +366,13 @@ export default function AdminDashboard() {
         <div>
           <h2 className="text-2xl font-bold mb-4">Users Queries</h2>
           <div className="bg-white p-4 rounded-lg shadow-sm border overflow-x-auto">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex gap-2 text-sm">
+                <Button variant={inquiryStatusFilter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setInquiryStatusFilter('all')}>All ({premiumInquiries.length})</Button>
+                <Button variant={inquiryStatusFilter === 'meeting_scheduled' ? 'default' : 'outline'} size="sm" onClick={() => setInquiryStatusFilter('meeting_scheduled')}>Meeting Scheduled ({premiumInquiries.filter(i => i.status === 'meeting_scheduled').length})</Button>
+                <Button variant={inquiryStatusFilter === 'meeting_done' ? 'default' : 'outline'} size="sm" onClick={() => setInquiryStatusFilter('meeting_done')}>Meeting Done ({premiumInquiries.filter(i => i.status === 'meeting_done').length})</Button>
+              </div>
+            </div>
             <table className="w-full text-sm text-left text-gray-500">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                 <tr>
@@ -365,7 +384,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {premiumInquiries.map(inquiry => (
+                {(inquiryStatusFilter === 'all' ? premiumInquiries : premiumInquiries.filter(i => i.status === inquiryStatusFilter)).map(inquiry => (
                   <tr key={inquiry.id} className="bg-white border-b hover:bg-gray-50">
                     <td className="px-6 py-4 font-medium text-gray-900">{inquiry.name}</td>
                     <td className="px-6 py-4">
@@ -384,7 +403,7 @@ export default function AdminDashboard() {
                         {inquiry.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 flex gap-2">
                       <Button 
                         size="sm" 
                         className="bg-violet hover:bg-pink text-white"
@@ -392,6 +411,20 @@ export default function AdminDashboard() {
                       >
                         Schedule Meeting
                       </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            Update <ChevronDown className="ml-2 h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => handleInquiryStatusChange(inquiry.id!, 'in_progress')}>In Progress</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleInquiryStatusChange(inquiry.id!, 'meeting_scheduled')}>Meeting Scheduled</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleInquiryStatusChange(inquiry.id!, 'meeting_done')}>Meeting Done</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleInquiryStatusChange(inquiry.id!, 'responded')}>Responded</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleInquiryStatusChange(inquiry.id!, 'closed')}>Closed</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 ))}
