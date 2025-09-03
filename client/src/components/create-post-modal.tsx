@@ -38,7 +38,7 @@ export function CreatePostModal({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState<string>("");
-  
+
   const { createPost } = usePosts();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -64,12 +64,12 @@ export function CreatePostModal({
           author: user?.email || "Admin",
           imageUrl: initialData.imageUrl || "",
         };
-        
+
         form.reset(formData);
         setCurrentImageUrl(initialData.imageUrl || "");
         setImagePreview(initialData.imageUrl || null);
         setSelectedImage(null);
-        
+
       } else {
         const formData = {
           title: "",
@@ -78,12 +78,12 @@ export function CreatePostModal({
           author: user?.email || "Admin",
           imageUrl: "",
         };
-        
+
         form.reset(formData);
         setCurrentImageUrl("");
         setImagePreview(null);
         setSelectedImage(null);
-        
+
       }
     }
   }, [isOpen, initialData, form, user]);
@@ -116,7 +116,6 @@ export function CreatePostModal({
         setUploadingImage(true);
         finalImageUrl = await uploadToCloudinary(selectedImage);
       } else if (!imagePreview) {
-        // No image provided
         toast({ title: "Image required", description: "Please upload a featured image.", variant: "destructive" });
         return;
       }
@@ -181,7 +180,7 @@ export function CreatePostModal({
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="category"
@@ -206,7 +205,7 @@ export function CreatePostModal({
                 </FormItem>
               )}
             />
-            
+
             <div className="space-y-2">
               <Label>Featured Image</Label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
@@ -248,7 +247,7 @@ export function CreatePostModal({
                 )}
               </div>
             </div>
-            
+
             <FormField
               control={form.control}
               name="content"
@@ -266,7 +265,7 @@ export function CreatePostModal({
                 </FormItem>
               )}
             />
-            
+
             <div className="flex justify-end space-x-4">
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
@@ -276,8 +275,8 @@ export function CreatePostModal({
                 className="bg-primary-blue hover:bg-accent-blue"
                 disabled={form.formState.isSubmitting || uploadingImage}
               >
-                {form.formState.isSubmitting || uploadingImage 
-                  ? "Publishing..." 
+                {form.formState.isSubmitting || uploadingImage
+                  ? "Publishing..."
                   : initialData ? "Update Post" : "Publish Post"
                 }
               </Button>

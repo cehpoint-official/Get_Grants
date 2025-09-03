@@ -33,6 +33,15 @@ service cloud.firestore {
       allow read, update, delete: if request.auth != null && request.auth.token.admin == true;
     }
 
+    // ✅ Premium Support Inquiries collection
+    match /premiumInquiries/{inquiryId} {
+      // Allow anyone to create inquiries (for the contact form)
+      allow create: if true;
+      
+      // Only admins can read and update inquiries
+      allow read, update: if request.auth != null && request.auth.token.admin == true;
+    }
+
     // Fallback deny
     match /{document=**} {
       allow read, write: if false;

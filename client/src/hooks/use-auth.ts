@@ -106,6 +106,10 @@ export function useAuth() {
     await deleteUser(currentUser);
   };
 
+  const updateUserState = (updates: Partial<UserProfile>) => {
+    setUser(prevUser => prevUser ? { ...prevUser, ...updates } : null);
+  };
+
   return {
     user,
     loading,
@@ -116,5 +120,6 @@ export function useAuth() {
     updateUserProfileDetails,
     changePassword,
     deleteAccount,
+    updateUserState,
   };
 }

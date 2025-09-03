@@ -27,12 +27,13 @@ export function Navbar() {
   const [location, navigate] = useLocation();
 
   useEffect(() => {
-    if (user && localStorage.getItem('grant_notify_consent') !== 'granted') {
+    // Don't show notification modal for admins
+    if (user && !user.notificationConsentGiven && !isAdmin) {
       setShowNotifyModal(true);
     } else {
       setShowNotifyModal(false);
     }
-  }, [user]);
+  }, [user, isAdmin]);
 
   const scrollToSection = (sectionId: string) => {
     if (location !== "/") {
@@ -192,7 +193,7 @@ export function Navbar() {
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <AdminModal isOpen={showAdminModal} onClose={() => setShowAdminModal(false)} />
       {/* <IncubatorSignupModal isOpen={showIncubatorModal} onClose={() => setShowIncubatorModal(false)} /> */}
-      <NotificationConsentModal isOpen={showNotifyModal && !!user && localStorage.getItem('grant_notify_consent') !== 'granted'} onClose={() => setShowNotifyModal(false)} />
+      <NotificationConsentModal isOpen={showNotifyModal && !!user && !user.notificationConsentGiven && !isAdmin} onClose={() => setShowNotifyModal(false)} />
     </>
   );
 }

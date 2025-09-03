@@ -13,6 +13,7 @@ export interface UserProfile {
   phone?: string; 
   notifyEmail?: boolean;
   notifyWhatsapp?: boolean;
+  notificationConsentGiven?: boolean;
 }
 
 // Data needed to create a new user profile

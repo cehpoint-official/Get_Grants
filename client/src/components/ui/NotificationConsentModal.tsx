@@ -1,9 +1,9 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/lib/firebase";
 import { doc, updateDoc } from "firebase/firestore";
-import { useEffect, useState } from "react";
 
 interface Props {
   isOpen: boolean;
@@ -11,15 +11,26 @@ interface Props {
 }
 
 export function NotificationConsentModal({ isOpen, onClose }: Props) {
-  const { user } = useAuth();
+  const { user, updateUserState } = useAuth();
   const [saving, setSaving] = useState(false);
 
   const allow = async () => {
     if (!user) return;
     setSaving(true);
     try {
-      await updateDoc(doc(db, 'users', user.id), { notifyEmail: true, notifyWhatsapp: true });
-      localStorage.setItem('grant_notify_consent', 'granted');
+      await updateDoc(doc(db, 'users', user.id), { 
+        notifyEmail: true, 
+        notifyWhatsapp: true,
+        notificationConsentGiven: true 
+      });
+      
+      // Update local user state to reflect the change immediately
+      updateUserState({
+        notifyEmail: true,
+        notifyWhatsapp: true,
+        notificationConsentGiven: true
+      });
+      
       onClose();
     } finally {
       setSaving(false);

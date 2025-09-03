@@ -20,6 +20,7 @@ import {
   updateApplicationStatus
 } from "@/services/applications";
 import { fetchAllUsers } from "@/services/users"; // Import the new user service
+import { fetchPremiumInquiries, updateInquiryStatus, PremiumInquiry } from "@/services/premiumSupport";
 import { Grant, InsertGrant, Post, InsertPost, Application, User, CalendarEvent, InsertEvent } from "@shared/schema";
 import { CreatePostModal } from "@/components/create-post-modal";
 import { CreateGrantModal } from "@/components/create-grant-modal";
@@ -29,7 +30,7 @@ import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import {
   X, ChevronDown, LayoutDashboard, FileText, Inbox, Home, BookOpen, Menu as MenuIcon,
-  Users, FileCheck, Award, LoaderCircle, Calendar as CalendarIcon, Briefcase, Share2
+  Users, FileCheck, Award, LoaderCircle, Calendar as CalendarIcon, Briefcase, Share2, MessageSquare, Phone, Mail
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -42,6 +43,7 @@ import { fetchDashboardStats, DashboardStats } from "@/services/admin";
 import { Calendar } from "@/components/ui/calendar";
 import { fetchEvents, createEvent as createCalendarEvent, updateEvent as updateCalendarEvent, deleteEvent as deleteCalendarEvent } from "@/services/events";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 // --- ALL SIDEBAR ITEMS ARE HERE ---
 const sidebarItems = [
@@ -50,6 +52,7 @@ const sidebarItems = [
   { name: "Applications", icon: <Inbox className="w-4 h-4 mr-2" /> },
   { name: "Users", icon: <Users className="w-4 h-4 mr-2" /> },
   { name: "Blogs", icon: <BookOpen className="w-4 h-4 mr-2" /> },
+  { name: "Users Queries", icon: <MessageSquare className="w-4 h-4 mr-2" /> },
   { name: "Incubators", icon: <Briefcase className="w-4 h-4 mr-2" /> },
   { name: "Calendar", icon: <CalendarIcon className="w-4 h-4 mr-2" /> },
   { name: "Social Apps", icon: <Share2 className="w-4 h-4 mr-2" /> },
@@ -129,6 +132,7 @@ export default function AdminDashboard() {
   const [grants, setGrants] = useState<Grant[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [premiumInquiries, setPremiumInquiries] = useState<PremiumInquiry[]>([]);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [editingGrant, setEditingGrant] = useState<Grant | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -141,6 +145,9 @@ export default function AdminDashboard() {
   const [showEventModal, setShowEventModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showResponseModal, setShowResponseModal] = useState(false);
+  const [selectedInquiry, setSelectedInquiry] = useState<PremiumInquiry | null>(null);
+  const [responseText, setResponseText] = useState("");
   const { logout } = useAuth();
   const [, navigate] = useLocation();
 
@@ -150,6 +157,7 @@ export default function AdminDashboard() {
     if (activeTab === "Calendar") loadEvents();
     if (activeTab === "Applications") loadApplications();
     if (activeTab === "Users") loadUsers();
+    if (activeTab === "Users Queries") loadPremiumInquiries();
     if (activeTab === "Home") navigate("/");
   }, [activeTab]);
 
@@ -159,6 +167,7 @@ export default function AdminDashboard() {
   const loadApplications = async () => setApplications(await fetchAllApplications());
   const loadUsers = async () => setUsers(await fetchAllUsers());
   const loadEvents = async () => setEvents(await fetchEvents());
+  const loadPremiumInquiries = async () => setPremiumInquiries(await fetchPremiumInquiries());
 
   const handleDeletePost = async (id: string) => { await deletePost(id); loadPosts(); };
   const handleCreatePost = async (formData: InsertPost) => { await createPost(formData); loadPosts(); setShowModal(false); };
@@ -171,6 +180,25 @@ export default function AdminDashboard() {
   const handleStatusChange = async (appId: string, status: string) => {
     await updateApplicationStatus(appId, status);
     loadApplications();
+  };
+
+  const handleInquiryStatusChange = async (inquiryId: string, status: PremiumInquiry['status']) => {
+    await updateInquiryStatus(inquiryId, status);
+    loadPremiumInquiries();
+  };
+
+  const handleRespondToInquiry = async () => {
+    if (!selectedInquiry || !responseText.trim()) return;
+    
+    try {
+      await updateInquiryStatus(selectedInquiry.id!, 'responded', responseText);
+      setResponseText("");
+      setSelectedInquiry(null);
+      setShowResponseModal(false);
+      loadPremiumInquiries();
+    } catch (error) {
+      console.error('Error responding to inquiry:', error);
+    }
   };
 
   const handleSidebarItemClick = (item: string) => { setActiveTab(item); setSidebarOpen(false); };
@@ -327,6 +355,85 @@ export default function AdminDashboard() {
                     </div>
                 </CardContent>
             </Card>
+        </div>
+      );
+      case "Users Queries": return (
+        <div>
+          <h2 className="text-2xl font-bold mb-4">Users Queries</h2>
+          <div className="bg-white p-4 rounded-lg shadow-sm border overflow-x-auto">
+            <table className="w-full text-sm text-left text-gray-500">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3">Name</th>
+                  <th scope="col" className="px-6 py-3">Email</th>
+                  <th scope="col" className="px-6 py-3">Phone</th>
+                  <th scope="col" className="px-6 py-3">Current Plan</th>
+                  <th scope="col" className="px-6 py-3">Budget</th>
+                  <th scope="col" className="px-6 py-3">Timeline</th>
+                  <th scope="col" className="px-6 py-3">Status</th>
+                  <th scope="col" className="px-6 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {premiumInquiries.map(inquiry => (
+                  <tr key={inquiry.id} className="bg-white border-b hover:bg-gray-50">
+                    <td className="px-6 py-4 font-medium text-gray-900">{inquiry.name}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center">
+                        <Mail className="w-4 h-4 mr-2 text-gray-400" />
+                        {inquiry.email}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center">
+                        <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                        {inquiry.phone}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">{inquiry.currentPlan}</td>
+                    <td className="px-6 py-4">{inquiry.budget}</td>
+                    <td className="px-6 py-4">{inquiry.timeline}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(inquiry.status)}`}>
+                        {inquiry.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedInquiry(inquiry);
+                            setShowResponseModal(true);
+                          }}
+                        >
+                          View Details
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              Status <ChevronDown className="ml-2 h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => handleInquiryStatusChange(inquiry.id!, 'in_progress')}>In Progress</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleInquiryStatusChange(inquiry.id!, 'responded')}>Responded</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleInquiryStatusChange(inquiry.id!, 'closed')}>Closed</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {premiumInquiries.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                No user queries yet.
+              </div>
+            )}
+          </div>
         </div>
       );
       case "Blogs": return (
@@ -550,6 +657,76 @@ export default function AdminDashboard() {
                   setShowPendingModal(false);
                   setActivePendingPost(null);
                 }}>Reject</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Users Queries Response Modal */}
+      <Dialog open={showResponseModal} onOpenChange={() => { setShowResponseModal(false); setSelectedInquiry(null); setResponseText(""); }}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>User Query Details</DialogTitle>
+          </DialogHeader>
+          {selectedInquiry && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-semibold text-gray-900">Contact Information</h4>
+                  <p><strong>Name:</strong> {selectedInquiry.name}</p>
+                  <p><strong>Email:</strong> {selectedInquiry.email}</p>
+                  <p><strong>Phone:</strong> {selectedInquiry.phone}</p>
+                  {selectedInquiry.companyName && <p><strong>Company:</strong> {selectedInquiry.companyName}</p>}
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900">Subscription Details</h4>
+                  <p><strong>Current Plan:</strong> {selectedInquiry.currentPlan}</p>
+                  <p><strong>Budget Range:</strong> {selectedInquiry.budget}</p>
+                  <p><strong>Timeline:</strong> {selectedInquiry.timeline}</p>
+                  <p><strong>Status:</strong> <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedInquiry.status)}`}>{selectedInquiry.status}</span></p>
+                </div>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold text-gray-900">Specific Needs</h4>
+                <p className="text-gray-700 bg-gray-50 p-3 rounded-md">{selectedInquiry.specificNeeds}</p>
+              </div>
+              
+              {selectedInquiry.message && (
+                <div>
+                  <h4 className="font-semibold text-gray-900">Additional Message</h4>
+                  <p className="text-gray-700 bg-gray-50 p-3 rounded-md">{selectedInquiry.message}</p>
+                </div>
+              )}
+              
+              {selectedInquiry.adminResponse && (
+                <div>
+                  <h4 className="font-semibold text-gray-900">Previous Admin Response</h4>
+                  <p className="text-gray-700 bg-blue-50 p-3 rounded-md">{selectedInquiry.adminResponse}</p>
+                </div>
+              )}
+              
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-2">Admin Response</h4>
+                <Textarea
+                  placeholder="Type your response here..."
+                  value={responseText}
+                  onChange={(e) => setResponseText(e.target.value)}
+                  rows={4}
+                  className="w-full"
+                />
+              </div>
+              
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => { setShowResponseModal(false); setSelectedInquiry(null); setResponseText(""); }}>Close</Button>
+                <Button 
+                  onClick={handleRespondToInquiry}
+                  disabled={!responseText.trim()}
+                  className="bg-violet hover:bg-pink text-white"
+                >
+                  Send Response
+                </Button>
               </div>
             </div>
           )}

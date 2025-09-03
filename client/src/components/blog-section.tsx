@@ -17,6 +17,7 @@ import { db } from "@/lib/firebase";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, X } from "lucide-react";
 import { uploadToCloudinary } from "@/services/cloudinary";
+import { useToast } from "@/hooks/use-toast";
 
 export function BlogSection() {
   const [showCreatePost, setShowCreatePost] = useState(false);
@@ -191,6 +192,7 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const { toast } = useToast();
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -214,8 +216,12 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
       if (selectedImage) {
         setUploadingImage(true);
         finalImageUrl = await uploadToCloudinary(selectedImage);
-      } else if (!imagePreview) {
-        // require image upload for user submissions as well
+      } else {
+        toast({
+          title: "Image required",
+          description: "Please upload a featured image.",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -305,7 +311,7 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
                 ) : (
                   <div>
                     <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-600 mb-2">Upload a featured image (optional)</p>
+                    <p className="text-gray-600 mb-2">Upload a featured image (required)</p>
                     <Input type="file" accept="image/*" onChange={handleImageSelect} className="hidden" id="user-image-upload" />
                     <FormLabel htmlFor="user-image-upload" className="cursor-pointer bg-primary-blue hover:bg-accent-blue text-white px-4 py-2 rounded-md inline-block">
                       Choose Image
@@ -325,7 +331,7 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
 
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-              <Button type="submit" disabled={uploadingImage || !imagePreview}>{uploadingImage ? "Uploading..." : "Submit"}</Button>
+              <Button type="submit" disabled={uploadingImage}>{uploadingImage ? "Uploading..." : "Submit"}</Button>
             </div>
           </form>
         </Form>

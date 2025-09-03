@@ -20,6 +20,7 @@ export async function createUserProfile(
     savedGrants: [],
     notifyEmail: additionalData.notifyEmail ?? true,
     notifyWhatsapp: additionalData.notifyWhatsapp ?? true,
+    notificationConsentGiven: false, // New users haven't given consent yet
   };
 
   await setDoc(userRef, {
@@ -47,6 +48,9 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
         savedGrants: data.savedGrants || [],
         phone: data.phone || '',
         createdAt: data.createdAt?.toDate() || new Date(),
+        notifyEmail: data.notifyEmail ?? true,
+        notifyWhatsapp: data.notifyWhatsapp ?? true,
+        notificationConsentGiven: data.notificationConsentGiven ?? false,
       };
       return profile;
     }
