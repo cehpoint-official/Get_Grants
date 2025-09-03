@@ -19,8 +19,8 @@ import {
   fetchApplications as fetchAllApplications,
   updateApplicationStatus
 } from "@/services/applications";
-import { fetchAllUsers } from "@/services/users"; // Import the new user service
-import { fetchPremiumInquiries, updateInquiryStatus, PremiumInquiry } from "@/services/premiumSupport";
+import { fetchAllUsers } from "@/services/users"; 
+import { fetchPremiumInquiries, PremiumInquiry } from "@/services/premiumSupport";
 import { Grant, InsertGrant, Post, InsertPost, Application, User, CalendarEvent, InsertEvent } from "@shared/schema";
 import { CreatePostModal } from "@/components/create-post-modal";
 import { CreateGrantModal } from "@/components/create-grant-modal";
@@ -30,7 +30,7 @@ import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import {
   X, ChevronDown, LayoutDashboard, FileText, Inbox, Home, BookOpen, Menu as MenuIcon,
-  Users, FileCheck, Award, LoaderCircle, Calendar as CalendarIcon, Briefcase, Share2, MessageSquare, Phone, Mail
+  Users, FileCheck, Award, LoaderCircle, Calendar as CalendarIcon, Briefcase, Share2, MessageSquare, Phone, Mail, User as UserIcon, Building
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -42,8 +42,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchDashboardStats, DashboardStats } from "@/services/admin";
 import { Calendar } from "@/components/ui/calendar";
 import { fetchEvents, createEvent as createCalendarEvent, updateEvent as updateCalendarEvent, deleteEvent as deleteCalendarEvent } from "@/services/events";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 // --- ALL SIDEBAR ITEMS ARE HERE ---
 const sidebarItems = [
@@ -145,11 +144,12 @@ export default function AdminDashboard() {
   const [showEventModal, setShowEventModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showResponseModal, setShowResponseModal] = useState(false);
-  const [selectedInquiry, setSelectedInquiry] = useState<PremiumInquiry | null>(null);
-  const [responseText, setResponseText] = useState("");
+  const [scheduleInquiry, setScheduleInquiry] = useState<PremiumInquiry | null>(null);
   const { logout } = useAuth();
   const [, navigate] = useLocation();
+
+  // ***** IMPORTANT:  scheduling link 
+  const meetingScheduleLink = "https://zcal.co/blackleoventures/GetGrants";
 
   useEffect(() => {
     if (activeTab === "Blogs") { loadPosts(); loadPending(); }
@@ -182,23 +182,14 @@ export default function AdminDashboard() {
     loadApplications();
   };
 
-  const handleInquiryStatusChange = async (inquiryId: string, status: PremiumInquiry['status']) => {
-    await updateInquiryStatus(inquiryId, status);
-    loadPremiumInquiries();
-  };
-
-  const handleRespondToInquiry = async () => {
-    if (!selectedInquiry || !responseText.trim()) return;
-    
-    try {
-      await updateInquiryStatus(selectedInquiry.id!, 'responded', responseText);
-      setResponseText("");
-      setSelectedInquiry(null);
-      setShowResponseModal(false);
-      loadPremiumInquiries();
-    } catch (error) {
-      console.error('Error responding to inquiry:', error);
-    }
+  const handleScheduleMeeting = () => {
+    if (!scheduleInquiry) return;
+    const params = new URLSearchParams();
+    params.append('name', scheduleInquiry.name);
+    params.append('email', scheduleInquiry.email);
+    const scheduleUrl = `${meetingScheduleLink}?${params.toString()}`;
+    window.open(scheduleUrl, '_blank');
+    setScheduleInquiry(null); // Close modal after opening link
   };
 
   const handleSidebarItemClick = (item: string) => { setActiveTab(item); setSidebarOpen(false); };
@@ -209,6 +200,8 @@ export default function AdminDashboard() {
             case 'Reviewed': return 'bg-blue-100 text-blue-800';
             case 'Approved': return 'bg-green-100 text-green-800';
             case 'Rejected': return 'bg-red-100 text-red-800';
+            case 'new': return 'bg-blue-100 text-blue-800';
+            case 'responded': return 'bg-green-100 text-green-800';
             default: return 'bg-gray-100 text-gray-800';
         }
   };
@@ -365,11 +358,8 @@ export default function AdminDashboard() {
               <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                 <tr>
                   <th scope="col" className="px-6 py-3">Name</th>
-                  <th scope="col" className="px-6 py-3">Email</th>
-                  <th scope="col" className="px-6 py-3">Phone</th>
-                  <th scope="col" className="px-6 py-3">Current Plan</th>
-                  <th scope="col" className="px-6 py-3">Budget</th>
-                  <th scope="col" className="px-6 py-3">Timeline</th>
+                  <th scope="col" className="px-6 py-3">Contact</th>
+                  <th scope="col" className="px-6 py-3">Company</th>
                   <th scope="col" className="px-6 py-3">Status</th>
                   <th scope="col" className="px-6 py-3">Actions</th>
                 </tr>
@@ -379,50 +369,29 @@ export default function AdminDashboard() {
                   <tr key={inquiry.id} className="bg-white border-b hover:bg-gray-50">
                     <td className="px-6 py-4 font-medium text-gray-900">{inquiry.name}</td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center">
-                        <Mail className="w-4 h-4 mr-2 text-gray-400" />
+                      <div className="flex items-center text-xs">
+                        <Mail className="w-3 h-3 mr-2 text-gray-400" />
                         {inquiry.email}
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center">
-                        <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                      <div className="flex items-center text-xs mt-1">
+                        <Phone className="w-3 h-3 mr-2 text-gray-400" />
                         {inquiry.phone}
                       </div>
                     </td>
-                    <td className="px-6 py-4">{inquiry.currentPlan}</td>
-                    <td className="px-6 py-4">{inquiry.budget}</td>
-                    <td className="px-6 py-4">{inquiry.timeline}</td>
+                    <td className="px-6 py-4">{inquiry.companyName || 'N/A'}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(inquiry.status)}`}>
+                      <span className={`capitalize px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(inquiry.status)}`}>
                         {inquiry.status}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedInquiry(inquiry);
-                            setShowResponseModal(true);
-                          }}
-                        >
-                          View Details
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              Status <ChevronDown className="ml-2 h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => handleInquiryStatusChange(inquiry.id!, 'in_progress')}>In Progress</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleInquiryStatusChange(inquiry.id!, 'responded')}>Responded</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleInquiryStatusChange(inquiry.id!, 'closed')}>Closed</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+                      <Button 
+                        size="sm" 
+                        className="bg-violet hover:bg-pink text-white"
+                        onClick={() => setScheduleInquiry(inquiry)}
+                      >
+                        Schedule Meeting
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -624,6 +593,48 @@ export default function AdminDashboard() {
         }}
       />
 
+      {/* NEW 'Schedule a Meeting' Modal */}
+      <Dialog open={!!scheduleInquiry} onOpenChange={() => setScheduleInquiry(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl font-bold text-violet">Schedule a Meeting</DialogTitle>
+          </DialogHeader>
+          {scheduleInquiry && (
+            <div className="py-4 space-y-4">
+              <div className="flex items-start p-3 bg-gray-50 rounded-lg">
+                <UserIcon className="w-5 h-5 mr-3 mt-1 text-gray-400"/>
+                <div>
+                  <label className="text-xs text-gray-500">Name</label>
+                  <p className="font-semibold text-gray-800">{scheduleInquiry.name}</p>
+                </div>
+              </div>
+               <div className="flex items-start p-3 bg-gray-50 rounded-lg">
+                <Mail className="w-5 h-5 mr-3 mt-1 text-gray-400"/>
+                <div>
+                  <label className="text-xs text-gray-500">Email</label>
+                  <p className="font-semibold text-gray-800">{scheduleInquiry.email}</p>
+                </div>
+              </div>
+               <div className="flex items-start p-3 bg-gray-50 rounded-lg">
+                <Building className="w-5 h-5 mr-3 mt-1 text-gray-400"/>
+                <div>
+                  <label className="text-xs text-gray-500">Company Name</label>
+                  <p className="font-semibold text-gray-800">{scheduleInquiry.companyName}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="sm:justify-between gap-2">
+            <Button type="button" variant="outline" onClick={() => setScheduleInquiry(null)}>
+              Back
+            </Button>
+            <Button type="button" className="bg-violet hover:bg-pink" onClick={handleScheduleMeeting}>
+              Schedule a Meeting
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={showPendingModal} onOpenChange={() => { setShowPendingModal(false); setActivePendingPost(null); }}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -657,76 +668,6 @@ export default function AdminDashboard() {
                   setShowPendingModal(false);
                   setActivePendingPost(null);
                 }}>Reject</Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Users Queries Response Modal */}
-      <Dialog open={showResponseModal} onOpenChange={() => { setShowResponseModal(false); setSelectedInquiry(null); setResponseText(""); }}>
-        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>User Query Details</DialogTitle>
-          </DialogHeader>
-          {selectedInquiry && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-semibold text-gray-900">Contact Information</h4>
-                  <p><strong>Name:</strong> {selectedInquiry.name}</p>
-                  <p><strong>Email:</strong> {selectedInquiry.email}</p>
-                  <p><strong>Phone:</strong> {selectedInquiry.phone}</p>
-                  {selectedInquiry.companyName && <p><strong>Company:</strong> {selectedInquiry.companyName}</p>}
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">Subscription Details</h4>
-                  <p><strong>Current Plan:</strong> {selectedInquiry.currentPlan}</p>
-                  <p><strong>Budget Range:</strong> {selectedInquiry.budget}</p>
-                  <p><strong>Timeline:</strong> {selectedInquiry.timeline}</p>
-                  <p><strong>Status:</strong> <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedInquiry.status)}`}>{selectedInquiry.status}</span></p>
-                </div>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold text-gray-900">Specific Needs</h4>
-                <p className="text-gray-700 bg-gray-50 p-3 rounded-md">{selectedInquiry.specificNeeds}</p>
-              </div>
-              
-              {selectedInquiry.message && (
-                <div>
-                  <h4 className="font-semibold text-gray-900">Additional Message</h4>
-                  <p className="text-gray-700 bg-gray-50 p-3 rounded-md">{selectedInquiry.message}</p>
-                </div>
-              )}
-              
-              {selectedInquiry.adminResponse && (
-                <div>
-                  <h4 className="font-semibold text-gray-900">Previous Admin Response</h4>
-                  <p className="text-gray-700 bg-blue-50 p-3 rounded-md">{selectedInquiry.adminResponse}</p>
-                </div>
-              )}
-              
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Admin Response</h4>
-                <Textarea
-                  placeholder="Type your response here..."
-                  value={responseText}
-                  onChange={(e) => setResponseText(e.target.value)}
-                  rows={4}
-                  className="w-full"
-                />
-              </div>
-              
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => { setShowResponseModal(false); setSelectedInquiry(null); setResponseText(""); }}>Close</Button>
-                <Button 
-                  onClick={handleRespondToInquiry}
-                  disabled={!responseText.trim()}
-                  className="bg-violet hover:bg-pink text-white"
-                >
-                  Send Response
-                </Button>
               </div>
             </div>
           )}

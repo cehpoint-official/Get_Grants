@@ -11,13 +11,13 @@ export default function PremiumSupportPage() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'signup'>('login');
-  
-  const { user } = useAuth(); 
+
+  const { user } = useAuth();
   const [, navigate] = useLocation();
 
   const handlePlanClick = (mode: 'login' | 'signup') => {
     if (user) {
-      navigate("/apply"); 
+      navigate("/apply");
     } else {
       setAuthInitialMode(mode);
       setIsAuthModalOpen(true);
@@ -112,36 +112,18 @@ export default function PremiumSupportPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            {/* Free Plan */}
-            {/* <div className="bg-white rounded-2xl p-8 text-center transition-all duration-300 hover:shadow-2xl shadow-lg shadow-black/20 hover:shadow-black/40 transform hover:-translate-y-1 hover:scale-[1.01]">
-              <div className="mb-6">
-                <h3 className="text-2xl font-bold text-violet mb-2 ">Free</h3>
-                <p className="text-gray-600">Perfect for getting started</p>
-              </div>
-              <div className="mb-8">
-                <span className="text-4xl font-bold text-violet">₹0</span>
-                <span className="text-gray-600">/month</span>
-              </div>
-              <ul className="text-left space-y-4 mb-8">
-                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Access to 100+ basic grants</span></li>
-                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Basic grant information</span></li>
-                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Email notifications</span></li>
-                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Community forum access</span></li>
-              </ul>
-              <Button onClick={() => handlePlanClick('signup')} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Get Started Free</Button>
-            </div> */}
-
             {/* Pro Plan */}
             <div className="bg-white rounded-2xl p-8 text-center shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/40 relative transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01]">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2"><span className="bg-violet text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg">Most Popular</span></div>
               <div className="mb-6"><h3 className="text-2xl font-bold text-violet mb-2">Pro</h3><p className="text-gray-600">For serious founders</p></div>
               <div className="mb-8"><span className="text-4xl font-bold text-violet">₹999</span><span className="text-gray-600">/month</span></div>
               <ul className="text-left space-y-4 mb-8">
-                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Everything in Free</span></li>
-                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Access to 500+ premium grants</span></li>
-                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Priority application support</span></li>
-                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">WhatsApp & SMS alerts</span></li>
-                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Grant deadline tracking</span></li>
+                {/* Checkmark color changed from text-red to text-violet */}
+                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-violet mr-3 flex-shrink-0" /><span className="text-gray-700">Everything in Free</span></li>
+                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-violet mr-3 flex-shrink-0" /><span className="text-gray-700">Access to 500+ premium grants</span></li>
+                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-violet mr-3 flex-shrink-0" /><span className="text-gray-700">Priority application support</span></li>
+                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-violet mr-3 flex-shrink-0" /><span className="text-gray-700">WhatsApp & SMS alerts</span></li>
+                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-violet mr-3 flex-shrink-0" /><span className="text-gray-700">Grant deadline tracking</span></li>
               </ul>
               <Button onClick={() => handlePlanClick('login')} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Choose Pro Plan</Button>
             </div>
@@ -151,42 +133,33 @@ export default function PremiumSupportPage() {
               <div className="mb-6"><h3 className="text-2xl font-bold text-violet mb-2">Enterprise</h3><p className="text-gray-600">For teams & incubators</p></div>
               <div className="mb-8"><span className="text-4xl font-bold text-violet">₹2,999</span><span className="text-gray-600">/month</span></div>
               <ul className="text-left space-y-4 mb-8">
-                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Everything in Pro</span></li>
-                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Done-for-you applications</span></li>
-                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">1:1 expert consultation</span></li>
-                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Pitch deck review</span></li>
-                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-red mr-3 flex-shrink-0" /><span className="text-gray-700">Team collaboration tools</span></li>
+                {/* Checkmark color changed from text-red to text-violet */}
+                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-violet mr-3 flex-shrink-0" /><span className="text-gray-700">Everything in Pro</span></li>
+                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-violet mr-3 flex-shrink-0" /><span className="text-gray-700">Done-for-you applications</span></li>
+                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-violet mr-3 flex-shrink-0" /><span className="text-gray-700">1:1 expert consultation</span></li>
+                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-violet mr-3 flex-shrink-0" /><span className="text-gray-700">Pitch deck review</span></li>
+                <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-violet mr-3 flex-shrink-0" /><span className="text-gray-700">Team collaboration tools</span></li>
               </ul>
               <Button onClick={() => handlePlanClick('login')} className="w-full bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold">Contact Sales</Button>
             </div>
           </div>
         </div>
       </section>
-         {/* Services Section */}
-         <section style={{
+      {/* Services Section */}
+      <section style={{
         background: 'white'
       }} className="text-violet">
         <div className="container mx-auto px-4 py-5 md:py-10 text-center">
-
-{/*          
-          <Button 
-            onClick={scrollToPricing} 
-            className="mb-8 bg-violet-100 text-black hover:bg-violet-200 rounded-full px-6 py-3 text-base font-semibold shadow-sm transition-colors group"
-          >
-            View Pricing Plans
-            <ArrowDown className="ml-2 h-5 w-5 transition-transform group-hover:translate-y-1" />
-          </Button> */}
-
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl drop-shadow-lg">
             Want to Increase Your Chances of Getting Funded?
           </h1>
           <p className="mt-4 text-lg max-w-2xl mx-auto text-gray-700 drop-shadow-md">
             Let our experts guide you through every step of the application process.
           </p>
-        
+
         </div>
       </section>
-         <section className="py-10 md:py-16">
+      <section className="py-10 md:py-16">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8">
             {services.map((service) => (
@@ -201,12 +174,12 @@ export default function PremiumSupportPage() {
           </div>
         </div>
       </section>
-      
+
       {/* Auth Modal unified for pricing actions */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} initialMode={authInitialMode} />
       <Faq />
-       
-        <Footer/>
+
+      <Footer />
     </div>
   );
 }
