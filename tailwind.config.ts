@@ -2,7 +2,7 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
+  content: ["./client/index.html", "./client/src//**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
       borderRadius: {
@@ -44,23 +44,18 @@ export default {
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
-        chart: {
-          "1": "var(--chart-1)",
-          "2": "var(--chart-2)",
-          "3": "var(--chart-3)",
-          "4": "var(--chart-4)",
-          "5": "var(--chart-5)",
-        },
-        sidebar: {
-          DEFAULT: "var(--sidebar-background)",
-          foreground: "var(--sidebar-foreground)",
-          primary: "var(--sidebar-primary)",
-          "primary-foreground": "var(--sidebar-primary-foreground)",
-          accent: "var(--sidebar-accent)",
-          "accent-foreground": "var(--sidebar-accent-foreground)",
-          border: "var(--sidebar-border)",
-          ring: "var(--sidebar-ring)",
-        },
+        // Figma Design Colors
+        'nav-dark': 'var(--nav-dark)',
+        'nav-gray': 'var(--nav-gray)',
+        'nav-pink-accent': 'var(--nav-pink-accent)',
+        'gradient-start': 'var(--gradient-start)',
+        'gradient-end': 'var(--gradient-end)',
+        'pain-point-bg': 'var(--pain-point-bg)',
+        'pain-point-text': 'var(--pain-point-text)',
+        'title-dark': 'var(--title-dark)',
+        'text-muted-custom': 'var(--text-muted-custom)',
+        violet: 'var(--violet)',
+        pink: 'var(--pink)',
       },
       keyframes: {
         "accordion-down": {

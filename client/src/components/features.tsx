@@ -1,63 +1,57 @@
-import { Database, Filter, Clock, Lightbulb } from "lucide-react";
+import { Info, CalendarClock, UserX } from "lucide-react";
 
 export function Features() {
-  const features = [
+  const painPoints = [
     {
-      icon: Database,
-      title: "Comprehensive Database",
-      description: "80+ verified grants across all sectors and stages",
-      color: "bg-white hover:bg-violet/20 shadow-lg shadow-black/20 hover:shadow-2xl hover:shadow-black/40 transform hover:-translate-y-1 hover:scale-[1.01]",
-      iconColor: "text-pink",
+      icon: Info,
+      title: "Information Overload",
+      description: "So many portals, yet no single place to view everything.",
     },
     {
-      icon: Filter,
-      title: "Smart Filtering",
-      description: "Find relevant grants by stage, sector, and location",
-      color: "bg-yellowish-white hover:bg-violet/20 shadow-lg shadow-black/20 hover:shadow-2xl hover:shadow-black/40 transform hover:-translate-y-1 hover:scale-[1.01]",
-      iconColor: "text-pink",
+      icon: CalendarClock,
+      title: "Silent Deadlines",
+      description: "Application windows pass by unnoticed, reducing your chances.",
     },
     {
-      icon: Clock,
-      title: "Real-time Updates",
-      description: "Stay updated with latest grant announcements",
-      color: "bg-yellowish-white hover:bg-violet/20 shadow-lg shadow-black/20 hover:shadow-2xl hover:shadow-black/40 transform hover:-translate-y-1 hover:scale-[1.01]",
-      iconColor: "text-pink",
-    },
-    {
-      icon: Lightbulb,
-      title: "Expert Insights",
-      description: "Actionable tips and guides for successful applications",
-      color: "bg-yellowish-white hover:bg-violet/20 shadow-lg shadow-black/20 hover:shadow-2xl hover:shadow-black/40 transform hover:-translate-y-1 hover:scale-[1.01] ",
-      iconColor: "text-pink",
+      icon: UserX,
+      title: "Unfit Options",
+      description: "Effort spent evaluating programs ends in rejection due to strict criteria.",
     },
   ];
 
   return (
-    <section className="py-16" style={{
-      background: 'white'
-    }}>
+   
+    <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-violet mb-4">
-            Why Get grants
+        <div className="text-center mb-24">
+         
+          <div className="inline-block bg-[#EB5E77]/10 text-[#EB5E77] font-semibold px-4 py-1.5 rounded-full text-sm mb-4">
+            Pain Points
+          </div>
+          <h2 className="text-3xl lg:text-4xl font-bold text-[#30343B] mb-3">
+            Why is finding grants so hard?
           </h2>
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-            Stay updated with latest grants and deadlines
+          <p className="text-lg text-[#565F6C] max-w-2xl mx-auto">
+            Why most startups miss out on funding opportunities
           </p>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, index) => (
+        
+        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          {painPoints.map((point, index) => (
             <div
               key={index}
-              className={`text-center p-6 rounded-2xl transition-all duration-300 ${feature.color}`}
+             
+              className="relative bg-white pt-16 pb-10 px-8 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] text-center"
             >
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-black/20">
-                <feature.icon className={`h-8 w-8 ${feature.iconColor}`} />
+             
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-16 h-16 bg-[#EB5E77]/10 border-2 border-[#EB5E77] rounded-full flex items-center justify-center">
+            
+                <point.icon className="h-8 w-8 text-[#EB5E77]" />
               </div>
-              <h3 className="text-xl font-semibold text-violet mb-2">
-                {feature.title}
+              <h3 className="text-xl font-bold text-[#30343B] mb-3">
+                {point.title}
               </h3>
-              <p className="text-gray-700">{feature.description}</p>
+              <p className="text-[#565F6C]">{point.description}</p>
             </div>
           ))}
         </div>

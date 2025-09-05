@@ -159,22 +159,27 @@ export function CreatePostModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#F8F5FA]">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-[#30343B]">
             {initialData ? "Edit Post" : "Create New Post"}
           </DialogTitle>
+          <p className="text-[#565F6C] mt-2">Create and publish your blog post</p>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmitForm)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmitForm)} className="space-y-6 bg-white p-6 rounded-xl">
             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel className="text-[#30343B] font-semibold">Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter post title" {...field} />
+                    <Input 
+                      placeholder="Enter post title" 
+                      {...field} 
+                      className="bg-white border-gray-300 focus:border-[#EB5E77] focus:ring-[#EB5E77] rounded-lg"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -186,10 +191,10 @@ export function CreatePostModal({
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel className="text-[#30343B] font-semibold">Category</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-white border-gray-300 focus:border-[#EB5E77] focus:ring-[#EB5E77] rounded-lg">
                         <SelectValue placeholder="Select Category" />
                       </SelectTrigger>
                     </FormControl>
@@ -199,6 +204,8 @@ export function CreatePostModal({
                       <SelectItem value="Startup Funding">Startup Funding</SelectItem>
                       <SelectItem value="Tools">Tools</SelectItem>
                       <SelectItem value="Strategy">Strategy</SelectItem>
+                      <SelectItem value="Funding">Funding</SelectItem>
+                      <SelectItem value="General">General</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -206,21 +213,21 @@ export function CreatePostModal({
               )}
             />
 
-            <div className="space-y-2">
-              <Label>Featured Image</Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+            <div className="space-y-3">
+              <Label className="text-[#30343B] font-semibold">Featured Image</Label>
+              <div className="border-2 border-dashed border-[#EB5E77]/30 rounded-xl p-8 text-center bg-white hover:border-[#EB5E77]/50 transition-colors">
                 {imagePreview ? (
                   <div className="relative">
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      className="max-w-full h-48 mx-auto rounded-lg object-cover"
+                      className="max-w-full h-48 mx-auto rounded-lg object-cover shadow-lg"
                     />
                     <Button
                       type="button"
                       variant="destructive"
                       size="sm"
-                      className="absolute top-2 right-2"
+                      className="absolute top-2 right-2 bg-red-500 hover:bg-red-600"
                       onClick={removeImage}
                     >
                       <X className="h-4 w-4" />
@@ -228,8 +235,8 @@ export function CreatePostModal({
                   </div>
                 ) : (
                   <div>
-                    <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-600 mb-2">Upload a featured image for your post</p>
+                    <Upload className="h-12 w-12 mx-auto text-[#EB5E77] mb-4" />
+                    <p className="text-[#565F6C] mb-4 font-medium">Upload a featured image for your post</p>
                     <Input
                       type="file"
                       accept="image/*"
@@ -237,12 +244,13 @@ export function CreatePostModal({
                       className="hidden"
                       id="image-upload"
                     />
-                    <Label
-                      htmlFor="image-upload"
-                      className="cursor-pointer bg-primary-blue hover:bg-accent-blue text-white px-4 py-2 rounded-md inline-block"
+                    <Button
+                      type="button"
+                      onClick={() => document.getElementById('image-upload')?.click()}
+                      className="bg-[#EB5E77] hover:bg-[#d4556a] text-white px-6 py-3 rounded-lg font-semibold transition-colors"
                     >
                       Choose Image
-                    </Label>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -253,11 +261,11 @@ export function CreatePostModal({
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Content</FormLabel>
+                  <FormLabel className="text-[#30343B] font-semibold">Content</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Enter post content"
-                      className="min-h-[200px]"
+                      className="min-h-[200px] bg-white border-gray-300 focus:border-[#EB5E77] focus:ring-[#EB5E77] rounded-lg resize-none"
                       {...field}
                     />
                   </FormControl>
@@ -266,13 +274,18 @@ export function CreatePostModal({
               )}
             />
 
-            <div className="flex justify-end space-x-4">
-              <Button type="button" variant="outline" onClick={handleClose}>
+            <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleClose}
+                className="border-gray-300 text-[#565F6C] hover:bg-gray-50 px-6 py-3 rounded-lg font-semibold min-w-[100px]"
+              >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                className="bg-primary-blue hover:bg-accent-blue"
+                className="bg-[#EB5E77] hover:bg-[#d4556a] text-white px-8 py-3 rounded-lg font-semibold disabled:opacity-50 min-w-[120px]"
                 disabled={form.formState.isSubmitting || uploadingImage}
               >
                 {form.formState.isSubmitting || uploadingImage

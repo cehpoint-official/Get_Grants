@@ -42,7 +42,7 @@ export function TrustBar() {
       <section className="py-12" style={{ background: 'white' }}>
         <div className="container mx-auto px-4 md:px-6">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-violet mb-4">
+            <h2 className="text-2xl font-bold text-[#565F6C] mb-4">
               Trusted by Leading Grant Organizations
             </h2>
           </div>

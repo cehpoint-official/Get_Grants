@@ -40,7 +40,9 @@ export const deletePost = async (id: string) => {
 export const fetchPendingPosts = async () => {
   const q = query(postsRef, where("status", "==", "pending"));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const pendingPosts = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+  console.log("Fetched pending posts from Firebase:", pendingPosts); // Debug log
+  return pendingPosts;
 };
 
 export const approvePost = async (id: string) => {

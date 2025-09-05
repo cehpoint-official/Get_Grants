@@ -5,7 +5,8 @@ import { GrantCategories } from "../components/grant-categories";
 import { BlogSection } from "../components/blog-section";
 import { Footer } from "../components/footer";
 import { TrustBar } from "../components/TrustBar";
-
+import { SmartTools } from "@/components/SmartTools";
+import StartupGrowth from "@/components/startup";
 
 
 export default function Home() {
@@ -26,6 +27,9 @@ export default function Home() {
       <Hero />
       <TrustBar />
       <Features />
+      <SmartTools />   
+      <StartupGrowth />
+     
       <section id="grant-library">
         <GrantCategories />
       </section>

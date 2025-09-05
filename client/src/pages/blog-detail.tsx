@@ -32,12 +32,12 @@ export default function BlogDetail() {
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      "Government Grants": "bg-blue-100 text-blue-800",
-      "Private Grants": "bg-green-100 text-green-800",
-      "Startup Funding": "bg-orange-100 text-orange-800",
-      "Tools": "bg-indigo-100 text-indigo-800",
-      "Strategy": "bg-purple-100 text-purple-800",
-      "Funding": "bg-pink-100 text-pink-800",
+      "Government Grants": "bg-[#EB5E77]/10 text-[#EB5E77]",
+      "Tools": "bg-[#EB5E77]/10 text-[#EB5E77]",
+      "Funding": "bg-[#EB5E77]/10 text-[#EB5E77]",
+      "Private Grants": "bg-[#EB5E77]/10 text-[#EB5E77]",
+      "Startup Funding": "bg-[#EB5E77]/10 text-[#EB5E77]",
+      "Strategy": "bg-[#EB5E77]/10 text-[#EB5E77]",
     };
     return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800";
   };
@@ -49,19 +49,23 @@ export default function BlogDetail() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <LoaderCircle className="w-10 h-10 animate-spin text-violet" />
+      <div className="flex justify-center items-center h-screen bg-[#F8F5FA]">
+        <div className="text-center">
+          <LoaderCircle className="w-10 h-10 animate-spin text-[#EB5E77] mx-auto mb-4" />
+          <p className="text-[#565F6C]">Loading post...</p>
+        </div>
       </div>
     );
   }
 
   if (!post) {
     return (
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-[#F8F5FA]">
         <main className="flex-grow flex items-center justify-center">
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-violet mb-4">Post not found</h1>
-              <Button onClick={handleBackToBlog} className="bg-violet hover:bg-pink text-white">
+              <h1 className="text-2xl font-bold text-[#30343B] mb-4">Post not found</h1>
+              <p className="text-[#565F6C] mb-6">The blog post you're looking for doesn't exist or has been removed.</p>
+              <Button onClick={handleBackToBlog} className="bg-[#EB5E77] hover:bg-[#d4556a] text-white rounded-lg">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Blog
               </Button>
@@ -73,32 +77,32 @@ export default function BlogDetail() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-[#F8F5FA]">
       <main className="flex-grow">
         <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <button
             onClick={handleBackToBlog}
-            className="flex items-center text-violet hover:text-pink font-semibold mb-8 transition-colors"
+            className="flex items-center text-[#EB5E77] hover:text-[#d4556a] font-semibold mb-8 transition-colors"
           >
             <ArrowLeft className="mr-2 h-5 w-5" />
             Back to all blogs
           </button>
 
-          <header className="mb-8">
+          <header className="mb-8 bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
             <div className="mb-4">
-              <span className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${getCategoryColor(post.category)}`}>
+              <span className={`inline-block px-3 py-1 text-sm font-semibold rounded-md ${getCategoryColor(post.category)}`}>
                 {post.category}
               </span>
             </div>
             
-            <h1 className="text-3xl lg:text-4xl font-extrabold text-violet tracking-tight mb-4 leading-tight">
+            <h1 className="text-3xl lg:text-4xl font-bold text-[#30343B] tracking-tight mb-6 leading-tight">
               {post.title}
             </h1>
             
-            <div className="flex items-center space-x-6 text-gray-500">
+            <div className="flex items-center space-x-6 text-[#565F6C]">
               <div className="flex items-center">
                 <User className="h-4 w-4 mr-2" />
-                <span>{post.author}</span>
+                <span className="font-medium">{post.author}</span>
               </div>
               <div className="flex items-center">
                 <Calendar className="h-4 w-4 mr-2" />
@@ -112,30 +116,32 @@ export default function BlogDetail() {
           </header>
 
           {post.imageUrl && (
-            <div className="mb-8">
+            <div className="mb-8 bg-white rounded-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
               <img
                 src={post.imageUrl}
                 alt={post.title}
-                className="w-full h-auto max-h-[450px] object-cover rounded-xl shadow-lg"
+                className="w-full h-auto max-h-[450px] object-cover rounded-xl"
               />
             </div>
           )}
 
-          <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-6">
-            {post.content.split('\n\n').map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
-            ))}
+          <div className="bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] mb-8">
+            <div className="prose prose-lg max-w-none text-[#565F6C] leading-relaxed space-y-6">
+              {post.content.split('\n\n').map((paragraph, index) => (
+                <p key={index} className="text-lg leading-8">{paragraph}</p>
+              ))}
+            </div>
           </div>
 
-          <div className="mt-12 p-8 bg-violet/5 rounded-2xl text-center">
-            <h2 className="text-2xl font-bold text-violet mb-4">Ready to find your grant?</h2>
-            <p className="text-gray-600 mb-6">
+          <div className="p-8 bg-[#FFE1E0] rounded-2xl text-center shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+            <h2 className="text-2xl font-bold text-[#30343B] mb-4">Ready to find your grant?</h2>
+            <p className="text-[#565F6C] mb-6 text-lg">
               Our platform lists hundreds of verified grants. Start your search today.
             </p>
             <Button
               onClick={() => navigate('/grants')}
               size="lg"
-              className="bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold"
+              className="bg-[#EB5E77] hover:bg-[#d4556a] text-white rounded-lg shadow-lg font-semibold px-8 py-3"
             >
               Explore Grants <ArrowRight className="ml-2 h-5 w-5" />
             </Button>

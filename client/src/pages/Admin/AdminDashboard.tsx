@@ -163,7 +163,11 @@ export default function AdminDashboard() {
   }, [activeTab]);
 
   const loadPosts = async () => setPosts(await fetchPosts() as Post[]);
-  const loadPending = async () => setPendingPosts(await fetchPendingPosts() as Post[]);
+  const loadPending = async () => {
+    const pending = await fetchPendingPosts() as Post[];
+    console.log("Pending posts loaded:", pending); // Debug log
+    setPendingPosts(pending);
+  };
   const loadGrants = async () => setGrants(await fetchGrants() as Grant[]);
   const loadApplications = async () => setApplications(await fetchAllApplications());
   const loadUsers = async () => setUsers(await fetchAllUsers());
@@ -451,29 +455,52 @@ export default function AdminDashboard() {
                   </Button>
               </div>
           </div>
-          {pendingPosts.length > 0 && (
-            <div className="bg-white border rounded-lg shadow-sm mb-6 p-4">
-              <h3 className="text-lg font-semibold mb-3">Pending Approval</h3>
+          <div className="bg-white border rounded-lg shadow-sm mb-6 p-4">
+            <h3 className="text-lg font-semibold mb-3 text-[#EB5E77]">
+              Pending Approval ({pendingPosts.length})
+            </h3>
+            {pendingPosts.length > 0 ? (
               <div className="space-y-3">
                 {pendingPosts.map((p) => (
-                  <div key={p.id} className="border rounded-md p-3">
+                  <div key={p.id} className="border border-[#EB5E77]/20 rounded-lg p-4 bg-[#FFE1E0]/10">
                     <div className="flex items-start justify-between">
-                      <div className="pr-4">
-                        <div className="font-medium">{p.title}</div>
-                        <div className="text-xs text-gray-500">By {p.authorName || p.author} • {p.authorEmail || ""}</div>
-                        <p className="text-sm text-gray-700 mt-2 line-clamp-3">{p.content}</p>
+                      <div className="pr-4 flex-1">
+                        <div className="font-semibold text-[#30343B] text-lg mb-2">{p.title}</div>
+                        <div className="text-sm text-[#565F6C] mb-2">
+                          By <span className="font-medium">{p.authorName || p.author}</span> 
+                          {p.authorEmail && <span> • {p.authorEmail}</span>}
+                        </div>
+                        <div className="text-xs text-[#EB5E77] font-medium mb-2">Category: {p.category || 'General'}</div>
+                        <p className="text-sm text-[#565F6C] line-clamp-3">{p.content}</p>
                       </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline" onClick={() => { setActivePendingPost(p); setShowPendingModal(true); }}>View</Button>
-                        <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={async () => { await approvePost(p.id); await loadPending(); await loadPosts(); }}>Approve</Button>
-                        <Button size="sm" variant="destructive" onClick={async () => { await rejectPost(p.id); await loadPending(); }}>Reject</Button>
+                      <div className="flex flex-col gap-2 ml-4">
+                        <Button size="sm" variant="outline" onClick={() => { setActivePendingPost(p); setShowPendingModal(true); }} className="text-[#EB5E77] border-[#EB5E77] hover:bg-[#EB5E77] hover:text-white">
+                          View
+                        </Button>
+                        <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={async () => { 
+                          await approvePost(p.id); 
+                          await loadPending(); 
+                          await loadPosts(); 
+                        }}>
+                          Approve
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={async () => { 
+                          await rejectPost(p.id); 
+                          await loadPending(); 
+                        }}>
+                          Reject
+                        </Button>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="text-center py-8 text-[#565F6C]">
+                <p>No pending blog posts for approval.</p>
+              </div>
+            )}
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.map((post) => (
                   <article key={post.id} className="bg-white rounded-lg border shadow hover:shadow-lg transition-shadow flex flex-col">

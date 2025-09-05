@@ -4,62 +4,46 @@
 
 :root {
   --background: hsl(0, 0%, 100%);
-  --foreground: hsl(20, 14.3%, 4.1%);
-  --muted: hsl(60, 4.8%, 95.9%);
-  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --foreground: hsl(222, 47%, 11%); /* #111827 */
+  --muted: hsl(210, 40%, 96.1%);
+  --muted-foreground: hsl(215, 10%, 44%); /* #565F6C */
   --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --popover-foreground: hsl(222, 47%, 11%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(20, 14.3%, 4.1%);
-  --border: hsl(20, 5.9%, 90%);
-  --input: hsl(20, 5.9%, 90%);
-  --primary: var(--violet);
+  --card-foreground: hsl(222, 47%, 11%);
+  --border: hsl(214.3, 31.8%, 91.4%);
+  --input: hsl(214.3, 31.8%, 91.4%);
+  --primary: hsl(266, 53%, 56%); /* #8A51CE */
   --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(60, 4.8%, 95.9%);
-  --secondary-foreground: hsl(24, 9.8%, 10%);
-  --accent: hsl(60, 4.8%, 95.9%);
-  --accent-foreground: hsl(24, 9.8%, 10%);
+  --secondary: hsl(210, 40%, 96.1%);
+  --secondary-foreground: hsl(222.2, 47.4%, 11.2%);
+  --accent: hsl(210, 40%, 96.1%);
+  --accent-foreground: hsl(222.2, 47.4%, 11.2%);
   --destructive: hsl(0, 84.2%, 60.2%);
-  --destructive-foreground: hsl(60, 9.1%, 97.8%);
-  --ring: hsl(20, 14.3%, 4.1%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(215, 20.2%, 65.1%);
   --radius: 0.5rem;
   
-  /* Custom theme colors */
-  --primary-blue:var(--violet);
-  --accent-blue:var(--violet);
-  --light-blue: hsl(238, 100%, 97%);
-  --dark-blue:var(--violet);
-  /* New gradient colors */
-  --rose-gold: hsl(30, 39%, 69%);
-  --violet: hsl(270, 58%, 55%);
-  --dark-violet: hsl(270, 50%, 40%);
-  --pink: hsl(341, 64%, 61%);
-  --red: hsl(0, 70%, 60%);
-  --yellowish-white: white;
+  /* Custom theme colors from Figma */
+  --nav-dark: hsl(222, 47%, 11%); /* #111827 */
+  --nav-gray: hsl(215, 10%, 44%); /* #565F6C */
+  --nav-pink-accent: hsl(350, 78%, 64%); /* #EB5E77 */
+  --gradient-start: hsl(266, 53%, 56%); /* #8A51CE */
+  --gradient-end: hsl(350, 78%, 64%); /* #EB5E77 */
+  --violet: hsl(266, 53%, 56%); /* Re-using for consistency */
+  --pink: hsl(350, 78%, 64%); /* Re-using for consistency */
+  --pain-point-bg: hsl(358, 100%, 94%); /* #FFE1E0 */
+  --pain-point-text: hsl(350, 78%, 64%); /* #EB5E77 */
+  --title-dark: hsl(220, 13%, 21%); /* #30343B */
+  --text-muted-custom: hsl(215, 10%, 44%); /* #565F6C */
   
 }
 
 .dark {
-  --background: hsl(240, 10%, 3.9%);
-  --foreground: #ffffff;
-  --muted: hsl(240, 3.7%, 15.9%);
-  --muted-foreground: hsl(240, 5%, 64.9%);
-  --popover: hsl(240, 10%, 3.9%);
-  --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(240, 10%, 3.9%);
-  --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 3.7%, 15.9%);
-  --input: hsl(240, 3.7%, 15.9%);
-  --primary:var(--violet);
-  --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(240, 3.7%, 15.9%);
-  --secondary-foreground: hsl(0, 0%, 98%);
-  --accent: hsl(240, 3.7%, 15.9%);
-  --accent-foreground: hsl(0, 0%, 98%);
-  --destructive: hsl(0, 62.8%, 30.6%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(240, 4.9%, 83.9%);
-  --radius: 0.5rem;
+  /* Dark mode colors can be adjusted later if needed */
+  --background: hsl(222, 47%, 11%);
+  --foreground: hsl(0, 0%, 98%);
+  /* ... other dark mode variables */
 }
 
 @layer base {
@@ -71,179 +55,4 @@
     @apply font-sans antialiased bg-background text-foreground;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
-}
-
-@layer utilities {
-  .text-primary-blue {
-    color: var(--primary-blue);
-  }
-  
-  .bg-primary-blue {
-    background-color: var(--primary-blue);
-  }
-  
-  .bg-light-blue {
-    background-color: var(--light-blue);
-  }
-  
-  .hover\:bg-accent-blue:hover {
-    background-color: var(--accent-blue);
-  }
-  
-  .border-primary-blue {
-    border-color: var(--primary-blue);
-  }
-  
-  .hover\:text-primary-blue:hover {
-    color: var(--primary-blue);
-  }
-
-  /* New gradient color utilities */
-  .bg-rose-gold {
-    background-color: var(--rose-gold);
-  }
-  
-  .bg-violet {
-    background-color: var(--violet);
-  }
-  
-  .bg-pink {
-    background-color: var(--pink);
-  }
-  
-  .bg-red {
-    background-color: var(--red);
-  }
-  
-  .bg-yellowish-white {
-    background-color: var(--yellowish-white);
-  }
-  
-  .text-rose-gold {
-    color: var(--rose-gold);
-  }
-  
-  .text-violet {
-    color: var(--violet);
-  }
-  
-  .text-pink {
-    color: var(--pink);
-  }
-  
-  .text-red {
-    color: var(--red);
-  }
-  
-  .text-yellowish-white {
-    color: var(--yellowish-white);
-  }
-  
-  .border-rose-gold {
-    border-color: var(--rose-gold);
-  }
-  
-  .border-violet {
-    border-color: var(--violet);
-  }
-  
-  .border-pink {
-    border-color: var(--pink);
-  }
-  
-  .border-red {
-    border-color: var(--red);
-  }
-  
-  .border-yellowish-white {
-    border-color: var(--yellowish-white);
-  }
-
-  /* Button consistency utilities */
-  .btn-primary {
-    @apply bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold transition-all duration-300;
-  }
-  
-  .btn-secondary {
-    @apply bg-yellowish-white text-violet hover:bg-pink hover:text-white rounded-xl shadow-lg font-semibold border-2 border-pink transition-all duration-300;
-  }
-  
-  .btn-outline {
-    @apply bg-transparent text-violet hover:bg-violet hover:text-white rounded-xl shadow-lg font-semibold border-2 border-violet transition-all duration-300;
-  }
-  
-  .btn-destructive {
-    @apply bg-red hover:bg-pink text-white rounded-xl shadow-lg font-semibold transition-all duration-300;
-  }
-
-  /* Line clamp utilities */
-  .line-clamp-1 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 1;
-  }
-  
-  .line-clamp-2 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-  }
-  
-  .line-clamp-3 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-  }
-
-  /* Simple marquee animation for TrustBar */
-  .marquee__track {
-    width: max-content;
-    animation: marquee-left 25s linear infinite;
-  }
-  
-  .marquee__track:hover {
-    animation-play-state: paused;
-  }
-
-  /* Enhanced hover effects for TrustBar */
-  .marquee__track .group:hover {
-    z-index: 20;
-  }
-}
-
-.react-calendar {
-  width: 100%;
-  font-family: inherit;
-  line-height: 1.5;
-  border: none !important;
-  background-color: transparent !important;
-}
-
-.react-calendar__tile {
-  padding: 0.75rem 0.5rem;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease-in-out;
-}
-
-.react-calendar__tile--active {
-  background-color:var(--violet) !important; /* Tailwind's primary-blue */
-  color: white !important;
-}
-
-.react-calendar__tile:hover {
-  background-color: #dbeafe; /* Tailwind's blue-100 */
-  color:var(--violet);
-}
-
-.react-calendar__navigation button {
-  color:var(--violet);
-  font-weight: 500;
-}
-
-@keyframes marquee-left {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-100%); }
 }

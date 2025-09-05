@@ -63,42 +63,42 @@ export function BlogSection() {
   const publishedPosts = posts.filter(p => p.status === 'published' || p.published);
   const allPosts = [...publishedPosts, ...defaultPosts];
   const visiblePosts = showAllPosts ? allPosts : allPosts.slice(0, 3);
+
   const getCategoryColor = (category: string) => {
     const colors = {
-      "Government Grants": "bg-violet/20 text-violet border border-violet",
-      "Private Grants": "bg-pink/20 text-pink border border-pink",
-      "Startup Funding": "bg-rose-gold/20 text-rose-gold border border-rose-gold",
-      "Tools": "bg-pink/20 text-pink border border-pink",
-      "Strategy": "bg-violet/20 text-violet border border-violet",
-      "Funding": "bg-rose-gold/20 text-rose-gold border border-rose-gold",
+      "Government Grants": "bg-[#EB5E77]/10 text-[#EB5E77]",
+      "Tools": "bg-[#EB5E77]/10 text-[#EB5E77]",
+      "Funding": "bg-[#EB5E77]/10 text-[#EB5E77]",
+      "Private Grants": "bg-[#EB5E77]/10 text-[#EB5E77]",
+      "Startup Funding": "bg-[#EB5E77]/10 text-[#EB5E77]",
+      "Strategy": "bg-[#EB5E77]/10 text-[#EB5E77]",
     };
-    return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-600 border border-gray-300";
+    return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800";
   };
 
   return (
     <>
-      <section id="blog" className="py-16" style={{
-        background: 'white'
-      }}>
+      <section id="blog" className="py-20 bg-[#F8F5FA]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex-1">
-                <h2 className="text-3xl lg:text-4xl font-bold text-violet mb-4">
-                  Latest Insights from Get Grants
-                </h2>
-                <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-                  Stay updated with the latest guides, tips, and insights on
-                  startup grants and funding in India
-                </p>
-              </div>
+        <div className="inline-block bg-[#FFE1E0] text-[#DD8014] font-semibold px-4 py-1.5 rounded-full text-sm mb-4">
+            Blog
+          </div>
+          <div className="relative text-center mb-16">
+            <h2 className="text-4xl font-bold text-[#30343B]">
+              Latest Insights from Get Grants
+            </h2>
+            <p className="mt-4 text-lg text-[#565F6C] max-w-3xl mx-auto">
+              Stay updated with the latest guides, tips, and insights on
+              startup grants and funding in India
+            </p>
+            <div className="absolute top-0 right-0 hidden md:block">
               {isAdmin ? (
-                <Button onClick={() => setShowCreatePost(true)} className="ml-4">
+                <Button onClick={() => setShowCreatePost(true)} className="bg-[#EB5E77] text-white hover:bg-[#d4556a] rounded-lg">
                   <Plus className="mr-2 h-4 w-4" /> Create Post
                 </Button>
               ) : (
-                <Button onClick={() => setShowUserSubmit(true)} className="ml-4">
-                  Submit Your Blog
+                <Button onClick={() => setShowUserSubmit(true)} className="bg-[#EB5E77] text-white hover:bg-[#d4556a] rounded-lg">
+                  <Plus className="mr-2 h-4 w-4" /> Submit Your Blog
                 </Button>
               )}
             </div>
@@ -106,27 +106,24 @@ export function BlogSection() {
 
           {loading ? (
             <div className="text-center py-12">
-              <div className="animate-pulse text-violet">Loading posts...</div>
+              <div className="animate-pulse text-[#30343B]">Loading posts...</div>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {visiblePosts.map((post) => (
                 <article
                   key={post.id}
-                  className="bg-white rounded-2xl shadow-lg shadow-black/20 hover:shadow-2xl hover:shadow-black/40 transition-all duration-300 overflow-hidden transform hover:-translate-y-1 hover:scale-[1.01]"
+                  className="bg-white rounded-2xl overflow-hidden flex flex-col transition-shadow duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)]"
                 >
                   <img
-                    src={
-                      post.imageUrl ||
-                      "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=400"
-                    }
-                    alt="Blog post"
-                    className="w-full h-48 object-cover"
+                    src={post.imageUrl || "https://via.placeholder.com/800x400"}
+                    alt={post.title}
+                    className="w-full h-52 object-cover p-4 rounded-3xl "
                   />
-                  <div className="p-6">
-                    <div className="flex items-center space-x-2 mb-3">
+                  <div className="p-6 flex flex-col flex-grow">
+                    <div className="mb-3">
                       <span
-                        className={`px-3 py-1 text-xs font-medium rounded-full ${getCategoryColor(
+                        className={`px-3 py-1 text-xs font-semibold rounded-md ${getCategoryColor(
                           post.category
                         )}`}
                       >
@@ -134,26 +131,34 @@ export function BlogSection() {
                       </span>
                     </div>
                     <h3
-                      className="text-xl font-semibold text-violet mb-3 hover:text-pink cursor-pointer transition-colors"
+                      className="text-xl font-bold text-[#30343B] mb-3 flex-grow hover:text-[#EB5E77] cursor-pointer transition-colors"
                       onClick={() => setLocation(`/blog?id=${post.id}`)}
                     >
                       {post.title}
                     </h3>
-                    <p className="text-gray-700 mb-4">
+                    <p className="text-[#565F6C] mb-4">
                       {post.content.substring(0, 150)}
                       {post.content.length > 150 ? "..." : ""}
                     </p>
-                    <div className="flex items-center justify-between text-sm text-gray-600">
-                      <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                      <span>By {post.author}</span>
+                    <div className="mt-auto pt-4 flex items-end justify-between">
+                       <Button
+                        variant="link"
+                        className="bg-[#EB5E77] text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-[#d4556a] hover:no-underline"
+                        onClick={() => setLocation(`/blog?id=${post.id}`)}
+                      >
+                        Read More →
+                      </Button>
+                      <div className="text-right text-sm text-[#565F6C]">
+                        <div>
+                          {new Date(post.createdAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </div>
+                        <div>By {post.author}</div>
+                      </div>
                     </div>
-                    <Button
-                      variant="link"
-                      className="mt-4 text-violet hover:text-pink font-medium p-0 transition-colors"
-                      onClick={() => setLocation(`/blog?id=${post.id}`)}
-                    >
-                      Read More →
-                    </Button>
                   </div>
                 </article>
               ))}
@@ -161,10 +166,10 @@ export function BlogSection() {
           )}
 
           {!showAllPosts && allPosts.length > 3 && (
-            <div className="text-center mt-12">
+            <div className="text-center mt-16">
               <Button
                 onClick={() => setShowAllPosts(true)}
-                className="bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold"
+                className="bg-[#EB5E77] text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-[#d4556a] hover:no-underline"
               >
                 View All Blog Posts
               </Button>
@@ -196,10 +201,14 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    console.log("File selected:", file); // Debug log
     if (file) {
       setSelectedImage(file);
       const reader = new FileReader();
-      reader.onload = () => setImagePreview(reader.result as string);
+      reader.onload = () => {
+        setImagePreview(reader.result as string);
+        console.log("Image preview set"); // Debug log
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -237,7 +246,23 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
         published: false,
         createdAt: serverTimestamp(),
       });
+      
+      toast({
+        title: "Success",
+        description: "Your blog post has been submitted for review!",
+      });
+      
+      // Reset form
+      form.reset();
+      setSelectedImage(null);
+      setImagePreview(null);
       onClose();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit blog post. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setUploadingImage(false);
     }
@@ -245,42 +270,64 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#F8F5FA]">
         <DialogHeader>
-          <DialogTitle>Submit Your Blog</DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-[#30343B]">Submit Your Blog</DialogTitle>
+          <p className="text-[#565F6C] mt-2">Share your insights with the startup community</p>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-xl">
             <FormField name="title" control={form.control} render={({ field }) => (
               <FormItem>
-                <FormLabel>Title</FormLabel>
-                <FormControl><Input {...field} placeholder="Title" /></FormControl>
+                <FormLabel className="text-[#30343B] font-semibold">Title</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    placeholder="Enter your blog title" 
+                    className="bg-white border-gray-300 focus:border-[#EB5E77] focus:ring-[#EB5E77] rounded-lg"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
 
-            <FormField name="authorName" control={form.control} render={({ field }) => (
-              <FormItem>
-                <FormLabel>Your Name</FormLabel>
-                <FormControl><Input {...field} placeholder="Your name" /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField name="authorName" control={form.control} render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[#30343B] font-semibold">Your Name</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      placeholder="Your name" 
+                      className="bg-white border-gray-300 focus:border-[#EB5E77] focus:ring-[#EB5E77] rounded-lg"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-            <FormField name="authorEmail" control={form.control} render={({ field }) => (
-              <FormItem>
-                <FormLabel>Your Email</FormLabel>
-                <FormControl><Input type="email" {...field} placeholder="you@example.com" /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
+              <FormField name="authorEmail" control={form.control} render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[#30343B] font-semibold">Your Email</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="email" 
+                      {...field} 
+                      placeholder="you@example.com" 
+                      className="bg-white border-gray-300 focus:border-[#EB5E77] focus:ring-[#EB5E77] rounded-lg"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
 
             <FormField name="category" control={form.control} render={({ field }) => (
               <FormItem>
-                <FormLabel>Category</FormLabel>
+                <FormLabel className="text-[#30343B] font-semibold">Category</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white border-gray-300 focus:border-[#EB5E77] focus:ring-[#EB5E77] rounded-lg">
                       <SelectValue placeholder="Select Category" />
                     </SelectTrigger>
                   </FormControl>
@@ -298,24 +345,40 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
               </FormItem>
             )} />
 
-            <div className="space-y-2">
-              <FormLabel>Featured Image</FormLabel>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+            <div className="space-y-3">
+              <FormLabel className="text-[#30343B] font-semibold">Featured Image</FormLabel>
+              <div className="border-2 border-dashed border-[#EB5E77]/30 rounded-xl p-8 text-center bg-white hover:border-[#EB5E77]/50 transition-colors">
                 {imagePreview ? (
                   <div className="relative">
-                    <img src={imagePreview} alt="Preview" className="max-w-full h-48 mx-auto rounded-lg object-cover" />
-                    <Button type="button" variant="destructive" size="sm" className="absolute top-2 right-2" onClick={removeImage}>
+                    <img src={imagePreview} alt="Preview" className="max-w-full h-48 mx-auto rounded-lg object-cover shadow-lg" />
+                    <Button 
+                      type="button" 
+                      variant="destructive" 
+                      size="sm" 
+                      className="absolute top-2 right-2 bg-red-500 hover:bg-red-600" 
+                      onClick={removeImage}
+                    >
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
                 ) : (
                   <div>
-                    <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-600 mb-2">Upload a featured image (required)</p>
-                    <Input type="file" accept="image/*" onChange={handleImageSelect} className="hidden" id="user-image-upload" />
-                    <FormLabel htmlFor="user-image-upload" className="cursor-pointer bg-primary-blue hover:bg-accent-blue text-white px-4 py-2 rounded-md inline-block">
+                    <Upload className="h-12 w-12 mx-auto text-[#EB5E77] mb-4" />
+                    <p className="text-[#565F6C] mb-4 font-medium">Upload a featured image (required)</p>
+                    <Input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleImageSelect} 
+                      className="hidden" 
+                      id="user-image-upload" 
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => document.getElementById('user-image-upload')?.click()}
+                      className="bg-[#EB5E77] hover:bg-[#d4556a] text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                    >
                       Choose Image
-                    </FormLabel>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -323,15 +386,35 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
 
             <FormField name="content" control={form.control} render={({ field }) => (
               <FormItem>
-                <FormLabel>Content</FormLabel>
-                <FormControl><Textarea {...field} rows={6} placeholder="Write your post..." /></FormControl>
+                <FormLabel className="text-[#30343B] font-semibold">Content</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    {...field} 
+                    rows={6} 
+                    placeholder="Write your post content here..." 
+                    className="bg-white border-gray-300 focus:border-[#EB5E77] focus:ring-[#EB5E77] rounded-lg resize-none"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
 
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-              <Button type="submit" disabled={uploadingImage}>{uploadingImage ? "Uploading..." : "Submit"}</Button>
+            <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onClose}
+                className="border-gray-300 text-[#565F6C] hover:bg-gray-50 px-6 py-3 rounded-lg font-semibold min-w-[100px]"
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={uploadingImage}
+                className="bg-[#EB5E77] hover:bg-[#d4556a] text-white px-8 py-3 rounded-lg font-semibold disabled:opacity-50 min-w-[120px]"
+              >
+                {uploadingImage ? "Uploading..." : "Submit Blog"}
+              </Button>
             </div>
           </form>
         </Form>
