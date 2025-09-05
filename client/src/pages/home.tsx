@@ -7,6 +7,9 @@ import { Footer } from "../components/footer";
 import { TrustBar } from "../components/TrustBar";
 import { SmartTools } from "@/components/SmartTools";
 import StartupGrowth from "@/components/startup";
+import Faq from "@/components/Faq";
+import Grant from "@/components/Grant"
+
 
 
 export default function Home() {
@@ -37,6 +40,8 @@ export default function Home() {
       <section id="blog">
         <BlogSection />
       </section>
+      <Grant />
+      <Faq />
       <Footer />
     </main>
   );
