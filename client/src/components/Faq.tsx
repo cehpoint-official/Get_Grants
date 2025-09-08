@@ -155,7 +155,7 @@ export default function PremiumSupport() {
         <div className="text-center mt-16">
           <Button 
             onClick={() => setIsContactModalOpen(true)}
-            className="text-white rounded-xl shadow-lg font-semibold px-6 py-3 text-base transition-transform hover:scale-105"
+            className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity"
             style={{ backgroundColor: '#EB5E77' }}
           >
             Have Any Queries

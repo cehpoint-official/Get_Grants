@@ -69,7 +69,7 @@ export default function GrantJourneySection() {
 
         {/* Call to Action Button */}
         <div className="text-center">
-          <Button className="bg-[#E84A5F] hover:bg-[#d94659] text-white font-semibold py-3 px-8 rounded-lg text-base transition-colors duration-300">
+          <Button className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity">
             Find Grants Now
           </Button>
         </div>

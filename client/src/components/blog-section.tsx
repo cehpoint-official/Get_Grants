@@ -93,11 +93,11 @@ export function BlogSection() {
             </p>
             <div className="absolute top-0 right-0 hidden md:block">
               {isAdmin ? (
-                <Button onClick={() => setShowCreatePost(true)} className="bg-[#EB5E77] text-white hover:bg-[#d4556a] rounded-lg">
+                <Button onClick={() => setShowCreatePost(true)} className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity">
                   <Plus className="mr-2 h-4 w-4" /> Create Post
                 </Button>
               ) : (
-                <Button onClick={() => setShowUserSubmit(true)} className="bg-[#EB5E77] text-white hover:bg-[#d4556a] rounded-lg">
+                <Button onClick={() => setShowUserSubmit(true)} className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity">
                   <Plus className="mr-2 h-4 w-4" /> Submit Your Blog
                 </Button>
               )}
@@ -169,7 +169,7 @@ export function BlogSection() {
             <div className="text-center mt-16">
               <Button
                 onClick={() => setShowAllPosts(true)}
-                className="bg-[#EB5E77] text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-[#d4556a] hover:no-underline"
+                className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity"
               >
                 View All Blog Posts
               </Button>
