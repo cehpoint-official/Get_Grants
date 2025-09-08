@@ -103,6 +103,17 @@ export function BlogSection() {
               )}
             </div>
           </div>
+          <div className="md:hidden mt-8 mb-8">
+              {isAdmin ? (
+                <Button onClick={() => setShowCreatePost(true)} className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity">
+                  <Plus className="mr-2 h-4 w-4" /> Create Post
+                </Button>
+              ) : (
+                <Button onClick={() => setShowUserSubmit(true)} className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity">
+                  <Plus className="mr-2 h-4 w-4" /> Submit Your Blog
+                </Button>
+              )}
+          </div>
 
           {loading ? (
             <div className="text-center py-12">
@@ -121,15 +132,6 @@ export function BlogSection() {
                     className="w-full h-52 object-cover p-4 rounded-3xl "
                   />
                   <div className="p-6 flex flex-col flex-grow">
-                    {/* <div className="mb-3">
-                      <span
-                        className={`px-3 py-1 text-xs font-semibold rounded-md ${getCategoryColor(
-                          post.category
-                        )}`}
-                      >
-                        {post.category}
-                      </span>
-                    </div> */}
                     <h3
                       className="text-xl font-bold text-[#30343B] mb-3 flex-grow hover:text-[#EB5E77] cursor-pointer transition-colors"
                       onClick={() => setLocation(`/blog?id=${post.id}`)}
@@ -191,7 +193,7 @@ export function BlogSection() {
 function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const form = useForm({
     resolver: zodResolver(insertPostSchema),
-    defaultValues: { title: "", content: "", author: "User", authorName: "", authorEmail: "", imageUrl: "" },
+    defaultValues: { title: "", content: "", category: "", author: "User", authorName: "", authorEmail: "", imageUrl: "" },
   });
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -201,13 +203,11 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    console.log("File selected:", file); // Debug log
     if (file) {
       setSelectedImage(file);
       const reader = new FileReader();
       reader.onload = () => {
         setImagePreview(reader.result as string);
-        console.log("Image preview set"); // Debug log
       };
       reader.readAsDataURL(file);
     }
@@ -252,7 +252,6 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
         description: "Your blog post has been submitted for review!",
       });
       
-      // Reset form
       form.reset();
       setSelectedImage(null);
       setImagePreview(null);
@@ -270,7 +269,7 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#FFFFFFF]">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#F8F5FA]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-[#30343B]">Submit Your Blog</DialogTitle>
           <p className="text-[#565F6C] mt-2">Share your insights with the startup community</p>
@@ -322,7 +321,7 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
               )} />
             </div>
 
-            {/* <FormField name="category" control={form.control} render={({ field }) => (
+            <FormField name="category" control={form.control} render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-[#30343B] font-semibold">Category</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
@@ -343,7 +342,7 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
                 </Select>
                 <FormMessage />
               </FormItem>
-            )} /> */}
+            )} />
 
             <div className="space-y-3">
               <FormLabel className="text-[#30343B] font-semibold">Featured Image</FormLabel>
