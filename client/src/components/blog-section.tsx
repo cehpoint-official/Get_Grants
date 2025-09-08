@@ -79,8 +79,8 @@ export function BlogSection() {
   return (
     <>
       <section id="blog" className="py-20 bg-[#F8F5FA]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="inline-block bg-[#FFE1E0] text-[#DD8014] font-semibold px-4 py-1.5 rounded-full text-sm mb-4">
+        <div className="max-w-7xl text-center mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="inline-block bg-[#FFE1E0] text-[#EB5E77] font-semibold px-4 py-1.5 rounded-full text-sm mb-4">
             Blog
           </div>
           <div className="relative text-center mb-16">
@@ -121,7 +121,7 @@ export function BlogSection() {
                     className="w-full h-52 object-cover p-4 rounded-3xl "
                   />
                   <div className="p-6 flex flex-col flex-grow">
-                    <div className="mb-3">
+                    {/* <div className="mb-3">
                       <span
                         className={`px-3 py-1 text-xs font-semibold rounded-md ${getCategoryColor(
                           post.category
@@ -129,7 +129,7 @@ export function BlogSection() {
                       >
                         {post.category}
                       </span>
-                    </div>
+                    </div> */}
                     <h3
                       className="text-xl font-bold text-[#30343B] mb-3 flex-grow hover:text-[#EB5E77] cursor-pointer transition-colors"
                       onClick={() => setLocation(`/blog?id=${post.id}`)}
@@ -191,7 +191,7 @@ export function BlogSection() {
 function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const form = useForm({
     resolver: zodResolver(insertPostSchema),
-    defaultValues: { title: "", content: "", category: "", author: "User", authorName: "", authorEmail: "", imageUrl: "" },
+    defaultValues: { title: "", content: "", author: "User", authorName: "", authorEmail: "", imageUrl: "" },
   });
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -270,7 +270,7 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#F8F5FA]">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#FFFFFFF]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-[#30343B]">Submit Your Blog</DialogTitle>
           <p className="text-[#565F6C] mt-2">Share your insights with the startup community</p>
@@ -322,7 +322,7 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
               )} />
             </div>
 
-            <FormField name="category" control={form.control} render={({ field }) => (
+            {/* <FormField name="category" control={form.control} render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-[#30343B] font-semibold">Category</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
@@ -343,7 +343,7 @@ function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
                 </Select>
                 <FormMessage />
               </FormItem>
-            )} />
+            )} /> */}
 
             <div className="space-y-3">
               <FormLabel className="text-[#30343B] font-semibold">Featured Image</FormLabel>

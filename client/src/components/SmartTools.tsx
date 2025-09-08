@@ -56,7 +56,7 @@ import {
   
     return (
       
-      <section className="py-20" style={{ background: 'linear-gradient(to top, #E7D3FF 0%, #F5F0FF 60%, #FFFFFF 100%)' }}>
+      <section className="py-20" style={{ background:'white' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header Section */}
           <div className="grid lg:grid-cols-12 gap-x-8 gap-y-6 items-center mb-16">
@@ -76,7 +76,7 @@ import {
           </div>
           
           {/* Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 ">
             {tools.map((tool) => (
               <div
                 key={tool.title}

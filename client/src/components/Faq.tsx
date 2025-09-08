@@ -80,7 +80,7 @@ export default function PremiumSupport() {
     <div 
       id="faq" 
       className="py-16 sm:py-24" 
-      style={{ background: 'linear-gradient(to top, #FFFFFF 50%, #FFB3C1 150%)' }}
+      style={{ background: ' #FFFFFF ' }}
     >
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-16 items-center">

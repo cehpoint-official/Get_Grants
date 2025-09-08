@@ -33,21 +33,21 @@ export function Hero() {
     >
     
       <div 
-        className="w-full h-full rounded-2xl flex items-center" 
+        className="w-full h-full rounded-2xl flex items-center relative" 
         style={{ 
-          background: 'linear-gradient(135deg,rgb(215, 178, 241) 0%,rgb(224, 192, 190) 50%, #FEE6CA 100%)'
+          background: 'linear-gradient(135deg,rgb(214, 170, 245) 0%,rgb(224, 192, 190) 50%, #FEE6CA 100%)'
         }}
       >
         <div className="w-full">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+          <div className="max-w-7xl mx-[50px] my-[50px] px-4 sm:px-6 lg:px-8">
+            <div className="lg:grid lg:grid-cols-[1.3fr_0.7fr] lg:gap-14 items-center">
             
-              <div className="mb-12 lg:mb-0 text-left">
-                <h1 className="text-3xl lg:text-4xl font-extrabold text-[#30343B] mb-4 leading-tight">
+              <div className="mb-15 lg:mb-0 text-left">
+                <h1 className="text-3xl lg:text-[40px] font-extrabold text-[#30343B] mb-4 leading-tight max-w-3xl">
                   <span style={{ color: '#EB5E77' }}>Discover & Apply</span> for Startup Grants & Incubator Programs
                 </h1>
                 
-                <p className="text-lg text-[#565F6C] mb-8">
+                <p className="text-lg text-[#565F6C] mb-10 lg:whitespace-nowrap">
                   India's go-to platform for early-stage funding and acceleration.
                 </p>
 
@@ -60,13 +60,13 @@ export function Hero() {
                       <Search className="absolute left-4 h-5 w-5 text-[#EB5E77] z-10" />
                       <Input
                         placeholder="Search for grants"
-                        className="pl-12 pr-32 h-16 text-base w-full border-0 focus-visible:ring-0 focus:outline-none bg-transparent"
+                        className="pl-12 pr-32 h-12 text-base w-full border-0 focus-visible:ring-0 focus:outline-none bg-transparent"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                       />
                       <Button
                         type="submit"
-                        className="absolute right-2 h-12 bg-[#EB5E77] hover:bg-[#d4556a] text-white px-5 font-semibold text-base rounded-lg transition-colors"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-11 bg-[#EB5E77] hover:bg-[#d4556a] text-white px-5 font-semibold text-base rounded-lg transition-colors"
                       >
                         Search
                       </Button>
@@ -74,12 +74,9 @@ export function Hero() {
                   </form>
                 </div>
 
-                <div className="flex items-center mb-8">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  <span className="text-[#565F6C] font-medium">No credit card required</span>
-                </div>
+               
             
-                <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                <div className="flex flex-col sm:flex-row gap-4 mb-5">
                   <Button
                     onClick={() => navigate('/grants')}
                     className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-8 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity"
@@ -108,13 +105,12 @@ export function Hero() {
                 </div>
               </div>
 
-              <div className="flex justify-center lg:justify-end items-end">
+              <div className="flex justify-center items-end lg:absolute lg:right-[-60px] lg:bottom-[-110px] z-10">
                 <div className="relative">
                   <img
                     src={heroImage}
                     alt="Startup collaboration and planning"
                     className="w-full max-w-lg lg:max-w-xl xl:max-w-2xl h-auto object-contain"
-                    style={{ transform: 'translateY(100px)' }}
                   />
                 </div>
               </div>
