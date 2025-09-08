@@ -1823,10 +1823,10 @@ export function GrantCategories() {
                     {/* Mobile Accordion Content */}
                     {isMobile && activeCategoryId === category.id && (
                       <div className="mt-4 p-4 space-y-6 animate-in fade-in-0 duration-300">
-                        <div className="p-6 bg-white rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.15)]">
+                        {/* <div className="p-6 bg-white rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.15)]">
                           <h2 className="text-2xl font-bold text-[#EB5E77] mb-1">{category.title}</h2>
                           <p className="text-gray-600">{category.description}</p>
-                        </div>
+                        </div> */}
                         {category.stages
                           ? renderStageContent(category)
                           : renderRegularContent(category)
