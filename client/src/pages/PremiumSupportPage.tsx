@@ -116,7 +116,7 @@ export default function PremiumSupportPage() {
             <div className="bg-white rounded-2xl p-8 text-center shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/40 relative transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01]">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2"><span className="bg-violet text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg">Most Popular</span></div>
               <div className="mb-6"><h3 className="text-2xl font-bold text-violet mb-2">Pro</h3><p className="text-gray-600">For serious founders</p></div>
-              <div className="mb-8"><span className="text-4xl font-bold text-violet">₹999</span><span className="text-gray-600">/month</span></div>
+              <div className="mb-8"><span className="text-4xl font-bold text-violet">₹399</span><span className="text-gray-600">/month</span></div>
               <ul className="text-left space-y-4 mb-8">
                 {/* Checkmark color changed from text-red to text-violet */}
                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-violet mr-3 flex-shrink-0" /><span className="text-gray-700">Everything in Free</span></li>
@@ -131,7 +131,7 @@ export default function PremiumSupportPage() {
             {/* Enterprise Plan */}
             <div className="bg-white rounded-2xl p-8 text-center transition-all duration-300 hover:shadow-2xl shadow-lg shadow-black/20 hover:shadow-black/40 transform hover:-translate-y-1 hover:scale-[1.01]">
               <div className="mb-6"><h3 className="text-2xl font-bold text-violet mb-2">Enterprise</h3><p className="text-gray-600">For teams & incubators</p></div>
-              <div className="mb-8"><span className="text-4xl font-bold text-violet">₹2,999</span><span className="text-gray-600">/month</span></div>
+              <div className="mb-8"><span className="text-4xl font-bold text-violet">₹3,999</span><span className="text-gray-600">/month</span></div>
               <ul className="text-left space-y-4 mb-8">
                 {/* Checkmark color changed from text-red to text-violet */}
                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-violet mr-3 flex-shrink-0" /><span className="text-gray-700">Everything in Pro</span></li>

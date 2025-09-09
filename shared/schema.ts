@@ -73,7 +73,6 @@ export const grantSchema = z.object({
   isPremium: z.boolean().default(false),
 });
 
-// THIS IS THE FIX - insertGrantSchema is now back
 export const insertGrantSchema = z.object({
   title: z.string().min(3, "Title is required"),
   organization: z.string().min(3, "Organization is required"),
@@ -108,6 +107,9 @@ export const applicationSchema = z.object({
   dpiit: z.string().optional(),
 });
 
+// New schema for inserting application data
+export const insertApplicationSchema = applicationSchema.omit({ id: true, submittedAt: true });
+
 
 // --- Calendar Event Schemas ---
 
@@ -138,7 +140,8 @@ export type Payment = z.infer<typeof paymentSchema>;
 export type Post = z.infer<typeof postSchema>;
 export type InsertPost = z.infer<typeof insertPostSchema>;
 export type Application = z.infer<typeof applicationSchema>;
+export type InsertApplication = z.infer<typeof insertApplicationSchema>; // New type
 export type Grant = z.infer<typeof grantSchema>;
-export type InsertGrant = z.infer<typeof insertGrantSchema>; // Type is also back
+export type InsertGrant = z.infer<typeof insertGrantSchema>;
 export type CalendarEvent = z.infer<typeof eventSchema>;
 export type InsertEvent = z.infer<typeof insertEventSchema>;

@@ -6,6 +6,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { submitApplication } from "@/services/applications";
 import { useAuth } from "@/hooks/use-auth";
+import { InsertApplication } from "@shared/schema";
 
 const formSchema = z.object({
   name: z.string()
@@ -67,12 +68,12 @@ export const GrantApplicationForm = () => {
     const updatedAreas = currentAreas.includes(area)
       ? currentAreas.filter(item => item !== area)
       : [...currentAreas, area];
-    setValue("supportAreas", updatedAreas);
+    setValue("supportAreas", updatedAreas, { shouldValidate: true });
   };
 
   const onSubmit = async (data: FormValues) => {
     try {
-      const submissionData = {
+      const submissionData: InsertApplication = {
         name: data.name,
         phone: data.phone,
         email: data.email,
@@ -80,6 +81,7 @@ export const GrantApplicationForm = () => {
         supportAreas: data.supportAreas,
         userId: user?.uid,
         status: "Pending",
+        // Optional fields ko undefined bhejein agar unki value nahi hai
         startupName: "",
         founderName: "",
         stage: "",
@@ -93,6 +95,7 @@ export const GrantApplicationForm = () => {
       setTimeout(() => navigate("/"), 2000);
     } catch (err) {
       console.error("Submission failed", err);
+      // Aap yahan user ko error message dikha sakte hain
     }
   };
 
