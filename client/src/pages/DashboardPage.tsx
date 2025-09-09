@@ -3,34 +3,27 @@ import { useAuth } from '@/hooks/use-auth';
 import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, LogOut, LoaderCircle, Bookmark, FileText, Home, CreditCard, Clock } from 'lucide-react';
+import { Shield, LogOut, LoaderCircle, Bookmark, FileText, Home, CreditCard, Clock, MessageSquare } from 'lucide-react';
 import { Redirect, Link, useLocation } from 'wouter';
 import { fetchUserApplications } from '@/services/applications';
 import { Application, Grant, Payment } from '@shared/schema';
 import { fetchGrantById } from "@/services/grants";
 import { fetchUserPayments } from "@/services/payments";
+import { fetchUserPremiumInquiriesByUserIdOrEmail, PremiumInquiry } from "@/services/premiumSupport";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+    AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogCancel
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
 import { useToast } from "@/hooks/use-toast";
 import { Input } from '@/components/ui/input';
 
 const profileSchema = z.object({
-  fullName: z.string().min(2, "Name must be at least 2 characters."),
-  phoneNumber: z.string().regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit mobile number."),
+    fullName: z.string().min(2, "Name must be at least 2 characters."),
+    phoneNumber: z.string().regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit mobile number."),
 });
 
 const passwordSchema = z.object({
@@ -42,7 +35,7 @@ const passwordSchema = z.object({
 });
 
 const deleteSchema = z.object({
-  password: z.string().min(1, "Password is required to delete your account."),
+    password: z.string().min(1, "Password is required to delete your account."),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -67,6 +60,7 @@ const DashboardPage = () => {
             case 'overview': return <DashboardOverview />;
             case 'applications': return <ApplicationTracking />;
             case 'saved-grants': return <SavedGrantsSection />;
+            case 'my-queries': return <MyQueriesSection />;
             case 'settings': return <SettingsSection />;
             case 'subscription': return <SubscriptionSection />;
             default: return <DashboardOverview />;
@@ -76,16 +70,17 @@ const DashboardPage = () => {
         <div className="flex flex-col min-h-screen">
             <main className="flex-grow bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                     <div className="text-left mb-12">
+                    <div className="text-left mb-12">
                         <h1 className="text-4xl lg:text-5xl font-extrabold text-violet tracking-tight">My Dashboard</h1>
                         <p className="mt-4 text-lg text-gray-600 max-w-2xl">Welcome back, {user.fullName}! Here's your grant application hub.</p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
                         <aside className="md:col-span-1 bg-white p-4 rounded-xl border shadow-sm sticky top-24">
-                             <nav className="flex flex-col space-y-1">
+                            <nav className="flex flex-col space-y-1">
                                 <Button variant={activeTab === 'overview' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('overview')} className="justify-start"><Home className="mr-2 h-4 w-4" /> Overview</Button>
                                 <Button variant={activeTab === 'applications' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('applications')} className="justify-start"><FileText className="mr-2 h-4 w-4" /> Applications</Button>
                                 <Button variant={activeTab === 'saved-grants' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('saved-grants')} className="justify-start"><Bookmark className="mr-2 h-4 w-4" /> Saved Grants</Button>
+                                <Button variant={activeTab === 'my-queries' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('my-queries')} className="justify-start"><MessageSquare className="mr-2 h-4 w-4" /> My Queries</Button>
                                 <Button variant={activeTab === 'subscription' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('subscription')} className="justify-start"><CreditCard className="mr-2 h-4 w-4" /> Subscription</Button>
                                 <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('settings')} className="justify-start"><Shield className="mr-2 h-4 w-4" /> Account Settings</Button>
                                 <Button variant={'ghost'} onClick={logout} className="justify-start text-red-600 hover:bg-red-50 hover:text-red-600"><LogOut className="mr-2 h-4 w-4" /> Logout</Button>
@@ -102,7 +97,6 @@ const DashboardPage = () => {
     );
 };
 
-// --- Overview Component ---
 const DashboardOverview = () => {
     const { user } = useAuth();
     const [applicationCount, setApplicationCount] = useState(0);
@@ -122,22 +116,17 @@ const DashboardOverview = () => {
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card>
                     <CardHeader><CardTitle className="text-lg">Saved Grants</CardTitle></CardHeader>
-                    <CardContent>
-                        <p className="text-3xl font-bold">{user?.savedGrants?.length || 0}</p>
-                    </CardContent>
+                    <CardContent><p className="text-3xl font-bold">{user?.savedGrants?.length || 0}</p></CardContent>
                 </Card>
                 <Card>
                     <CardHeader><CardTitle className="text-lg">Applications</CardTitle></CardHeader>
-                    <CardContent>
-                        <p className="text-3xl font-bold">{applicationCount}</p>
-                    </CardContent>
+                    <CardContent><p className="text-3xl font-bold">{applicationCount}</p></CardContent>
                 </Card>
             </CardContent>
         </Card>
     );
 };
 
-// --- Application Tracking Component ---
 const ApplicationTracking = () => {
     const { user } = useAuth();
     const [applications, setApplications] = useState<Application[]>([]);
@@ -181,24 +170,17 @@ const ApplicationTracking = () => {
                         <div key={app.id} className="flex items-center justify-between p-4 border rounded-lg">
                             <div>
                                 <p className="font-semibold text-gray-800">{app.startupName || "Grant Application"}</p>
-                                <p className="text-sm text-gray-500 flex items-center mt-1">
-                                    <Clock size={14} className="mr-1.5" /> Applied on {app.submittedAt ? new Date(app.submittedAt.seconds * 1000).toLocaleDateString() : 'N/A'}
-                                </p>
+                                <p className="text-sm text-gray-500 flex items-center mt-1"><Clock size={14} className="mr-1.5" /> Applied on {app.submittedAt ? new Date(app.submittedAt.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
                             </div>
-                            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(app.status || 'Pending')}`}>
-                                {app.status || 'Pending'}
-                            </span>
+                            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(app.status || 'Pending')}`}>{app.status || 'Pending'}</span>
                         </div>
-                    )) : (
-                        <p className="text-center text-gray-500 py-8">You haven't submitted any applications yet.</p>
-                    )}
+                    )) : (<p className="text-center text-gray-500 py-8">You haven't submitted any applications yet.</p>)}
                 </div>
             </CardContent>
         </Card>
     );
 };
 
-// --- Saved Grants Component ---
 const SavedGrantsSection = () => {
     const { user } = useAuth();
     const [savedGrants, setSavedGrants] = useState<Grant[]>([]);
@@ -230,7 +212,7 @@ const SavedGrantsSection = () => {
                 {savedGrants.length > 0 ? (
                     <div className="space-y-4">
                         {savedGrants.map((grant) => (
-                           <Link key={grant.id} href={`/grant/${grant.id}`}>
+                            <Link key={grant.id} href={`/grant/${grant.id}`}>
                                 <a className="block p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
                                     <h3 className="font-semibold text-violet">{grant.title}</h3>
                                     <p className="text-sm text-gray-600">{grant.organization}</p>
@@ -239,31 +221,68 @@ const SavedGrantsSection = () => {
                             </Link>
                         ))}
                     </div>
-                ) : (
-                    <p className="text-center text-gray-500 py-8">You haven't saved any grants yet.</p>
-                )}
+                ) : (<p className="text-center text-gray-500 py-8">You haven't saved any grants yet.</p>)}
             </CardContent>
         </Card>
     );
 };
 
-// --- Subscription Component ---
+const MyQueriesSection = () => {
+    const { user } = useAuth();
+    const [queries, setQueries] = useState<PremiumInquiry[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (user) {
+            fetchUserPremiumInquiriesByUserIdOrEmail({ userId: user.uid, email: user.email })
+                .then(setQueries)
+                .finally(() => setLoading(false));
+        }
+    }, [user]);
+
+    if (loading) {
+        return <div className="flex justify-center items-center p-8"><LoaderCircle className="w-8 h-8 animate-spin text-violet" /></div>;
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>My Queries</CardTitle>
+                <CardDescription>View your submitted queries and responses from our team.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-6">
+                    {queries.length > 0 ? queries.map(query => (
+                        <div key={query.id} className="border rounded-lg p-4">
+                            <div className="flex justify-between items-start mb-2">
+                                <p className="font-semibold text-gray-800 pr-4">{query.specificNeeds}</p>
+                                <Badge variant={query.status === 'responded' ? 'default' : 'secondary'} className="whitespace-nowrap">{query.status}</Badge>
+                            </div>
+                            <p className="text-sm text-gray-500">Submitted on: {query.createdAt.toLocaleDateString()}</p>
+                            {query.adminResponse && (
+                                <div className="mt-4 p-3 bg-violet/5 border-l-4 border-violet rounded-r-lg">
+                                    <p className="font-semibold text-violet mb-1">Admin's Response:</p>
+                                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{query.adminResponse}</p>
+                                </div>
+                            )}
+                        </div>
+                    )) : (<p className="text-center text-gray-500 py-8">You haven't submitted any queries yet.</p>)}
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
 const SubscriptionSection = () => {
     const { user } = useAuth();
     const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
     const [, navigate] = useLocation();
-    
-    const handleViewPricing = () => {
-        navigate("/premium-support");
-    };
+    const handleViewPricing = () => { navigate("/premium-support"); };
 
     useEffect(() => {
         if (user?.uid) {
-            fetchUserPayments(user.uid).then(data => {
-                setPayments(data);
-                setLoading(false);
-            });
+            fetchUserPayments(user.uid).then(data => { setPayments(data); setLoading(false); });
         }
     }, [user]);
 
@@ -289,7 +308,6 @@ const SubscriptionSection = () => {
                     {plan === 'Free' && <Button onClick={handleViewPricing} className="mt-4 bg-violet hover:bg-pink text-white">Upgrade Now</Button>}
                 </CardContent>
             </Card>
-
             <Card>
                 <CardHeader><CardTitle>Payment History</CardTitle></CardHeader>
                 <CardContent>
@@ -314,7 +332,6 @@ const SubscriptionSection = () => {
     );
 };
 
-// --- Settings Component ---
 const SettingsSection = () => {
     return (
         <Tabs defaultValue="profile" className="w-full">
@@ -352,19 +369,9 @@ const ProfileSettings = () => {
             <CardHeader><CardTitle>Personal Information</CardTitle><CardDescription>Update your name and mobile number.</CardDescription></CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    <div>
-                        <label>Full Name</label>
-                        <Input {...register("fullName")} />
-                        {errors.fullName && <p className="text-sm text-red-600 mt-1">{errors.fullName.message}</p>}
-                    </div>
-                    <div>
-                        <label>Phone Number</label>
-                        <Input {...register("phoneNumber")} />
-                        {errors.phoneNumber && <p className="text-sm text-red-600 mt-1">{errors.phoneNumber.message}</p>}
-                    </div>
-                    <Button type="submit" disabled={isSubmitting} className="bg-violet hover:bg-pink text-white">
-                        {isSubmitting ? <LoaderCircle className="animate-spin" /> : "Save Changes"}
-                    </Button>
+                    <div><label>Full Name</label><Input {...register("fullName")} />{errors.fullName && <p className="text-sm text-red-600 mt-1">{errors.fullName.message}</p>}</div>
+                    <div><label>Phone Number</label><Input {...register("phoneNumber")} />{errors.phoneNumber && <p className="text-sm text-red-600 mt-1">{errors.phoneNumber.message}</p>}</div>
+                    <Button type="submit" disabled={isSubmitting} className="bg-violet hover:bg-pink text-white">{isSubmitting ? <LoaderCircle className="animate-spin" /> : "Save Changes"}</Button>
                 </form>
             </CardContent>
         </Card>
@@ -391,19 +398,9 @@ const PasswordSettings = () => {
             <CardHeader><CardTitle>Change Password</CardTitle><CardDescription>Choose a new password for your account.</CardDescription></CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    <div>
-                        <label>New Password</label>
-                        <Input type="password" {...register("newPassword")} />
-                        {errors.newPassword && <p className="text-sm text-red-600 mt-1">{errors.newPassword.message}</p>}
-                    </div>
-                    <div>
-                        <label>Confirm New Password</label>
-                        <Input type="password" {...register("confirmPassword")} />
-                        {errors.confirmPassword && <p className="text-sm text-red-600 mt-1">{errors.confirmPassword.message}</p>}
-                    </div>
-                    <Button type="submit" disabled={isSubmitting} className="bg-violet hover:bg-pink text-white">
-                         {isSubmitting ? <LoaderCircle className="animate-spin" /> : "Update Password"}
-                    </Button>
+                    <div><label>New Password</label><Input type="password" {...register("newPassword")} />{errors.newPassword && <p className="text-sm text-red-600 mt-1">{errors.newPassword.message}</p>}</div>
+                    <div><label>Confirm New Password</label><Input type="password" {...register("confirmPassword")} />{errors.confirmPassword && <p className="text-sm text-red-600 mt-1">{errors.confirmPassword.message}</p>}</div>
+                    <Button type="submit" disabled={isSubmitting} className="bg-violet hover:bg-pink text-white">{isSubmitting ? <LoaderCircle className="animate-spin" /> : "Update Password"}</Button>
                 </form>
             </CardContent>
         </Card>
@@ -415,7 +412,7 @@ const DeleteAccountSettings = () => {
     const { toast } = useToast();
     const [isOpen, setIsOpen] = useState(false);
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<DeleteFormValues>({ resolver: zodResolver(deleteSchema) });
-    
+
     const onSubmit = async (data: DeleteFormValues) => {
         try {
             await deleteAccount(data.password);
@@ -428,32 +425,22 @@ const DeleteAccountSettings = () => {
     };
 
     return (
-         <Card className="border-red-500 bg-red-50">
-             <CardHeader><CardTitle className="text-red-700">Delete Account</CardTitle></CardHeader>
+        <Card className="border-red-500 bg-red-50">
+            <CardHeader><CardTitle className="text-red-700">Delete Account</CardTitle></CardHeader>
             <CardContent>
                 <p className="text-sm text-red-600 mb-4">Permanently delete your account and all associated data. This action cannot be undone.</p>
                 <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-                    <AlertDialogTrigger asChild>
-                        <Button variant="destructive">Delete My Account</Button>
-                    </AlertDialogTrigger>
+                    <AlertDialogTrigger asChild><Button variant="destructive">Delete My Account</Button></AlertDialogTrigger>
                     <AlertDialogContent>
                         <form onSubmit={handleSubmit(onSubmit)}>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This will permanently delete your account. To confirm, please enter your password.
-                                </AlertDialogDescription>
+                                <AlertDialogDescription>This will permanently delete your account. To confirm, please enter your password.</AlertDialogDescription>
                             </AlertDialogHeader>
-                            <div className="py-4">
-                                <label>Password</label>
-                                <Input type="password" {...register("password")} />
-                                {errors.password && <p className="text-sm text-red-600 mt-1">{errors.password.message}</p>}
-                            </div>
+                            <div className="py-4"><label>Password</label><Input type="password" {...register("password")} />{errors.password && <p className="text-sm text-red-600 mt-1">{errors.password.message}</p>}</div>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <Button type="submit" variant="destructive" disabled={isSubmitting}>
-                                    {isSubmitting ? <LoaderCircle className="animate-spin" /> : "Yes, delete account"}
-                                </Button>
+                                <Button type="submit" variant="destructive" disabled={isSubmitting}>{isSubmitting ? <LoaderCircle className="animate-spin" /> : "Yes, delete account"}</Button>
                             </AlertDialogFooter>
                         </form>
                     </AlertDialogContent>
