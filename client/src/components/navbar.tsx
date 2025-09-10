@@ -42,7 +42,7 @@ export function Navbar() {
       setActiveLink('Explore Grants');
     } else if (location.startsWith('/premium-support')) {
       setActiveLink('Premium Support');
-    } else if (location.startsWith('/blog')) {
+    } else if (location.startsWith('/blog-detail')) {
       setActiveLink('Blog');
     } else {
       setActiveLink('');
@@ -65,8 +65,8 @@ export function Navbar() {
 
   const navItems = [
     { name: 'Home', action: () => { navigate('/'); scrollToSection('home'); } },
-    { name: 'Explore Grants', action: () => navigate('/grants') },
-    { name: 'Premium Support', action: () => navigate('/premium-support') },
+    { name: 'Find Grants', action: () => navigate('/grants') },
+    { name: 'Pricing', action: () => navigate('/premium-support') },
     { name: 'Blog', action: () => { navigate('/'); scrollToSection('blog'); } },
   ];
 

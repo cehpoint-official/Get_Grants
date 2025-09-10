@@ -78,7 +78,7 @@ export function BlogSection() {
 
   return (
     <>
-      <section id="blog" className="py-20 bg-[#F8F5FA]">
+      <section id="blog" className="py-20 bg-white]">
         <div className="max-w-7xl text-center mx-auto px-4 sm:px-6 lg:px-8">
         <div className="inline-block bg-[#FFE1E0] text-[#EB5E77] font-semibold px-4 py-1.5 rounded-full text-sm mb-4">
             Blog
@@ -129,28 +129,25 @@ export function BlogSection() {
                   <img
                     src={post.imageUrl || "https://via.placeholder.com/800x400"}
                     alt={post.title}
-                    className="w-full h-52 object-cover p-4 rounded-3xl "
+                    className="w-full h-64 object-cover p-4 rounded-3xl "
                   />
-                  <div className="p-6 flex flex-col flex-grow">
-                    <h3
-                      className="text-xl font-bold text-[#30343B] mb-3 flex-grow hover:text-[#EB5E77] cursor-pointer transition-colors"
-                      onClick={() => setLocation(`/blog?id=${post.id}`)}
-                    >
-                      {post.title}
-                    </h3>
-                    <p className="text-[#565F6C] mb-4">
-                      {post.content.substring(0, 150)}
-                      {post.content.length > 150 ? "..." : ""}
+                  <div className="p-6 flex flex-col flex-grow text-left">
+                    <h3 className="text-2xl font-bold text-[#30343B] mb-5 flex-grow break-words..." >
+                           {post.title}
+                                 </h3>
+                    <p className="text-[#565F6C] mb-4 ">
+                      {post.content.substring(0, 75)}
+                      {post.content.length > 75 ? "..." : ""}
                     </p>
                     <div className="mt-auto pt-4 flex items-end justify-between">
                        <Button
                         variant="link"
-                        className="bg-[#EB5E77] text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-[#d4556a] hover:no-underline"
-                        onClick={() => setLocation(`/blog?id=${post.id}`)}
+                        className="bg-violet  text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-[#8A41CE] hover:no-underline"
+                        onClick={() => setLocation(`/blog-detail?id=${post.id}`)}
                       >
                         Read More →
                       </Button>
-                      <div className="text-right text-sm text-[#565F6C]">
+                      {/* <div className="text-right text-sm text-[#565F6C]">
                         <div>
                           {new Date(post.createdAt).toLocaleDateString('en-US', {
                             month: 'short',
@@ -159,7 +156,7 @@ export function BlogSection() {
                           })}
                         </div>
                         <div>By {post.author}</div>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </article>

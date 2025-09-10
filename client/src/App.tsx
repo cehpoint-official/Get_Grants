@@ -33,7 +33,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/blog" component={BlogDetail} />
+      <Route path="/blog-detail" component={BlogDetail} />
       <Route path="/apply" component={ApplyPage} />
       <Route path="/grants" component={GrantsPage} />
       <Route path="/grant/:id" component={GrantDetailPage} />

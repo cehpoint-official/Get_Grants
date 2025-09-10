@@ -66,7 +66,7 @@ export function Hero() {
                       />
                       <Button
                         type="submit"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 h-11 bg-[#EB5E77] hover:bg-[#d4556a] text-white px-5 font-semibold text-base rounded-lg transition-colors"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-11 bg-violet hover:bg-[#8A41CE] text-white px-5 font-semibold text-base rounded-lg transition-colors"
                       >
                         Search
                       </Button>

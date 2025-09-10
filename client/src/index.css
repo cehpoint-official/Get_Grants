@@ -31,7 +31,8 @@
   --nav-pink-accent: hsl(350, 78%, 64%); /* #EB5E77 */
   --gradient-start: hsl(266, 53%, 56%); /* #8A51CE */
   --gradient-end: hsl(350, 78%, 64%); /* #EB5E77 */
-  --violet: hsl(266, 53%, 56%); /* Re-using for consistency */
+  --violet: hsl(266, 51%, 56%); /* Re-using for consistency */
+  --dark-violet: hsl(270, 75%, 43%); /* Re-using for consistency */
   --pink: hsl(350, 78%, 64%); /* Re-using for consistency */
   --pain-point-bg: hsl(358, 100%, 94%); /* #FFE1E0 */
   --pain-point-text: hsl(350, 78%, 64%); /* #EB5E77 */

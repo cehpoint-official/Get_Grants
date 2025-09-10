@@ -3,7 +3,7 @@ import React from 'react';
 const StartupGrowth = () => {
   return (
    
-    <div className="bg-gray-100 flex items-center justify-center font-sans py-20 md:py-15">
+    <div className="bg-white flex items-center justify-center font-sans py-20 md:py-15">
       {/* Main component container */}
       <div className="flex w-full max-w-10xl shadow-lg  overflow-hidden mx-4 md:mx-1 lg:mx-2 flex-col md:flex-row">
         {/* Left Dark Section */}

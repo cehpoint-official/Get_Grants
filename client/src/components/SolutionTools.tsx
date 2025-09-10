@@ -26,7 +26,7 @@ function ProcessCard({ step, title, description, Icon }: ProcessCardProps) {
 
 export default function GrantJourneySection() {
   return (
-    <section className="bg-slate-50 py-16 md:py-24">
+    <section className="bg-white py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
