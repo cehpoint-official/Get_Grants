@@ -73,7 +73,7 @@ export default function PremiumSupport() {
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-16 items-center">
                     <div className="text-left">
-                        <span className="inline-block px-3 py-1 text-sm font-semibold rounded-2xl" style={{ backgroundColor: '#F49BAB', color: '#EB5E77' }}>
+                        <span className="inline-block px-3 py-1 text-sm font-semibold rounded-2xl" style={{ backgroundColor: '#F49BAB8F', color: '#EB5E77' }}>
                             FAQ
                         </span>
                         <h2 className="mt-4 text-4xl lg:text-5xl font-bold" style={{ color: '#111827' }}>

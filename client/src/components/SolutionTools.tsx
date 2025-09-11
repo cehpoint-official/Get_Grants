@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { User, Puzzle, ClipboardCheck, Clock } from "lucide-react";
+import { navigate } from "wouter/use-browser-location";
 
 
 type ProcessCardProps = {
@@ -69,7 +70,9 @@ export default function GrantJourneySection() {
 
         {/* Call to Action Button */}
         <div className="text-center">
-          <Button className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity">
+          <Button 
+          onClick={() => navigate('/grants')}
+          className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity">
             Find Grants Now
           </Button>
         </div>

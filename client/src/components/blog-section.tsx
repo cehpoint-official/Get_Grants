@@ -147,7 +147,7 @@ export function BlogSection() {
                       >
                         Read More →
                       </Button>
-                      {/* <div className="text-right text-sm text-[#565F6C]">
+                      <div className="text-right text-sm text-[#565F6C]">
                         <div>
                           {new Date(post.createdAt).toLocaleDateString('en-US', {
                             month: 'short',
@@ -155,8 +155,8 @@ export function BlogSection() {
                             year: 'numeric',
                           })}
                         </div>
-                        <div>By {post.author}</div>
-                      </div> */}
+                        {/* <div>By {post.author}</div> */}
+                      </div>
                     </div>
                   </div>
                 </article>
