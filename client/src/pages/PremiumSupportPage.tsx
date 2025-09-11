@@ -6,8 +6,6 @@ import { AuthModal } from "../components/AuthModal";
 import { useAuth } from "@/hooks/use-auth";
 import { Footer } from "@/components/footer";
 import Faq from "@/components/Faq";
-
-// Importing the new icons from the assets folder
 import accessIcon from "@/assets/logos/access.png";
 import alertIcon from "@/assets/logos/alert.png";
 import priorityIcon from "@/assets/logos/priority.png";
@@ -39,10 +37,10 @@ export default function PremiumSupportPage() {
 
   return (
     <div id="premium-support" className="bg-white" >
-      {/* Pricing Section */}
-      <section id="pricing" >
-        <div className="max-w-7xl  mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center bg-[#FAF5FF] py-16 ">
+      
+       <section className="bg-[#FAF5FF]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-[#30343B] mb-4">
               Unlock All Features
             </h2>
@@ -50,7 +48,12 @@ export default function PremiumSupportPage() {
               Experience the complete power of our platform with nothing held back.
             </p>
           </div>
+        </div>
+      </section>
 
+      {/* Section 2: Pricing Cards */}
+      <section id="pricing" >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row justify-center items-center gap-8">
             {/* Basic Plan */}
             <div className="group bg-white rounded-2xl p-8 text-center shadow-lg border w-full max-w-sm transition-all duration-300 ease-in-out hover:scale-105 ">
@@ -63,38 +66,38 @@ export default function PremiumSupportPage() {
                 <p className="text-[#565F6C] min-h-[40px]" style={{ fontFamily: 'Poppins', fontSize: '14px', fontWeight: 500, lineHeight: '20px' }}>Perfect for startups looking for quick funding opportunities</p>
               </div>
               <ul className="text-left space-y-4 mb-8">
-                  <li className="flex items-center">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                    <span className="text-gray-700">Unlimited grant access</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                    <span className="text-gray-700">Basic search functionality</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                    <span className="text-gray-700">Email notifications for new grants</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                    <span className="text-gray-700">Access to grant details</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle2 className="h-5 w-5 text-gray-300 mr-3 flex-shrink-0" />
-                    <span className="text-gray-400">Application deadline reminders</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle2 className="h-5 w-5 text-gray-300 mr-3 flex-shrink-0" />
-                    <span className="text-gray-400">Priority support</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle2 className="h-5 w-5 text-gray-300 mr-3 flex-shrink-0" />
-                    <span className="text-gray-400">Grant eligibility checker</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle2 className="h-5 w-5 text-gray-300 mr-3 flex-shrink-0" />
-                    <span className="text-gray-400">Early access to new features</span>
-                  </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span className="text-gray-700">Unlimited grant access</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span className="text-gray-700">Basic search functionality</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span className="text-gray-700">Email notifications for new grants</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span className="text-gray-700">Access to grant details</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-5 w-5 text-gray-300 mr-3 flex-shrink-0" />
+                  <span className="text-gray-400">Application deadline reminders</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-5 w-5 text-gray-300 mr-3 flex-shrink-0" />
+                  <span className="text-gray-400">Priority support</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-5 w-5 text-gray-300 mr-3 flex-shrink-0" />
+                  <span className="text-gray-400">Grant eligibility checker</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-5 w-5 text-gray-300 mr-3 flex-shrink-0" />
+                  <span className="text-gray-400">Early access to new features</span>
+                </li>
               </ul>
               <Button onClick={() => handlePlanClick('login')} className="w-full text-[#8541EF] group-hover:bg-[#8541EF] group-hover:text-dark-voilet rounded-[20px] font-semibold h-[40px] border border-[#8541EF]" style={{backgroundColor: '#8541EF17'}}>Get started</Button>
             </div>
@@ -103,15 +106,15 @@ export default function PremiumSupportPage() {
             <div className="bg-white rounded-2xl p-8 text-center shadow-2xl w-full max-w-sm relative transition-all duration-300 ease-in-out hover:scale-110">
               <div className="absolute top-4 right-4">
                 <span 
-                    className="text-white text-xs font-semibold px-4 py-1.5 rounded-[27px] shadow-lg h-[21px] flex items-center justify-center"
-                    style={{ background: 'linear-gradient(91.15deg, #FA9025 30.26%, #FFEBE3 81.29%, #FF9B10 94.61%)' }}
+                  className="text-white text-xs font-semibold px-4 py-1.5 rounded-[27px] shadow-lg h-[21px] flex items-center justify-center"
+                  style={{ background: 'linear-gradient(91.15deg, #FA9025 30.26%, #FFEBE3 81.29%, #FF9B10 94.61%)' }}
                 >
-                    Popular
+                  Popular
                 </span>
               </div>
               <div className="mb-6">
                 <div className="inline-flex items-center justify-center bg-[#E0E7FF] text-[#3730A3] px-4 py-2 rounded-[36px] text-sm font-medium mb-4 h-[31px] w-[115px]">Growth</div>
-                 <div className="mb-4 h-[39px] flex items-baseline justify-center">
+                  <div className="mb-4 h-[39px] flex items-baseline justify-center">
                   <span className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Inter', fontSize: '32px', fontWeight: 700 }}>₹499</span>
                   <span className="text-gray-600 text-lg" style={{ fontFamily: 'Inter', fontSize: '18px', fontWeight: 500 }}>/month</span>
                 </div>
@@ -150,7 +153,7 @@ export default function PremiumSupportPage() {
                     <CheckCircle2 className="h-5 w-5 text-gray-300 mr-3 flex-shrink-0" />
                     <span className="text-gray-400">Early access to new features</span>
                   </li>
-              </ul>
+                </ul>
               <Button onClick={() => handlePlanClick('login')} className="w-full bg-[#8541EF] hover:bg-[#7a38d9] text-white rounded-[20px] font-semibold h-[40px]">Get started</Button>
             </div>
 
@@ -197,8 +200,8 @@ export default function PremiumSupportPage() {
                     <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
                     <span className="text-gray-700">Early access to new features</span>
                   </li>
-              </ul>
-               <Button onClick={() => handlePlanClick('login')} className="w-full text-[#8541EF] group-hover:bg-[#8541EF] group-hover:text-dark-violet rounded-[20px] font-semibold h-[40px] border border-[#8541EF]" style={{backgroundColor: '#8541EF17'}}>Get started</Button>
+                </ul>
+                <Button onClick={() => handlePlanClick('login')} className="w-full text-[#8541EF] group-hover:bg-[#8541EF] group-hover:text-dark-violet rounded-[20px] font-semibold h-[40px] border border-[#8541EF]" style={{backgroundColor: '#8541EF17'}}>Get started</Button>
             </div>
           </div>
         </div>
@@ -238,7 +241,7 @@ export default function PremiumSupportPage() {
             {/* Priority Updates Card */}
             <div className="bg-white p-8 rounded-[21px] text-center border relative w-[354px] h-[190px]" style={{ boxShadow: '0px 4px 22.1px 0px #8A51CE3D' }}>
               <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white rounded-full h-[70px] w-[70px] flex items-center justify-center" style={{ border: '1px solid #8541EF4F', boxShadow: '0px 4px 22.1px 0px #8A51CE3D' }}>
-                 <img src={priorityIcon} alt="Priority Updates" className="h-9 w-9" />
+                  <img src={priorityIcon} alt="Priority Updates" className="h-9 w-9" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-2">Priority Updates</h3>
               <p className="text-sm text-[#30343B]" style={{height: '48px', lineHeight: '20px'}}>Gain early insights into fresh funding programs before others.</p>
