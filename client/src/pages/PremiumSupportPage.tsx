@@ -58,12 +58,12 @@ export default function PremiumSupportPage() {
             {/* Basic Plan */}
             <div className="group bg-white rounded-2xl p-8 text-center shadow-lg border w-full max-w-sm transition-all duration-300 ease-in-out hover:scale-105 ">
               <div className="mb-6">
-                <div className="inline-flex items-center justify-center bg-[#F3F4F6] text-[#4B5563] px-4 py-2 rounded-[36px] text-sm font-medium mb-4 h-[31px] w-[115px]">Basic</div>
+                <div className="inline-flex items-center justify-center bg-[#F3F4F6] text-[#4B5563] px-4 py-2 rounded-[36px] text-sm font-medium mb-4 h-[31px] w-[115px]">1-Month</div>
                 <div className="mb-4 h-[39px] flex items-baseline justify-center">
-                  <span className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Inter', fontSize: '32px', fontWeight: 700 }}>₹199</span>
-                  <span className="text-gray-600 text-lg" style={{ fontFamily: 'Inter', fontSize: '18px', fontWeight: 500 }}>/month</span>
+                  <span className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Inter', fontSize: '32px', fontWeight: 700 }}>₹390</span>
+                
                 </div>
-                <p className="text-[#565F6C] min-h-[40px]" style={{ fontFamily: 'Poppins', fontSize: '14px', fontWeight: 500, lineHeight: '20px' }}>Perfect for startups looking for quick funding opportunities</p>
+                <p className="text-[#565F6C] min-h-[40px]" style={{ fontFamily: 'Poppins', fontSize: '14px', fontWeight: 500, lineHeight: '20px' }}>Explore all our features for one month and find the right funding for your startup</p>
               </div>
               <ul className="text-left space-y-4 mb-8">
                 <li className="flex items-center">
@@ -113,12 +113,12 @@ export default function PremiumSupportPage() {
                 </span>
               </div>
               <div className="mb-6">
-                <div className="inline-flex items-center justify-center bg-[#E0E7FF] text-[#3730A3] px-4 py-2 rounded-[36px] text-sm font-medium mb-4 h-[31px] w-[115px]">Growth</div>
+                <div className="inline-flex items-center justify-center bg-[#E0E7FF] text-[#3730A3] px-4 py-2 rounded-[36px] text-sm font-medium mb-4 h-[31px] w-[115px]">3-Month</div>
                   <div className="mb-4 h-[39px] flex items-baseline justify-center">
-                  <span className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Inter', fontSize: '32px', fontWeight: 700 }}>₹499</span>
-                  <span className="text-gray-600 text-lg" style={{ fontFamily: 'Inter', fontSize: '18px', fontWeight: 500 }}>/month</span>
+                  <span className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Inter', fontSize: '32px', fontWeight: 700 }}>₹999</span>
+                 
                 </div>
-                <p className="text-[#565F6C] min-h-[40px]" style={{ fontFamily: 'Poppins', fontSize: '14px', fontWeight: 500, lineHeight: '20px' }}>Perfect for startups looking for quick funding opportunities</p>
+                <p className="text-[#565F6C] min-h-[40px]" style={{ fontFamily: 'Poppins', fontSize: '14px', fontWeight: 500, lineHeight: '20px' }}>Our most popular plan. Track grants over a three-month period and increase your chances</p>
               </div>
               <ul className="text-left space-y-4 mb-8">
                   <li className="flex items-center">
@@ -160,12 +160,12 @@ export default function PremiumSupportPage() {
             {/* Pro Plan */}
             <div className="group bg-white rounded-2xl p-8 text-center shadow-lg border w-full max-w-sm transition-all duration-300 ease-in-out hover:scale-105 ">
               <div className="mb-6">
-                <div className="inline-flex items-center justify-center bg-[#FEF3C7] text-[#92400E] px-4 py-2 rounded-[36px] text-sm font-medium mb-4 h-[31px] w-[115px]">Pro</div>
+                <div className="inline-flex items-center justify-center bg-[#FEF3C7] text-[#92400E] px-4 py-2 rounded-[36px] text-sm font-medium mb-4 h-[31px] w-[115px]">Custom Plan</div>
                 <div className="mb-4 h-[39px] flex items-baseline justify-center">
-                  <span className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Inter', fontSize: '32px', fontWeight: 700 }}>₹699</span>
-                  <span className="text-gray-600 text-lg" style={{ fontFamily: 'Inter', fontSize: '18px', fontWeight: 500 }}>/month</span>
+                  <span className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Inter', fontSize: '32px', fontWeight: 700 }}>₹3999</span>
+                  
                 </div>
-                <p className="text-[#565F6C] min-h-[40px]" style={{ fontFamily: 'Poppins', fontSize: '14px', fontWeight: 500, lineHeight: '20px' }}>Perfect for startups looking for quick funding opportunities</p>
+                <p className="text-[#565F6C] min-h-[40px]" style={{ fontFamily: 'Poppins', fontSize: '14px', fontWeight: 500, lineHeight: '20px' }}>This is a premium, personalized service where users can schedule a meeting</p>
               </div>
               <ul className="text-left space-y-4 mb-8">
                   <li className="flex items-center">
@@ -190,15 +190,15 @@ export default function PremiumSupportPage() {
                   </li>
                   <li className="flex items-center">
                     <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                    <span className="text-gray-700">Priority support</span>
+                    <span className="text-gray-700">Perfectly your requirements</span>
                   </li>
                   <li className="flex items-center">
                     <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                    <span className="text-gray-700">Grant eligibility checker</span>
+                    <span className="text-gray-700">Schedule a meeting with our experts</span>
                   </li>
                   <li className="flex items-center">
                     <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                    <span className="text-gray-700">Early access to new features</span>
+                    <span className="text-gray-700">Strategic approach funding</span>
                   </li>
                 </ul>
                 <Button onClick={() => handlePlanClick('login')} className="w-full text-[#8541EF] group-hover:bg-[#8541EF] group-hover:text-dark-violet rounded-[20px] font-semibold h-[40px] border border-[#8541EF]" style={{backgroundColor: '#8541EF17'}}>Get started</Button>
