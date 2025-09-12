@@ -17,6 +17,7 @@ import DashboardPage from "./pages/DashboardPage";
 import { useAuth } from "@/hooks/use-auth";
 import { Navbar } from "@/components/navbar";
 import { ProtectedAdminRoute } from "./components/ProtectedAdminRoute";
+import ContactUs from "@/pages/ContactUs";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
@@ -38,7 +39,7 @@ function Router() {
       <Route path="/grants" component={GrantsPage} />
       <Route path="/grant/:id" component={GrantDetailPage} />
       <Route path="/premium-support" component={PremiumSupportPage} />
-
+      <Route path="/contact" component={ContactUs} /> 
       <Route path="/dashboard">
         <ProtectedRoute>
           <DashboardPage />

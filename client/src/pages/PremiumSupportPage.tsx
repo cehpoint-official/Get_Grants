@@ -38,7 +38,7 @@ export default function PremiumSupportPage() {
   return (
     <div id="premium-support" className="bg-white" >
       
-       <section className="bg-[#FAF5FF]">
+       <section className="bg-[#FAF5FF] pt-10 pb-20 relative z-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center py-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-[#30343B] mb-4">
@@ -53,7 +53,7 @@ export default function PremiumSupportPage() {
 
       {/* Section 2: Pricing Cards */}
       <section id="pricing" >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10">
           <div className="flex flex-col lg:flex-row justify-center items-center gap-8">
             {/* Basic Plan */}
             <div className="group bg-white rounded-2xl p-8 text-center shadow-lg border w-full max-w-sm transition-all duration-300 ease-in-out hover:scale-105 ">

@@ -44,7 +44,11 @@ export function Navbar() {
       setActiveLink('Premium Support');
     } else if (location.startsWith('/blog-detail')) {
       setActiveLink('Blog');
-    } else {
+    }
+    else if (location.startsWith('/contact')) {
+      setActiveLink('Contact');
+    }
+     else {
       setActiveLink('');
     }
   }, [location]);
@@ -68,6 +72,7 @@ export function Navbar() {
     { name: 'Find Grants', action: () => navigate('/grants') },
     { name: 'Pricing', action: () => navigate('/premium-support') },
     { name: 'Blog', action: () => { navigate('/'); scrollToSection('blog'); } },
+    { name: 'Contact', action: () => navigate('/contact') },
   ];
 
   const handleLogout = async () => {
