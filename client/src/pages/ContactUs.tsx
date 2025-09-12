@@ -41,7 +41,7 @@ const InfoCard = ({
     {/* Title and Divider */}
     <div className="flex flex-col items-center w-full">
       <h3 className="font-semibold text-base leading-none text-[#3E4043] mb-3">{title}</h3>
-      <div className="w-[200px] h-[1px] bg-gray-200 mx-auto mb-4"></div>
+      <div className="w-[250px] h-[1px] bg-gray-200 mx-auto mb-4"></div>
     </div>
     
     {/* Text Lines */}
@@ -75,7 +75,6 @@ const SupportCard = ({
     {/* Added min-height to ensure consistent heading position */}
     <h4 className="font-inter font-medium text-[16px] text-gray-800 mb-3 leading-none min-h-[40px] flex items-center">{title}</h4>
     <p className="font-inter text-xs text-[#565F6C] leading-[18px] max-w-[260px]">{description}</p>
-    
   </div>
 );
 
@@ -204,6 +203,7 @@ const ContactUs = () => {
                 </Button>
               </div>
             </div>
+            
           </div>
         </div>
         
