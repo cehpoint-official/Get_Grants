@@ -72,6 +72,7 @@ export function Navbar() {
     { name: 'Find Grants', action: () => navigate('/grants') },
     { name: 'Pricing', action: () => navigate('/premium-support') },
     { name: 'Blog', action: () => { navigate('/'); scrollToSection('blog'); } },
+    { name: 'About', action: () => navigate('/about') },
     { name: 'Contact', action: () => navigate('/contact') },
   ];
 

@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Navbar } from "@/components/navbar";
 import { ProtectedAdminRoute } from "./components/ProtectedAdminRoute";
 import ContactUs from "@/pages/ContactUs";
+import About from "@/pages/About";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
@@ -34,6 +35,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/about" component={About} /> 
       <Route path="/blog-detail" component={BlogDetail} />
       <Route path="/apply" component={ApplyPage} />
       <Route path="/grants" component={GrantsPage} />

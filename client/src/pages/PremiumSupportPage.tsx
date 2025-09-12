@@ -190,15 +190,15 @@ export default function PremiumSupportPage() {
                   </li>
                   <li className="flex items-center">
                     <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                    <span className="text-gray-700">Perfectly your requirements</span>
+                    <span className="text-gray-700">Priority support</span>
                   </li>
                   <li className="flex items-center">
                     <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                    <span className="text-gray-700">Schedule a meeting with our experts</span>
+                    <span className="text-gray-700">Grant eligibility checker</span>
                   </li>
                   <li className="flex items-center">
                     <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                    <span className="text-gray-700">Strategic approach funding</span>
+                    <span className="text-gray-700">Early access to new features</span>
                   </li>
                 </ul>
                 <Button onClick={() => handlePlanClick('login')} className="w-full text-[#8541EF] group-hover:bg-[#8541EF] group-hover:text-dark-violet rounded-[20px] font-semibold h-[40px] border border-[#8541EF]" style={{backgroundColor: '#8541EF17'}}>Get started</Button>
@@ -268,6 +268,8 @@ export default function PremiumSupportPage() {
             personalized support.
           </p>
           <Button className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-8 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity" style={{ backgroundColor: '#EB5E77' }}>
+            
+            
             Connect Us
           </Button>
         </div>
