@@ -3,7 +3,7 @@ import { fetchGrants } from '@/services/grants';
 import { Grant } from '@shared/schema';
 import { Button } from '@/components/ui/button';
 import { useLocation } from 'wouter';
-import { LoaderCircle, Lock, Search, CalendarDays, Wallet, Clock4 } from 'lucide-react';
+import { LoaderCircle, Lock, Search, CalendarDays, Wallet, Clock4, SlidersHorizontal } from 'lucide-react';
 import { useAuth, AppUser } from '@/hooks/use-auth';
 import { AuthModal } from '@/components/AuthModal';
 import { Input } from '@/components/ui/input';
@@ -58,7 +58,7 @@ const getStatusClass = (status: Grant['status']) => {
         case 'Expired':
             return 'bg-[#FFBAB86B] text-[#EA3030]';
         case 'Closing Soon':
-             return 'bg-orange-100 text-orange-600';
+            return 'bg-orange-100 text-orange-600';
         default:
             return 'bg-gray-100 text-gray-700';
     }
@@ -74,7 +74,7 @@ export const GrantCard = ({ grant, user, onCardClick }: { grant: Grant, user: Ap
     return (
         <article
             onClick={() => onCardClick(grant)}
-            className="bg-white relative rounded-[12px] border border-gray-200/80 shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col cursor-pointer overflow-hidden w-[270px] min-h-[338px]"
+            className="bg-white relative rounded-[12px] border border-gray-200/80 shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col cursor-pointer overflow-hidden w-full min-h-[338px]"
         >
             <div className="p-5 flex flex-col h-full">
                 <div className="flex justify-between items-start mb-3">
@@ -99,8 +99,8 @@ export const GrantCard = ({ grant, user, onCardClick }: { grant: Grant, user: Ap
 
                 <div className="mt-auto space-y-4">
                     <div className="flex items-baseline space-x-2">
-                         <span className="font-inter font-bold text-sm text-black">{grant.fundingAmount}</span>
-                         <span className="font-poppins font-medium text-sm text-[#565F6C]">funding</span>
+                        <span className="font-inter font-bold text-sm text-black">{grant.fundingAmount}</span>
+                        <span className="font-poppins font-medium text-sm text-[#565F6C]">funding</span>
                     </div>
 
                     <div className="flex items-center text-xs text-gray-700 bg-[#F8F8F8] rounded-[12px] p-2">
@@ -109,9 +109,9 @@ export const GrantCard = ({ grant, user, onCardClick }: { grant: Grant, user: Ap
                     </div>
                     
                     <Button 
-                      className="w-full h-[45px] bg-[#D4D4D430] hover:bg-[#c0b4ff61] text-[#212121] font-semibold rounded-[35px] text-sm"
-                      tabIndex={-1}
-                      onClick={(e) => { e.stopPropagation(); onCardClick(grant); }}
+                        className="w-full h-[45px] bg-[#D4D4D430] hover:bg-[#c0b4ff61] text-[#212121] font-semibold rounded-[35px] text-sm"
+                        tabIndex={-1}
+                        onClick={(e) => { e.stopPropagation(); onCardClick(grant); }}
                     >
                         {isLocked ? 'Unlock with Premium' : 'View Details'}
                     </Button>
@@ -127,7 +127,6 @@ export const GrantCard = ({ grant, user, onCardClick }: { grant: Grant, user: Ap
         </article>
     );
 };
-
 
 const FilterSidebar = ({ filters, onFilterChange, onResetFilters }: {
     filters: any;
@@ -155,7 +154,7 @@ const FilterSidebar = ({ filters, onFilterChange, onResetFilters }: {
     };
 
     return (
-        <aside className="lg:col-span-1 bg-white p-6 rounded-lg shadow-md h-fit sticky top-24">
+        <aside className="lg:col-span-1 bg-white p-6 rounded-lg shadow-md h-fit lg:sticky top-24">
             <h3 className="text-xl font-semibold mb-6">All Filters</h3>
             <div className="space-y-6">
                 <div>
@@ -204,7 +203,8 @@ export default function GrantsPage() {
     });
     const [activeCategory, setActiveCategory] = useState('All');
     const [currentPage, setCurrentPage] = useState(1);
-    const grantsPerPage = 6;
+    const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
+    const grantsPerPage = 9;
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -244,7 +244,6 @@ export default function GrantsPage() {
 
     const filteredGrants = useMemo(() => {
         let filtered = grants;
-
         if (searchTerm) {
             const lowercasedSearchTerm = searchTerm.toLowerCase();
             filtered = filtered.filter(grant =>
@@ -255,11 +254,9 @@ export default function GrantsPage() {
                 grant.fundingAmount.toLowerCase().includes(lowercasedSearchTerm)
             );
         }
-
         if (activeCategory !== 'All') {
             filtered = filtered.filter(grant => grant.category === activeCategory);
         }
-        
         if (filters.minAmount) {
             const min = parseFloat(filters.minAmount);
             if (!isNaN(min)) {
@@ -267,10 +264,10 @@ export default function GrantsPage() {
             }
         }
         if (filters.maxAmount) {
-             const max = parseFloat(filters.maxAmount);
-             if (!isNaN(max)) {
+            const max = parseFloat(filters.maxAmount);
+            if (!isNaN(max)) {
                 filtered = filtered.filter(grant => parseFloat(grant.fundingAmount.replace(/[^0-9.-]+/g, "")) <= max);
-             }
+            }
         }
         if (filters.status !== 'All') {
             filtered = filtered.filter(grant => grant.status === filters.status);
@@ -278,7 +275,6 @@ export default function GrantsPage() {
         if (filters.deadline) {
             filtered = filtered.filter(grant => new Date(grant.deadline) <= new Date(filters.deadline));
         }
-
         return filtered;
     }, [grants, searchTerm, activeCategory, filters]);
 
@@ -315,7 +311,7 @@ export default function GrantsPage() {
         <>
             <div className="bg-gray-50 min-h-screen">
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="mb-12 w-[429px]">
+                    <div className="mb-12 text-center lg:text-left">
                         <h1 className="font-poppins font-semibold text-[34px] text-gray-800 leading-tight">
                             Explore All Grants
                         </h1>
@@ -324,8 +320,8 @@ export default function GrantsPage() {
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-[20px] mb-8">
-                        <div className="relative flex-grow">
+                    <div className="flex flex-col sm:flex-row items-center gap-[20px] mb-8">
+                        <div className="relative flex-grow w-full">
                             <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#9F9F9F] pointer-events-none" />
                             <Input
                                 type="text"
@@ -337,12 +333,23 @@ export default function GrantsPage() {
                                 onKeyDown={(e) => { if (e.key === 'Enter') { setSearchTerm(searchInput); setCurrentPage(1); } }}
                             />
                         </div>
-                        <Button onClick={() => { setSearchTerm(searchInput); setCurrentPage(1); }} className="w-[140px] h-[49px] rounded-[16px] bg-[#7E4DFF] hover:bg-[#6f3eff] text-white shadow-[0_8px_18px_rgba(126,77,255,0.35)]">
+                        <Button onClick={() => { setSearchTerm(searchInput); setCurrentPage(1); }} className="w-full sm:w-[140px] h-[49px] rounded-[16px] bg-[#7E4DFF] hover:bg-[#6f3eff] text-white shadow-[0_8px_18px_rgba(126,77,255,0.35)]">
                             Search
                         </Button>
                     </div>
 
-                    <div className="mb-12 flex flex-wrap gap-[14px]">
+                    <div className="mb-8 flex justify-center lg:justify-start">
+                        <Button 
+                            onClick={() => setIsFilterSidebarOpen(!isFilterSidebarOpen)} 
+                            className="lg:hidden flex items-center gap-2"
+                            variant="outline"
+                        >
+                            <SlidersHorizontal size={16} />
+                            {isFilterSidebarOpen ? 'Hide Filters' : 'Show Filters'}
+                        </Button>
+                    </div>
+
+                    <div className="mb-12 flex flex-wrap justify-center lg:justify-start gap-[14px]">
                         {categories.map(category => (
                             <Button
                                 key={category}
@@ -360,12 +367,14 @@ export default function GrantsPage() {
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                       <FilterSidebar filters={filters} onFilterChange={handleFilterChange} onResetFilters={handleResetFilters} />
-
+                        <div className={`${isFilterSidebarOpen ? 'block' : 'hidden'} lg:block`}>
+                            <FilterSidebar filters={filters} onFilterChange={handleFilterChange} onResetFilters={handleResetFilters} />
+                        </div>
+                        
                         <main className="lg:col-span-3">
                             {currentGrants.length > 0 ? (
                                 <>
-                                    <div className="flex flex-wrap gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {currentGrants.map((grant) => (
                                             <GrantCard key={grant.id} grant={grant} user={user} onCardClick={handleCardClick} />
                                         ))}

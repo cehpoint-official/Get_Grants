@@ -72,7 +72,8 @@ export default function PremiumSupport() {
         <div id="faq" className="py-16 sm:py-24" style={{ background: ' #FFFFFF ' }}>
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-16 items-center">
-                    <div className="text-left">
+                    {/* Updated this div for mobile center alignment */}
+                    <div className="text-center lg:text-left">
                         <span className="inline-block px-3 py-1 text-sm font-semibold rounded-2xl" style={{ backgroundColor: '#F49BAB8F', color: '#EB5E77' }}>
                             FAQ
                         </span>
@@ -82,7 +83,8 @@ export default function PremiumSupport() {
                         <p className="mt-4 text-lg" style={{ color: '#565F6C' }}>
                             Simplifying everything you need here
                         </p>
-                        <div className="mt-6 h-1 w-25" style={{ backgroundColor: '#EB5E77' }} />
+                        {/* Centered the underline for mobile */}
+                        <div className="mt-6 h-1 w-24 mx-auto lg:mx-0" style={{ backgroundColor: '#EB5E77' }} />
                     </div>
                     <div className="mt-10 lg:mt-0">
                         <div className="space-y-4">
@@ -142,7 +144,7 @@ export default function PremiumSupport() {
                                 <textarea placeholder="Your query/Requirement *" {...register("queryText", { required: "Query is required" })} className="w-full p-3 pl-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-[#EB5E77] transition-colors" rows={4}></textarea>
                                 {errors.queryText && <p className="text-red-500 text-sm mt-1">{errors.queryText.message}</p>}
                             </div>
-                            <Button type="submit" disabled={isSubmitting} className="w-full text-white rounded-xl shadow-lg font-semibold py-3 text-lg disabled:opacity-50" style={{ backgroundColor: '#EB5E77' }}>
+                            <Button type="submit" disabled={isSubmitting} className="w-full  rounded-xl shadow-lg font-semibold py-3 text-lg disabled:opacity-50 bg-[#8541EF] hover:bg-[#7a38d9] text-white" >
                                 {isSubmitting ? "Submitting..." : "Submit Inquiry"}
                             </Button>
                         </form>

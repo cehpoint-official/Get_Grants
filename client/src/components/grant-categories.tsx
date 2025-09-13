@@ -85,7 +85,7 @@ export function GrantCategories() {
   const isMobile = useMobile();
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>("stage");
 
-  // --- DATA & FILTER OPTIONS
+  // --- DATA & FILTER OPTIONS ---
   const filterOptions = {
     stage: ["Idea", "MVP", "Revenue", "Scaling"],
     fundingType: ["Grant", "Equity", "Fellowship", "Others"],
@@ -817,8 +817,7 @@ export function GrantCategories() {
                },
                {
                  name: "DAE (Department of Atomic Energy)",
-                 description:
-                   "Nuclear Technology, Nuclear Medicine, Radiation Technology, Advanced Materials, Energy Solutions",
+                 description: "Nuclear Technology, Nuclear Medicine, Radiation Technology, Advanced Materials, Energy Solutions",
                  website: "https://dae.gov.in/",
                },
            ],
@@ -1028,7 +1027,7 @@ export function GrantCategories() {
   ],
 },
 {
-  id: "international",
+  id: "international-accelerators",
   icon: Rocket,
   title: "International Accelerators & Incubators",
   subtitle: "Global Programs",
@@ -1335,7 +1334,7 @@ export function GrantCategories() {
       ],
      },
      {
-      id: "specialized",
+      id: "specialized-focus",
       title: "🎯 Specialized Focus Accelerators",
       grants: [
         {
@@ -1389,7 +1388,7 @@ export function GrantCategories() {
       setActiveCategoryId(categoryId);
     }
   };
-
+  
   const toggleStage = (stageId: string) => {
     const newSet = new Set(expandedStages);
     if (newSet.has(stageId)) newSet.delete(stageId);
@@ -1512,7 +1511,6 @@ export function GrantCategories() {
     return combinedFilter(uniqueGrants) as Grant[];
   }, [searchTerm, selectedFilters, categories]);
 
-
   // --- RENDER FUNCTIONS ---
 
   const GrantCard = ({ grant }: { grant: Grant }) => (
@@ -1584,7 +1582,10 @@ export function GrantCategories() {
 
     return (
       <div className="space-y-6">
-        <div className="flex gap-5 overflow-x-auto no-scrollbar pb-2">
+        {/* --- CHANGE START --- */}
+        {/* Changed from a fixed grid layout to a wrapping flexbox layout */}
+        <div className="flex flex-wrap gap-5 pb-2">
+        {/* --- CHANGE END --- */}
           {stages.map(s => {
             const active = s.id === currentStage?.id;
             return (
@@ -1599,7 +1600,7 @@ export function GrantCategories() {
           })}
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredStageGrants.map((grant, index) => (
             <GrantCard key={`${currentStage?.id}-${index}`} grant={grant as Grant} />
           ))}
@@ -1612,7 +1613,7 @@ export function GrantCategories() {
     const filteredCategoryItems = combinedFilter(category.items || []);
     if (filteredCategoryItems.length === 0) return null;
     return (
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {filteredCategoryItems.map((item, index) =>
           typeof item === 'object'
             ? <GrantCard key={`${category.id}-${index}`} grant={item as Grant} />
@@ -1632,23 +1633,17 @@ export function GrantCategories() {
       }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mb-6">
-          <div className="lg:col-span-8">
-            <h1 className="text-2xl sm:text-3xl lg:text-[44px] leading-[1.15] tracking-tight text-[#16181D]">
-              Discover the Right Grants for Your Startup Journey
-            </h1>
-          </div>
-          <div className="lg:col-span-4">
-            <p className="text-base lg:text-lg text-gray-500">
-              Access government grants, startup schemes, and funding support in one place.
-            </p>
-          </div>
+        <div className="text-center mb-6">
+          <h1 className="text-2xl sm:text-3xl lg:text-[44px] leading-[1.15] tracking-tight text-[#16181D]">
+            Discover the Right Grants for Your Startup Journey
+          </h1>
+          <p className="text-base lg:text-lg text-gray-500 mt-2">
+            Access government grants, startup schemes, and funding support in one place.
+          </p>
         </div>
-
-        
         <div className="py-2 mb-8 lg:top-24 z-10">
         
-          <div className="flex flex-col md:flex-row items-stretch gap-4">
+          <div className="flex flex-row items-stretch gap-4 flex-wrap">
           
             <div className="flex-grow flex relative rounded-2xl border border-black/10 bg-white shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
               <input
@@ -1658,7 +1653,7 @@ export function GrantCategories() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Search className={`absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 ${isMobile ? '' : 'text-gray-400'}`} />
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm("")}
@@ -1678,7 +1673,7 @@ export function GrantCategories() {
              <Button
                onClick={() => setShowFilters(!showFilters)}
                variant="outline"
-               className="w-full md:w-auto hover:text-pink bg-white hover:bg-pink/10 text-[#EB5E77] font-medium px-4 py-3 flex items-center justify-center gap-2 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.2)] transition-all duration-300"
+               className="w-auto hover:text-pink bg-white hover:bg-pink/10 text-[#EB5E77] font-medium px-4 py-3 flex items-center justify-center gap-2 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.2)] transition-all duration-300"
              >
                <Filter className="h-4 w-4" />
              <span>Filters</span>
@@ -1690,7 +1685,7 @@ export function GrantCategories() {
            </Button>
            <Button
              onClick={() => navigate("/apply")}
-             className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity"
+             className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity w-auto"
            >
              Apply for Grant
            </Button>
@@ -1755,7 +1750,6 @@ export function GrantCategories() {
             </div>
           )}
         </div>
-
         {/* Combined Search Results for Mobile and Desktop */}
         {(searchTerm || hasActiveFilters) ? (
             <div className="mt-8">
@@ -1765,7 +1759,7 @@ export function GrantCategories() {
                             <h2 className="text-2xl font-bold text-[#EB5E77] mb-1">Search Results</h2>
                             <p className="text-gray-600">Found {allFilteredGrants.length} matching grants</p>
                         </div>
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {allFilteredGrants.map((grant, index) => (
                                 <GrantCard key={`search-result-${index}`} grant={grant} />
                             ))}
@@ -1875,6 +1869,7 @@ export function GrantCategories() {
         </div>
         )}
       </div>
+
    </section>
   );
 }

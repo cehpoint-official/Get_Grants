@@ -1,5 +1,3 @@
-// client/src/pages/ContactUs.tsx
-
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,17 +8,17 @@ import {
   Twitter,
   Instagram,
   MessageSquare,
+  LoaderCircle, // Loading icon ke liye import karein
 } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
+import { getFunctions, httpsCallable } from "firebase/functions";
 
-// Importing your icons from the assets folder
 import mailIcon from "@/assets/logos/mail.png";
 import phoneIcon from "@/assets/logos/phone.png";
 import locationIcon from "@/assets/logos/location.png";
 import supportIcon from "@/assets/logos/support.png";
 import assistanceIcon from "@/assets/logos/assistance.png";
 
-// Helper components for cards
 const InfoCard = ({
   icon,
   title,
@@ -32,30 +30,22 @@ const InfoCard = ({
   line1: string;
   line2: string;
 }) => (
-    <div className="bg-white p-6 rounded-[15px] shadow-[0px_4px_38.1px_0px_#00000012] text-center flex flex-col items-center justify-start h-[256px] w-full max-w-[261px] font-inter relative overflow-hidden pt-8">
-    {/* Icon Section */}
+  <div className="bg-white p-6 rounded-[15px] shadow-[0px_4px_38.1px_0px_#00000012] text-center flex flex-col items-center justify-start h-[256px] w-full max-w-[261px] font-inter relative overflow-hidden pt-8">
     <div className="bg-[#FAF5FF] rounded-full h-[54px] w-[54px] flex items-center justify-center mb-4">
       {icon}
     </div>
-
-    {/* Title and Divider */}
     <div className="flex flex-col items-center w-full">
       <h3 className="font-semibold text-base leading-none text-[#3E4043] mb-3">{title}</h3>
       <div className="w-[250px] h-[1px] bg-gray-200 mx-auto mb-4"></div>
     </div>
-    
-    {/* Text Lines */}
     <div className="px-1 mt-2">
-        <p className="text-sm font-normal text-[#4B4B4B] leading-[124%] mb-2">{line1}</p>
-        <p className="text-sm font-normal text-[#828487] leading-[124%]">{line2}</p>
+      <p className="text-sm font-normal text-[#4B4B4B] leading-[124%] mb-2">{line1}</p>
+      <p className="text-sm font-normal text-[#828487] leading-[124%]">{line2}</p>
     </div>
-
-    {/* Decorative bottom border */}
-    <div className="absolute bottom-0 left-0 right-0 h-[6px] bg-[#8541EF]  rounded-b-[15px]"></div>
+    <div className="absolute bottom-0 left-0 right-0 h-[6px] bg-[#8541EF] rounded-b-[15px]"></div>
   </div>
 );
 
-// UPDATED SupportCard with flexbox for alignment
 const SupportCard = ({
   icon,
   title,
@@ -65,28 +55,55 @@ const SupportCard = ({
   title: string;
   description: string;
 }) => (
-    <div className="border border-[#DCDCDC] rounded-[14px] p-6 text-center h-full flex flex-col justify-start items-center relative overflow-visible pt-12 bg-white">
-    {/* Icon overlapping the top border, centered */}
+  <div className="border border-[#DCDCDC] rounded-[14px] p-6 text-center h-full flex flex-col justify-start items-center relative overflow-visible pt-12 bg-white">
     <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-1 rounded-full border border-[#DCDCDC] shadow-sm">
-        <div className="h-10 w-10 flex items-center justify-center bg-white rounded-full">
-          {icon}
-        </div>
+      <div className="h-10 w-10 flex items-center justify-center bg-white rounded-full">
+        {icon}
+      </div>
     </div>
-    {/* Added min-height to ensure consistent heading position */}
     <h4 className="font-inter font-medium text-[16px] text-gray-800 mb-3 leading-none min-h-[40px] flex items-center">{title}</h4>
     <p className="font-inter text-xs text-[#565F6C] leading-[18px] max-w-[260px]">{description}</p>
   </div>
 );
 
 const ContactUs = () => {
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Backend logic will be added here
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    const functions = getFunctions();
+    const saveContactMessage = httpsCallable(functions, 'saveContactMessage');
+    try {
+      const result = await saveContactMessage(formData);
+      console.log(result.data);
+      alert("Your message has been sent successfully!");
+      setFormData({ name: "", email: "", subject: "", message: "" });
+    } catch (error) {
+      console.error("Error sending message:", error);
+      alert("There was an error sending your message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="bg-white">
-      {/* Top Section */}
       <section className="bg-[#FAF5FF] pt-20 pb-40 relative z-0">
         <div className="max-w-[417px] mx-auto px-4 text-center flex flex-col items-center space-y-3">
           <h2
@@ -104,36 +121,32 @@ const ContactUs = () => {
         </div>
       </section>
 
-      {/* Card Section - UPDATED GAP */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 justify-items-center">
-            <InfoCard
-              icon={<img src={mailIcon} alt="Email Icon" className="h-[22px] w-[22px]" />}
-              title="Email Us"
-              line1="info@startupgrants.in"
-              line2="Reach us anytime for quick assistance."
-            />
-            <InfoCard
-              icon={<img src={phoneIcon} alt="Phone Icon" className="h-[22px] w-[22px]" />}
-              title="Call Us"
-              line1="+91 7028377734"
-              line2="Speak directly with our support team."
-            />
-            <InfoCard
-              icon={<img src={locationIcon} alt="Location Icon" className="h-[22px] w-[22px]" />}
-              title="Visit Us"
-              line1="Salt Lake, Kolkata—700091, India."
-              line2="Meet us in person to discuss your needs."
-            />
+          <InfoCard
+            icon={<img src={mailIcon} alt="Email Icon" className="h-[22px] w-[22px]" />}
+            title="Email Us"
+            line1="info@startupgrants.in"
+            line2="Reach us anytime for quick assistance."
+          />
+          <InfoCard
+            icon={<img src={phoneIcon} alt="Phone Icon" className="h-[22px] w-[22px]" />}
+            title="Call Us"
+            line1="+91 7028377734"
+            line2="Speak directly with our support team."
+          />
+          <InfoCard
+            icon={<img src={locationIcon} alt="Location Icon" className="h-[22px] w-[22px]" />}
+            title="Visit Us"
+            line1="Salt Lake, Kolkata—700091, India."
+            line2="Meet us in person to discuss your needs."
+          />
         </div>
       </div>
 
-      {/* Form Section */}
       <section className="py-20 border-b border-[#E7E7E9]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white p-8 md:p-12 rounded-[17px] shadow-[0px_4px_23.1px_0px_#8541EF26] grid grid-cols-1 lg:grid-cols-2 gap-12">
-            
-            {/* Left Side */}
             <div className="flex flex-col">
               <div>
                 <h3 className="text-[32px] font-semibold bg-gradient-to-r from-[#8541EF] to-[#EB5E77] bg-clip-text text-transparent mb-4 leading-[44px]">
@@ -168,45 +181,50 @@ const ContactUs = () => {
               </div>
             </div>
 
-            {/* Right Side - Form */}
             <div className="relative bg-white p-8 rounded-[16px] border border-[#E7E7E9] shadow-[0px_4px_23.1px_0px_#8541EF26] pb-24 mt-2">
               <h4 className="text-2xl font-semibold text-gray-800 mb-6">
                 Keep in touch
               </h4>
-              <form onSubmit={handleFormSubmit} className="space-y-5">
+              {/* ===== STEP 1: Form ko ek 'id' dein ===== */}
+              <form id="contact-form" onSubmit={handleFormSubmit} className="space-y-5">
                 <div>
                   <label htmlFor="name" className="text-sm font-medium text-gray-700 block mb-1">Name</label>
-                  <Input type="text" name="name" id="name" required className="w-full h-10 px-4 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
+                  <Input type="text" name="name" id="name" required value={formData.name} onChange={handleInputChange} className="w-full h-10 px-4 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
                 </div>
                 <div>
                   <label htmlFor="email" className="text-sm font-medium text-gray-700 block mb-1">Email</label>
-                  <Input type="email" name="email" id="email" required className="w-full h-10 px-4 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
+                  <Input type="email" name="email" id="email" required value={formData.email} onChange={handleInputChange} className="w-full h-10 px-4 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
                 </div>
                 <div>
                   <label htmlFor="subject" className="text-sm font-medium text-gray-700 block mb-1">Subject</label>
-                  <Input type="text" name="subject" id="subject" required className="w-full h-10 px-4 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
+                  <Input type="text" name="subject" id="subject" required value={formData.subject} onChange={handleInputChange} className="w-full h-10 px-4 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
                 </div>
                 <div>
                   <label htmlFor="message" className="text-sm font-medium text-gray-700 block mb-1">Message</label>
-                  <Textarea name="message" id="message" required rows={4} className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
+                  <Textarea name="message" id="message" required value={formData.message} onChange={handleInputChange} rows={4} className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
+                </div>
+                {/* Submit button ko form ke andar rakhein, lekin design wahi rahega */}
+                <div className="absolute right-6 bottom-6">
+                  {/* ===== STEP 2: Button ko 'form' attribute se jodein ===== */}
+                  <Button
+                    type="submit"
+                    form="contact-form" // Yeh form ki ID se match hona chahiye
+                    disabled={isSubmitting}
+                    className="h-10 px-3 text-base font-semibold text-white rounded-lg shadow-sm hover:opacity-90 transition-opacity flex items-center"
+                    style={{ background: "linear-gradient(90.24deg, #8541EF 0.21%, #EB5E77 165.86%)" }}
+                  >
+                    {isSubmitting ? (
+                      <LoaderCircle className="animate-spin mr-2" size={18} />
+                    ) : (
+                      <MessageSquare size={18} className="mr-2" />
+                    )}
+                    {isSubmitting ? "Sending..." : "Send message"}
+                  </Button>
                 </div>
               </form>
-              {/* Fixed bottom-right action button */}
-              <div className="absolute right-6 bottom-6">
-                <Button
-                  type="submit"
-                  className="h-10 px-3 text-base font-semibold text-white rounded-lg shadow-sm hover:opacity-90 transition-opacity"
-                  style={{ background: "linear-gradient(90.24deg, #8541EF 0.21%, #EB5E77 165.86%)" }}
-                >
-                  <MessageSquare size={18} className="mr-2" />
-                  Send message
-                </Button>
-              </div>
             </div>
-            
           </div>
         </div>
-        
       </section>
       <Footer />
     </div>

@@ -75,7 +75,8 @@ export default function Testimonials() {
     <section className="bg-white py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-          <div className="space-y-6 self-start">
+          {/* Updated this div for mobile center alignment */}
+          <div className="space-y-6 self-start text-center lg:text-left">
             <span className="inline-block text-sm font-semibold bg-purple-100 text-purple-700 px-3 py-1 rounded-full">
               Case Studies
             </span>
@@ -85,13 +86,15 @@ export default function Testimonials() {
             <p className="text-lg text-gray-600">
               Meet the entrepreneurs who raised capital on our platform
             </p>
-            <Button
-                    onClick={() => navigate('/grants')}
-                    className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-8 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity"
-                  >
-                    Find Grants
-                  </Button>
-            
+            {/* Added a wrapper for the button */}
+            <div className="flex justify-center lg:justify-start">
+              <Button
+                onClick={() => navigate('/grants')}
+                className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-8 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity"
+              >
+                Find Grants
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -111,5 +114,3 @@ export default function Testimonials() {
     </section>
   );
 }
-
-

@@ -1,4 +1,5 @@
 import { Facebook, Linkedin, Twitter, Instagram, Mail, Phone, Rocket } from "lucide-react";
+import { Link } from "wouter";
 
 export function Footer() {
   const scrollToSection = (sectionId: string) => {
@@ -11,11 +12,10 @@ export function Footer() {
   return (
     <footer className="bg-[#111827] text-white py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-4 gap-8">
-          {/* Column 1: Branding and Social Media */}
-          
-          <div>
-                        <div className="flex items-center mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center md:text-left">
+    
+          <div className="flex flex-col items-center md:items-start">
+            <div className="flex items-center mb-6">
               <div className="mr-3">
                 <Rocket className="h-8 w-8 sm:h-9 sm:w-9 text-[#EB5E77]" />
               </div>
@@ -42,107 +42,117 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Column 2: Quick Links */}
-          <div>
-            <h4 className="text-lg font-semibold mb-6 text-white uppercase tracking-wide">QUICK LINKS</h4>
-            <ul className="space-y-3">
-              <li>
-                <button
-                  onClick={() => scrollToSection("home")}
-                  className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"
-                >
-                  <span className="w-1.5 h-1.5 bg-white rounded-full mr-3 group-hover:bg-[#EB5E77] transition-colors"></span>
-                  HOME
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => scrollToSection("grants")}
-                  className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"
-                >
-                  <span className="w-1.5 h-1.5 bg-white rounded-full mr-3 group-hover:bg-[#EB5E77] transition-colors"></span>
-                  BROWSE GRANTS
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => scrollToSection("blog")}
-                  className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"
-                >
-                  <span className="w-1.5 h-1.5 bg-white rounded-full mr-3 group-hover:bg-[#EB5E77] transition-colors"></span>
-                  BLOGS
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => scrollToSection("about")}
-                  className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"
-                >
-                  <span className="w-1.5 h-1.5 bg-white rounded-full mr-3 group-hover:bg-[#EB5E77] transition-colors"></span>
-                  ABOUT US
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => scrollToSection("contact")}
-                  className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"
-                >
-                  <span className="w-1.5 h-1.5 bg-white rounded-full mr-3 group-hover:bg-[#EB5E77] transition-colors"></span>
-                  CONTACT
-                </button>
-              </li>
-            </ul>
+          <div className="col-span-1 md:col-span-2 lg:col-span-2">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+            
+              <div className="flex flex-col items-start px-4 sm:px-0"> 
+                <h4 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6 text-white uppercase tracking-wide">QUICK LINKS</h4>
+                <ul className="space-y-2 sm:space-y-3"> 
+                  <li>
+                    <button
+                      onClick={() => scrollToSection("home")}
+                      className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"
+                    >
+                      <span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77] transition-colors"></span>
+                      HOME
+                    </button>
+                  </li>
+                  <li>
+                    <Link href="/grants">
+                      <a className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group">
+                        <span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77] transition-colors"></span>
+                        FIND GRANTS
+                      </a>
+                    </Link>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => scrollToSection("blog")}
+                      className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"
+                    >
+                      <span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77] transition-colors"></span>
+                      BLOG
+                    </button>
+                  </li>
+                  <li>
+                    <Link href="/about">
+                      <a className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group">
+                        <span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77] transition-colors"></span>
+                        ABOUT US
+                      </a>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/contact">
+                      <a className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group">
+                        <span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77] transition-colors"></span>
+                        CONTACT
+                      </a>
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+              <div className="flex flex-col items-start px-4 sm:px-0"> 
+                <h4 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6 text-white uppercase tracking-wide">LEGAL</h4>
+                <ul className="space-y-2 sm:space-y-3"> 
+                  <li>
+                    <Link href="/premium-support">
+                      <a className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group">
+                        <span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77] transition-colors"></span>
+                        SUPPORT
+                      </a>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/premium-support#pricing">
+                      <a className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group">
+                        <span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77] transition-colors"></span>
+                        PRICING
+                      </a>
+                    </Link>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => scrollToSection("faq")}
+                      className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"
+                    >
+                      <span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77] transition-colors"></span>
+                      FAQ'S
+                    </button>
+                  </li>
+                  <li>
+                    <a href="#" className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group">
+                      <span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77] transition-colors"></span>
+                      PRIVACY POLICY
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group">
+                      <span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77] transition-colors"></span>
+                      TERMS
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
 
-          {/* Column 3: Legal */}
-          <div>
-            <h4 className="text-lg font-semibold mb-6 text-white uppercase tracking-wide">LEGAL</h4>
-            <ul className="space-y-3">
-              <li>
-                <a href="#" className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group">
-                  <span className="w-1.5 h-1.5 bg-white rounded-full mr-3 group-hover:bg-[#EB5E77] transition-colors"></span>
-                  SUPPORT
-                </a>
-              </li>
-              <li>
-                <button
-                  onClick={() => scrollToSection("faq")}
-                  className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"
-                >
-                  <span className="w-1.5 h-1.5 bg-white rounded-full mr-3 group-hover:bg-[#EB5E77] transition-colors"></span>
-                  FAQ'S
-                </button>
-              </li>
-              <li>
-                <a href="#" className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group">
-                  <span className="w-1.5 h-1.5 bg-white rounded-full mr-3 group-hover:bg-[#EB5E77] transition-colors"></span>
-                  PRIVACY POLICY
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group">
-                  <span className="w-1.5 h-1.5 bg-white rounded-full mr-3 group-hover:bg-[#EB5E77] transition-colors"></span>
-                  TERMS AND CONDITIONS
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 4: Contact Us */}
-          <div>
+          <div className="flex flex-col items-center md:items-start lg:col-span-1"> 
             <h4 className="text-lg font-semibold mb-6 text-white uppercase tracking-wide">CONTACT US</h4>
-            <div className="space-y-4">
+            
+            {/* --- THIS IS THE CHANGED LINE --- */}
+            <div className="flex flex-row flex-wrap justify-center md:flex-col gap-4"> 
               <div className="flex items-center">
-                <div className="w-8 h-8 bg-gradient-to-r from-[#EB5E77] to-[#8A51CE] rounded-full flex items-center justify-center mr-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-[#EB5E77] to-[#8A51CE] rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                   <Mail className="h-4 w-4 text-white" />
                 </div>
-                <span className="text-white text-sm">Email: help@hirenari.com</span>
+                <span className="text-white text-sm">help@hirenari.com</span>
               </div>
               <div className="flex items-center">
-                <div className="w-8 h-8 bg-gradient-to-r from-[#EB5E77] to-[#8A51CE] rounded-full flex items-center justify-center mr-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-[#EB5E77] to-[#8A51CE] rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                   <Phone className="h-4 w-4 text-white" />
                 </div>
-                <span className="text-white text-sm">Phone: +91 1000000011</span>
+                <span className="text-white text-sm">+91 1000000011</span>
               </div>
             </div>
           </div>

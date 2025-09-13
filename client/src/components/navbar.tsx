@@ -48,7 +48,7 @@ export function Navbar() {
     else if (location.startsWith('/contact')) {
       setActiveLink('Contact');
     }
-     else {
+      else {
       setActiveLink('');
     }
   }, [location]);
@@ -67,13 +67,18 @@ export function Navbar() {
     setIsOpen(false);
   };
 
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    setIsOpen(false);
+  };
+
   const navItems = [
     { name: 'Home', action: () => { navigate('/'); scrollToSection('home'); } },
-    { name: 'Find Grants', action: () => navigate('/grants') },
-    { name: 'Pricing', action: () => navigate('/premium-support') },
+    { name: 'Find Grants', action: () => handleNavigation('/grants') },
+    { name: 'Pricing', action: () => handleNavigation('/premium-support') },
     { name: 'Blog', action: () => { navigate('/'); scrollToSection('blog'); } },
-    { name: 'About', action: () => navigate('/about') },
-    { name: 'Contact', action: () => navigate('/contact') },
+    { name: 'About', action: () => handleNavigation('/about') },
+    { name: 'Contact', action: () => handleNavigation('/contact') },
   ];
 
   const handleLogout = async () => {
@@ -83,16 +88,19 @@ export function Navbar() {
     } catch (error) {
       console.error("Logout error:", error);
     }
+    setIsOpen(false);
   };
 
   const handleLoginClick = () => {
     setAuthInitialMode('login');
     setIsAuthModalOpen(true);
+    setIsOpen(false);
   };
   
   const handleSignupClick = () => {
     setAuthInitialMode('signup');
     setIsAuthModalOpen(true);
+    setIsOpen(false);
   };
   
   const renderAuthButtons = () => {
@@ -102,7 +110,7 @@ export function Navbar() {
           <>
             <Button variant="ghost" onClick={() => navigate("/admin")} className="hidden lg:inline-flex text-nav-dark font-semibold">Admin Dashboard</Button>
             <Button onClick={handleLogout} className="hidden lg:inline-flex text-white font-semibold rounded-lg bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 transition-opacity">
-                Logout
+              Logout
             </Button>
           </>
         );
@@ -146,7 +154,7 @@ export function Navbar() {
         <>
             <Button variant="ghost" onClick={handleLoginClick} className="hidden lg:inline-flex text-nav-dark font-semibold ">Login</Button>
             <Button onClick={handleSignupClick} className="hidden lg:inline-flex text-white font-semibold rounded-lg bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 transition-opacity">
-                Sign Up
+              Sign Up
             </Button>
         </>
       );
@@ -158,7 +166,7 @@ export function Navbar() {
         if (isAdmin) {
           return (
             <div className="flex flex-col gap-2">
-              <Button onClick={() => navigate("/admin")} variant="ghost" className="w-full font-semibold text-nav-dark">Admin Dashboard</Button>
+              <Button onClick={() => handleNavigation("/admin")} variant="ghost" className="w-full font-semibold text-nav-dark">Admin Dashboard</Button>
               <Button onClick={handleLogout} className="w-full text-white font-semibold rounded-lg bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)]">Logout</Button>
             </div>
           );
@@ -166,7 +174,7 @@ export function Navbar() {
           return (
               <>
                   <p className="px-3 py-2 font-semibold text-violet">{user.fullName}</p>
-                  <Button onClick={() => navigate('/dashboard')} variant="ghost" className="w-full justify-start text-violet">My Dashboard</Button>
+                  <Button onClick={() => handleNavigation('/dashboard')} variant="ghost" className="w-full justify-start text-violet">My Dashboard</Button>
                   <Button onClick={handleLogout} variant="ghost" className="w-full justify-start text-red-600">Logout</Button>
               </>
           );
