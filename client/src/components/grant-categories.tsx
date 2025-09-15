@@ -1514,7 +1514,7 @@ export function GrantCategories() {
   // --- RENDER FUNCTIONS ---
 
   const GrantCard = ({ grant }: { grant: Grant }) => (
-    <div className={`group relative rounded-2xl p-5 transition-all flex flex-col h-full bg-white text-[#1F2937] shadow-[0_10px_24px_rgba(0,0,0,0.12)] hover:bg-[#EB5E77] hover:text-white hover:shadow-[0_12px_28px_rgba(235,94,119,0.35)]`}>
+    <div className={`group relative rounded-2xl p-5 transition-all flex flex-col h-full bg-white text-[#1F2937] shadow-lg hover:bg-[#EB5E77] hover:text-white hover:shadow-[0_12px_28px_rgba(235,94,119,0.35)]`}>
       <div className="flex items-start justify-between mb-3">
         <h4 className={`font-bold text-lg pr-2 text-[#1F2937] group-hover:text-white`}>{grant.name}</h4>
         <button
@@ -1592,7 +1592,7 @@ export function GrantCategories() {
               <button
                 key={s.id}
                 onClick={() => setActiveStageId(s.id)}
-                className={`${active ? 'bg-[linear-gradient(90deg,#8A51CE_0%,#EB5E77_100%)] text-white' : 'bg-white text-[#16181D]'} px-6 py-3 rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.25)] whitespace-nowrap font-semibold`}
+                className={`${active ? 'bg-[linear-gradient(90deg,#8A51CE_0%,#EB5E77_100%)] text-white' : 'bg-white text-[#16181D]'} px-6 py-3 rounded-2xl shadow-lg whitespace-nowrap font-semibold`}
               >
                 {s.title.replace(/^[^\s]*\s/,'') || s.title}
               </button>
@@ -1618,7 +1618,7 @@ export function GrantCategories() {
           typeof item === 'object'
             ? <GrantCard key={`${category.id}-${index}`} grant={item as Grant} />
             : (
-              <div key={`${category.id}-${index}`} className="bg-yellowish-white rounded-2xl p-4 transition-all duration-300 shadow-[0_8px_20px_rgba(0,0,0,0.15)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.28)]">
+              <div key={`${category.id}-${index}`} className="bg-white rounded-2xl p-4 transition-all duration-300 shadow-lg hover:shadow-[0_12px_28px_rgba(0,0,0,0.28)]">
                 <h4 className="font-semibold text-violet">{item}</h4>
               </div>
             )
@@ -1645,11 +1645,11 @@ export function GrantCategories() {
         
           <div className="flex flex-row items-stretch gap-4 flex-wrap">
           
-            <div className="flex-grow flex relative rounded-2xl border border-black/10 bg-white shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
+            <div className="flex-grow flex relative rounded-2xl border border-black/10 bg-white shadow-lg]">
               <input
                 type="text"
                 placeholder="Search grants by name or description..."
-                className="w-full pl-14 pr-16 h-[56px] focus:outline-none focus:ring-0 focus-visible:ring-0 text-[#16181D] placeholder-gray-500 bg-transparent rounded-2xl"
+                className="w-full  pl-14 pr-16 h-[45px] focus:outline-none focus:ring-0 focus-visible:ring-0 text-[#16181D] placeholder-gray-500 bg-transparent rounded-2xl"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -1664,16 +1664,16 @@ export function GrantCategories() {
                 </button>
               )}
               <button
-                className="absolute right-3 top-1/2 -translate-y-1/2 h-11 w-11 rounded-full bg-[#EB5E77] hover:bg-[#d4556a] text-white shadow-[0_6px_18px_rgba(0,0,0,0.25)] flex items-center justify-center"
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-[#EB5E77] hover:bg-[#d4556a] text-white shadow-lg flex items-center justify-center"
                 aria-label="Search"
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-4 w-4" />
               </button>
             </div>
              <Button
                onClick={() => setShowFilters(!showFilters)}
                variant="outline"
-               className="w-auto hover:text-pink bg-white hover:bg-pink/10 text-[#EB5E77] font-medium px-4 py-3 flex items-center justify-center gap-2 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.2)] transition-all duration-300"
+               className="w-auto hover:text-pink bg-white hover:bg-pink/10 text-[#EB5E77] font-medium px-4 py-3 flex items-center justify-center gap-2 rounded-xl shadow-lg transition-all duration-300"
              >
                <Filter className="h-4 w-4" />
              <span>Filters</span>
@@ -1693,7 +1693,7 @@ export function GrantCategories() {
 
           {/* Filter Panel */}
           {showFilters && (
-            <div className="mt-4 bg-yellowish-white rounded-2xl shadow-xl shadow-black/20 p-6 animate-in fade-in-0 duration-300">
+            <div className="mt-4 bg-white rounded-2xl shadow-xl shadow-black/20 p-6 animate-in fade-in-0 duration-300">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-[#EB5E77]">Filters</h3>
                 <Button onClick={() => setShowFilters(false)} variant="ghost" size="sm" className="text-[#EB5E77] hover:text-pink rounded-xl"><X className="h-4 w-4" /></Button>
@@ -1755,7 +1755,7 @@ export function GrantCategories() {
             <div className="mt-8">
                 {allFilteredGrants.length > 0 ? (
                     <div className="space-y-6">
-                        <div className="p-6 bg-yellowish-white rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.15)]">
+                        <div className="p-6 bg-white rounded-2xl shadow-lg">
                             <h2 className="text-2xl font-bold text-[#EB5E77] mb-1">Search Results</h2>
                             <p className="text-gray-600">Found {allFilteredGrants.length} matching grants</p>
                         </div>
@@ -1767,7 +1767,7 @@ export function GrantCategories() {
                     </div>
                 ) : (
                     <div className="text-center py-10">
-                        <div className="bg-white p-8 rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.15)] ">
+                        <div className="bg-white p-8 rounded-2xl shadow-lg ">
                             <h3 className="text-xl font-bold mb-2">No Results Found</h3>
                             <p className="text-gray-600">
                                 Try adjusting your search or filter criteria.
@@ -1785,7 +1785,7 @@ export function GrantCategories() {
         ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-4 lg:sticky lg:top-24 self-start">
-            <div className="bg-white rounded-3xl p-6 border border-black/10 shadow-[0_16px_50px_rgba(0,0,0,0.35)]">
+            <div className="bg-white rounded-3xl p-6 border border-black/10 shadow-lg]">
               {/* <h3 className="font-bold text-lg mb-4 px-2">Categories</h3> */}
               <div className="space-y-2">
                 {visibleCategories.map(category => {
@@ -1794,7 +1794,7 @@ export function GrantCategories() {
                   const hasSearchResults = searchTerm && category.count > 0;
                   let buttonClass = 'hover:bg-[#FFE1E0]/60 border border-transparent';
                   if (isActive) {
-                    buttonClass = 'bg-[#FFE1E0] border-2 border-[#EB5E77] shadow-[0_10px_26px_rgba(235,94,119,0.25)]';
+                    buttonClass = 'bg-[#FFE1E0] border-2 border-[#EB5E77] shadow-lg';
                   } else if (hasSearchResults) {
                     buttonClass = 'hover:bg-[#FFE1E0]/60 border border-transparent';
                   }
@@ -1805,7 +1805,7 @@ export function GrantCategories() {
                       onClick={() => handleCategoryClick(category.id)}
                       className={`w-full text-left px-3 py-3 rounded-2xl transition-all flex items-center gap-4 ${buttonClass}`}
                     >
-                      <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                      <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-lg">
                         <category.icon className="h-7 w-7 text-[#EB5E77]" />
                       </div>
                       <div>
@@ -1849,7 +1849,7 @@ export function GrantCategories() {
               </div>
             ) : (
               <div className="text-center py-20">
-                <div className="bg-white p-8 rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.15)] ">
+                <div className="bg-white p-8 rounded-2xl shadow-lg ">
                   <h3 className="text-xl font-bold mb-2">No Results Found</h3>
                   <p className="text-gray-600">
                     Try adjusting your search or filter criteria to find what you're looking for.

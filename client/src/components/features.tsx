@@ -39,7 +39,7 @@ export function Features() {
           {painPoints.map((point, index) => (
             <div
               key={index}
-              className="relative bg-white pt-16 pb-10 px-8 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] text-center"
+              className="relative bg-white pt-16 pb-10 px-8 rounded-xl shadow-lg text-center"
             >
               <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-16 h-16 bg-[#EB5E77]/10 border-2 border-[#EB5E77] rounded-full flex items-center justify-center">
                 <point.icon className="h-8 w-8 text-[#EB5E77]" />

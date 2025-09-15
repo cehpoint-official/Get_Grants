@@ -134,7 +134,7 @@ const FilterSidebar = ({ filters, onFilterChange, onResetFilters }: {
     onResetFilters: () => void;
 }) => {
     const [minAmount, setMinAmount] = useState(0);
-    const [maxAmount, setMaxAmount] = useState(50000000); 
+    const [maxAmount, setMaxAmount] = useState(20000000); 
 
     const handleMinAmountChange = (value: number[]) => {
         setMinAmount(value[0]);
@@ -163,7 +163,7 @@ const FilterSidebar = ({ filters, onFilterChange, onResetFilters }: {
                         <Label>Min Amount ({formatAmount(minAmount)})</Label>
                         <Slider defaultValue={[0]} max={10000000} step={50000} onValueChange={handleMinAmountChange} />
                         <Label>Max Amount ({formatAmount(maxAmount)})</Label>
-                        <Slider defaultValue={[50000000]} max={1000000000} step={1000000} onValueChange={handleMaxAmountChange} />
+                        <Slider defaultValue={[20000000]} max={20000000} step={1000000} onValueChange={handleMaxAmountChange} />
                     </div>
                 </div>
                 <div>

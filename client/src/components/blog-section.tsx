@@ -78,39 +78,48 @@ export function BlogSection() {
 
   return (
     <>
-      <section id="blog" className="py-20 bg-white]">
-        <div className="max-w-7xl text-center mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="inline-block bg-[#FFE1E0] text-[#EB5E77] font-semibold px-4 py-1.5 rounded-full text-sm mb-4">
-            Blog
+      <section id="blog" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="inline-block bg-[#FFE1E0] text-[#EB5E77] font-semibold px-4 py-1.5 rounded-full text-sm mb-4">
+              Blog
+            </div>
           </div>
-          <div className="relative text-center mb-16">
-            <h2 className="text-4xl font-bold text-[#30343B]">
-              Latest Insights from Get Grants
-            </h2>
-            <p className="mt-4 text-lg text-[#565F6C] max-w-3xl mx-auto">
-              Stay updated with the latest guides, tips, and insights on
-              startup grants and funding in India
-            </p>
-            <div className="absolute top-0 right-0 hidden md:block">
+          
+          {/* Flex container for heading and button */}
+          <div className="md:flex md:items-start md:justify-between text-center mb-16">
+            <div className="flex-grow">
+              <h2 className="text-4xl font-bold text-[#30343B]">
+                Latest Insights from Get Grants
+              </h2>
+              <p className="mt-4 text-lg text-[#565F6C] max-w-3xl mx-auto">
+                Stay updated with the latest guides, tips, and insights on
+                startup grants and funding in India
+              </p>
+            </div>
+            
+            <div className="hidden md:block flex-shrink-0 md:ml-8">
               {isAdmin ? (
                 <Button onClick={() => setShowCreatePost(true)} className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity">
                   <Plus className="mr-2 h-4 w-4" /> Create Post
                 </Button>
               ) : (
                 <Button onClick={() => setShowUserSubmit(true)} className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity">
-                  <Plus className="mr-2 h-4 w-4" /> Submit Your Blog
+                  <Plus className="mr-1 h-4 w-4" /> Submit Blog
                 </Button>
               )}
             </div>
           </div>
-          <div className="md:hidden mt-8 mb-8">
+          
+          {/* Mobile button */}
+          <div className="md:hidden text-center mb-8">
               {isAdmin ? (
                 <Button onClick={() => setShowCreatePost(true)} className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity">
                   <Plus className="mr-2 h-4 w-4" /> Create Post
                 </Button>
               ) : (
                 <Button onClick={() => setShowUserSubmit(true)} className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity">
-                  <Plus className="mr-2 h-4 w-4" /> Submit Your Blog
+                  <Plus className="mr-2 h-4 w-4" /> Submit Blog
                 </Button>
               )}
           </div>
@@ -133,16 +142,16 @@ export function BlogSection() {
                   />
                   <div className="p-6 flex flex-col flex-grow text-left">
                     <h3 className="text-2xl font-bold text-[#30343B] mb-5 flex-grow break-words..." >
-                           {post.title}
-                                 </h3>
+                      {post.title}
+                    </h3>
                     <p className="text-[#565F6C] mb-4 ">
                       {post.content.substring(0, 75)}
                       {post.content.length > 75 ? "..." : ""}
                     </p>
                     <div className="mt-auto pt-4 flex items-end justify-between">
-                       <Button
+                      <Button
                         variant="link"
-                        className="bg-violet  text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-[#8A41CE] hover:no-underline"
+                        className="bg-violet text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-[#8A41CE] hover:no-underline"
                         onClick={() => setLocation(`/blog-detail?id=${post.id}`)}
                       >
                         Read More →
@@ -155,7 +164,6 @@ export function BlogSection() {
                             year: 'numeric',
                           })}
                         </div>
-                        {/* <div>By {post.author}</div> */}
                       </div>
                     </div>
                   </div>
@@ -170,7 +178,7 @@ export function BlogSection() {
                 onClick={() => setShowAllPosts(true)}
                 className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity"
               >
-                View All Blog Posts
+                View All Blogs
               </Button>
             </div>
           )}
@@ -187,6 +195,8 @@ export function BlogSection() {
   );
 }
 
+// UserSubmitModal component remains unchanged, so it's excluded for brevity.
+// You can keep your existing UserSubmitModal code as it is.
 function UserSubmitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const form = useForm({
     resolver: zodResolver(insertPostSchema),

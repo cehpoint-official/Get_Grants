@@ -84,7 +84,7 @@ export default function PremiumSupport() {
                             Simplifying everything you need here
                         </p>
                         {/* Centered the underline for mobile */}
-                        <div className="mt-6 h-1 w-24 mx-auto lg:mx-0" style={{ backgroundColor: '#EB5E77' }} />
+                        <div className="mt-6 h-1 w-28 mx-auto lg:mx-0" style={{ backgroundColor: '#EB5E77' }} />
                     </div>
                     <div className="mt-10 lg:mt-0">
                         <div className="space-y-4">

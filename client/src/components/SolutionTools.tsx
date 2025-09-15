@@ -12,10 +12,10 @@ type ProcessCardProps = {
 
 function ProcessCard({ step, title, description, Icon }: ProcessCardProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-6 transform hover:-translate-y-2 transition-transform duration-300">
+    <div className="bg-white rounded-2xl shadow-lg p-6 text-center ">
       <div className="mb-4">
         <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-[#FFE1E0]">
-          <Icon className="h-6 w-6 text-[#EB5E77]" />
+          <Icon className="h-6 w-6 text-[#EB5E77] " />
         </div>
       </div>
       <p className="text-xs font-semibold text-[#EB5E77] mb-1 uppercase">{step}</p>
