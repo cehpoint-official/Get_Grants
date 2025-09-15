@@ -82,16 +82,15 @@ const DashboardPage = () => {
                         <p className="mt-4 text-lg text-gray-600 max-w-2xl">Welcome back, {user.fullName}! Here's your grant application hub.</p>
                     </div>
 
-                    <div className="md:hidden bg-gray-100 border-b px-4 py-3 flex items-center justify-between sticky top-0 z-40 rounded-md">
+                    <div className="md:hidden bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-40 rounded-md shadow-sm">
                         <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-md text-gray-800 hover:bg-gray-100" aria-label="Open menu">
                             <MenuIcon className="h-6 w-6" />
                         </button>
-                        <h2 className="font-semibold text-gray-800">{activeTab === 'overview' ? 'Dashboard' : activeTab.replace('-', ' ')}</h2>
+                        <h2 className="font-semibold text-gray-800 text-lg">My Dashboard</h2>
                         <div className="w-9"></div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
-                        {/* Mobile Sidebar (Drawer) */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start mt-6 md:mt-0">
                         <div className={`fixed inset-0 z-40 md:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
                             <div className="absolute inset-0 bg-black opacity-50" onClick={() => setSidebarOpen(false)}></div>
                             <aside className={`relative z-50 w-64 h-full bg-white p-4 border-r shadow-lg transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
@@ -108,6 +107,9 @@ const DashboardPage = () => {
                                     </div>
                                 </div>
                                 <nav className="flex flex-col gap-1 mt-6 px-1 text-sm text-gray-700">
+                                    <Link href="/">
+                                        <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center hover:bg-violet/5`}><Home className="mr-2 h-4 w-4" /> Home Page</div>
+                                    </Link>
                                     <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === 'overview' ? 'bg-violet/10 text-violet font-semibold' : 'hover:bg-violet/5'}`} onClick={() => handleTabClick('overview')}><Home className="mr-2 h-4 w-4" /> Overview</div>
                                     <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === 'applications' ? 'bg-violet/10 text-violet font-semibold' : 'hover:bg-violet/5'}`} onClick={() => handleTabClick('applications')}><FileText className="mr-2 h-4 w-4" /> Applications</div>
                                     <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === 'saved-grants' ? 'bg-violet/10 text-violet font-semibold' : 'hover:bg-violet/5'}`} onClick={() => handleTabClick('saved-grants')}><Bookmark className="mr-2 h-4 w-4" /> Saved Grants</div>
@@ -120,10 +122,12 @@ const DashboardPage = () => {
                                 </div>
                             </aside>
                         </div>
-
-                        {/* Desktop Sidebar */}
+                        
                         <aside className="hidden md:block md:col-span-1 bg-white p-4 rounded-xl border shadow-sm sticky top-24">
                             <nav className="flex flex-col space-y-1">
+                                <Link href="/">
+                                    <Button variant={'ghost'} className="w-full justify-start"><Home className="mr-2 h-4 w-4" /> Home Page</Button>
+                                </Link>
                                 <Button variant={activeTab === 'overview' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('overview')} className="justify-start"><Home className="mr-2 h-4 w-4" /> Overview</Button>
                                 <Button variant={activeTab === 'applications' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('applications')} className="justify-start"><FileText className="mr-2 h-4 w-4" /> Applications</Button>
                                 <Button variant={activeTab === 'saved-grants' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('saved-grants')} className="justify-start"><Bookmark className="mr-2 h-4 w-4" /> Saved Grants</Button>
@@ -302,7 +306,7 @@ const MyQueriesSection = () => {
     }, [activeInquiryId]);
 
     const handleOpenThread = (inquiryId: string) => {
-        setActiveInquiryId(inquiryId);
+        setActiveInquiryId(activeInquiryId === inquiryId ? null : inquiryId);
     };
 
     const handleSend = async () => {
@@ -451,7 +455,6 @@ const ProfileSettings = () => {
 
     const onSubmit = async (data: ProfileFormValues) => {
         try {
-           
             const updates: any = {};
             if (data.fullName !== user?.fullName) updates.fullName = data.fullName;
             if (data.phoneNumber !== (user as any)?.phoneNumber && data.phoneNumber) updates.phoneNumber = data.phoneNumber;
@@ -478,7 +481,6 @@ const ProfileSettings = () => {
                                     const { uploadToCloudinary } = await import('@/services/cloudinary');
                                     const url = await uploadToCloudinary(file);
                                     setValue('avatarUrl', url, { shouldDirty: true });
-                                   
                                     try { await updateUserProfileDetails({ avatarUrl: url }); } catch {}
                                     updateUserState?.({ avatarUrl: url as any });
                                     toast({ title: 'Avatar updated', description: 'Image uploaded successfully.' });

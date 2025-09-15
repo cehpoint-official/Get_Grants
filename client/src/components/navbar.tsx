@@ -15,18 +15,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { NotificationConsentModal } from "@/components/ui/NotificationConsentModal";
+import { scrollToSectionWithOffset } from "@/lib/scrollUtils";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'signup'>('login');
-  const [showAdminModal, setShowAdminModal] = useState(false);
-  const [showIncubatorModal, setShowIncubatorModal] = useState(false);
   const { user, isAdmin, logout } = useAuth();
   const [showNotifyModal, setShowNotifyModal] = useState(false);
   const [location, navigate] = useLocation();
   const [activeLink, setActiveLink] = useState('Home');
-  const isDashboardRoute = location.startsWith('/dashboard') || location.startsWith('/admin');
 
   useEffect(() => {
     if (user && !user.notificationConsentGiven && !isAdmin) {
@@ -40,44 +38,39 @@ export function Navbar() {
     if (location === '/') {
       setActiveLink('Home');
     } else if (location.startsWith('/grants')) {
-      setActiveLink('Explore Grants');
+      setActiveLink('Find Grants');
     } else if (location.startsWith('/premium-support')) {
-      setActiveLink('Premium Support');
+      setActiveLink('Pricing');
     } else if (location.startsWith('/blog-detail')) {
       setActiveLink('Blog');
-    }
-    else if (location.startsWith('/contact')) {
+    } else if (location.startsWith('/about')) {
+      setActiveLink('About');
+    } else if (location.startsWith('/contact')) {
       setActiveLink('Contact');
-    }
-      else {
+    } else {
       setActiveLink('');
     }
   }, [location]);
 
-
-  const scrollToSection = (sectionId: string) => {
-    if (location !== "/") {
-      localStorage.setItem("scrollTo", sectionId);
-      navigate("/");
-    } else {
-      const el = document.getElementById(sectionId);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
+  const handleNavigation = (path: string, sectionId?: string) => {
+    if (path === '/' && sectionId) {
+      if (location === '/') {
+        scrollToSectionWithOffset(sectionId);
+      } else {
+        navigate(`/#${sectionId}`);
       }
+    } else {
+      navigate(path);
+      window.scrollTo(0, 0);
     }
     setIsOpen(false);
   };
 
-  const handleNavigation = (path: string) => {
-    navigate(path);
-    setIsOpen(false);
-  };
-
   const navItems = [
-    { name: 'Home', action: () => { navigate('/'); scrollToSection('home'); } },
+    { name: 'Home', action: () => handleNavigation('/', 'home') },
     { name: 'Find Grants', action: () => handleNavigation('/grants') },
     { name: 'Pricing', action: () => handleNavigation('/premium-support') },
-    { name: 'Blog', action: () => { navigate('/'); scrollToSection('blog'); } },
+    { name: 'Blog', action: () => handleNavigation('/', 'blog') },
     { name: 'About', action: () => handleNavigation('/about') },
     { name: 'Contact', action: () => handleNavigation('/contact') },
   ];
@@ -121,13 +114,9 @@ export function Navbar() {
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                         <Avatar className="h-10 w-10 border-2 border-violet/50">
-                            { (user as any)?.avatarUrl ? (
-                                <img src={(user as any).avatarUrl} alt="avatar" className="h-full w-full rounded-full object-cover" />
-                              ) : (
-                                <AvatarFallback className="bg-violet/20 text-violet font-bold">
-                                    {user.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || <UserIcon />}
-                                </AvatarFallback>
-                              ) }
+                            <AvatarFallback className="bg-violet/20 text-violet font-bold">
+                                {user.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || <UserIcon />}
+                            </AvatarFallback>
                         </Avatar>
                     </Button>
                 </DropdownMenuTrigger>
@@ -177,11 +166,10 @@ export function Navbar() {
           );
         } else {
           return (
-              <div className="flex flex-col gap-4">
-                  <p className="px-3 py-2 font-semibold text-violet">{user.fullName}</p>
-                  <button onClick={() => handleNavigation('/dashboard')} className="w-full text-center font-semibold text-gray-900">My Dashboard</button>
-                  <Button onClick={handleLogout} className="w-full h-auto py-3 text-white font-semibold rounded-lg bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90">Logout</Button>
-              </div>
+            <div className="flex flex-col gap-2">
+                <Button onClick={() => handleNavigation('/dashboard')} variant="ghost" className="w-full font-semibold text-nav-dark">My Dashboard</Button>
+                <Button onClick={handleLogout} className="w-full text-white font-semibold rounded-lg bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)]">Logout</Button>
+            </div>
           );
         }
       } else {
@@ -194,10 +182,9 @@ export function Navbar() {
       }
   };
 
-
   return (
     <>
-      <nav className={`bg-white sticky top-0 z-40 border-b border-gray-200 shadow-sm ${isDashboardRoute ? 'hidden md:block' : ''}`}>
+      <nav className="bg-white sticky top-0 z-40 border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <Link href="/" className="flex items-center gap-2">
@@ -228,49 +215,39 @@ export function Navbar() {
               <div className="hidden lg:flex items-center gap-2">
                 {renderAuthButtons()}
               </div>
-              {!isDashboardRoute && (
-                <div className="lg:hidden">
-                  <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}>
-                    {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-                  </Button>
-                </div>
-              )}
+              <div className="lg:hidden">
+                <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}>
+                  {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
 
-        {!isDashboardRoute && isOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
-            <div className="absolute inset-0 bg-black/50" onClick={() => setIsOpen(false)}></div>
-            <aside className="relative z-50 w-72 max-w-[80%] h-full bg-white p-4 border-r shadow-lg transition-transform duration-300 ease-in-out translate-x-0">
-              <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="absolute top-4 right-4">
-                <X className="h-6 w-6" />
-              </Button>
-              <div className="flex items-center gap-2 px-2 pt-1">
-                <Rocket className="h-7 w-7 text-violet" />
-                <span className="text-xl font-bold bg-gradient-to-r from-gradient-start to-gradient-end bg-clip-text text-transparent">Get Grants</span>
-              </div>
-              <nav className="flex flex-col gap-1 mt-6 px-1">
-                {navItems.map((item) => (
-                  <button
-                    key={item.name}
-                    onClick={item.action}
-                    className={`px-3 py-2 rounded-md text-left transition-all ${activeLink === item.name ? 'bg-violet/10 text-violet font-semibold' : 'hover:bg-violet/5 text-nav-gray'}`}
-                  >
-                    {item.name}
-                  </button>
-                ))}
-              </nav>
-              <div className="border-t mt-4 pt-4 px-1">
+        {isOpen && (
+          <div className="lg:hidden bg-white border-t border-gray-200">
+            <div className="px-4 pt-2 pb-4 space-y-2">
+              {navItems.map((item) => (
+                <button 
+                  key={item.name} 
+                  onClick={item.action} 
+                  className={`block w-full text-left px-3 py-2 rounded-md font-medium ${
+                    activeLink === item.name ? 'text-nav-pink-accent bg-pink-50' : 'text-nav-gray'
+                  }`}
+                >
+                  {item.name}
+                </button>
+              ))}
+              <div className="border-t pt-4 mt-4">
                 {renderMobileAuthButtons()}
               </div>
-            </aside>
+            </div>
           </div>
         )}
       </nav>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} initialMode={authInitialMode} />
-      <AdminModal isOpen={showAdminModal} onClose={() => setShowAdminModal(false)} />
+      <AdminModal isOpen={false} onClose={() => {}} />
       <NotificationConsentModal isOpen={showNotifyModal && !!user && !user.notificationConsentGiven && !isAdmin} onClose={() => setShowNotifyModal(false)} />
     </>
   );

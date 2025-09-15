@@ -3,7 +3,6 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-
 import Home from "@/pages/home";
 import BlogDetail from "@/pages/blog-detail";
 import NotFound from "@/pages/not-found";
@@ -19,6 +18,7 @@ import { Navbar } from "@/components/navbar";
 import { ProtectedAdminRoute } from "./components/ProtectedAdminRoute";
 import ContactUs from "@/pages/ContactUs";
 import About from "@/pages/About";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
@@ -47,13 +47,11 @@ function Router() {
           <DashboardPage />
         </ProtectedRoute>
       </Route>
-
       <Route path="/applyincubator">
         <ProtectedRoute>
           <ApplyIncubator />
         </ProtectedRoute>
       </Route>
-
       <Route path="/admin">
         <ProtectedAdminRoute>
           <AdminDashboard />
@@ -66,7 +64,12 @@ function Router() {
 
 function App() {
   const [location] = useLocation();
-  const showNavbar = !location.startsWith("/admin");
+  const isMobile = useIsMobile();
+  
+  const isAdminRoute = location.startsWith("/admin");
+  const isMobileDashboard = location.startsWith("/dashboard") && isMobile;
+
+  const showNavbar = !isAdminRoute && !isMobileDashboard;
 
   return (
     <QueryClientProvider client={queryClient}>

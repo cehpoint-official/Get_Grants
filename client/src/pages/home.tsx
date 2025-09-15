@@ -10,22 +10,21 @@ import StartupGrowth from "@/components/startup";
 import SolutionTools from "@/components/SolutionTools";
 import Testimonials from "@/components/Testimonials";
 import Faq from "@/components/Faq";
-import Grant from "@/components/Grant"
-
-
+import Grant from "@/components/Grant";
+import { scrollToSectionWithOffset } from "@/lib/scrollUtils";
+import { useLocation } from "wouter";
 
 export default function Home() {
-  
+  const [location] = useLocation();
+
   useEffect(() => {
-    const sectionId = localStorage.getItem("scrollTo");
-    if (sectionId) {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "start" });
-        localStorage.removeItem("scrollTo");
-      }
+    const hash = window.location.hash;
+
+    if (hash) {
+      const sectionId = hash.substring(1);
+      scrollToSectionWithOffset(sectionId, 'auto');
     }
-  }, []);
+  }, [location]); 
 
   return (
     <main>
@@ -38,9 +37,7 @@ export default function Home() {
       <SmartTools />   
       <StartupGrowth />
       <SolutionTools />
-     
-    <Testimonials/>
-     
+      <Testimonials/>
       <section id="blog">
         <BlogSection />
       </section>

@@ -1,12 +1,21 @@
 import { Facebook, Linkedin, Twitter, Instagram, Mail, Phone, Rocket } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { scrollToSectionWithOffset } from "@/lib/scrollUtils";
 
 export function Footer() {
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+  const [location, navigate] = useLocation();
+
+  const handleScrollClick = (sectionId: string) => {
+    if (location === "/") {
+      scrollToSectionWithOffset(sectionId);
+    } else {
+      navigate(`/#${sectionId}`);
     }
+  };
+
+  const handlePageNavigation = (path: string) => {
+      navigate(path);
+      window.scrollTo(0, 0);
   };
 
   return (
@@ -46,22 +55,22 @@ export function Footer() {
             <div className="grid grid-cols-2 gap-x-8 gap-y-10 lg:grid-cols-3">
               
               <div className="col-span-1 text-left">
-                <h4 className="text-base font-semibold mb-6 text-white uppercase tracking-wide text-center sm:text-left">QUICK LINKS</h4>
-                <ul className="space-y-3 flex flex-col items-center sm:items-start">
-                  <li><button onClick={() => scrollToSection("home")} className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>HOME</button></li>
-                  <li><Link href="/grants"><a className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>FIND GRANTS</a></Link></li>
-                  <li><button onClick={() => scrollToSection("blog")} className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>BLOG</button></li>
-                  <li><Link href="/about"><a className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>ABOUT US</a></Link></li>
-                  <li><Link href="/contact"><a className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>CONTACT</a></Link></li>
+                <h4 className="text-base font-semibold mb-6 text-white uppercase tracking-wide text-left sm:text-left">QUICK LINKS</h4>
+                <ul className="space-y-3 flex flex-col items-start sm:items-start">
+                  <li><button onClick={() => handleScrollClick("home")} className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>HOME</button></li>
+                  <li><button onClick={() => handlePageNavigation('/grants')} className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>FIND GRANTS</button></li>
+                  <li><button onClick={() => handleScrollClick("blog")} className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>BLOG</button></li>
+                  <li><button onClick={() => handlePageNavigation('/about')} className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>ABOUT US</button></li>
+                  <li><button onClick={() => handlePageNavigation('/contact')} className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>CONTACT</button></li>
                 </ul>
               </div>
 
               <div className="col-span-1 text-left">
-                <h4 className="text-base font-semibold mb-6 text-white uppercase tracking-wide text-center sm:text-left">LEGAL</h4>
-                <ul className="space-y-3 flex flex-col items-center sm:items-start">
-                  <li><Link href="/premium-support"><a className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>SUPPORT</a></Link></li>
-                  <li><Link href="/premium-support#pricing"><a className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>PRICING</a></Link></li>
-                  <li><button onClick={() => scrollToSection("faq")} className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>FAQ'S</button></li>
+                <h4 className="text-base font-semibold mb-6 text-white uppercase tracking-wide text-left sm:text-left">LEGAL</h4>
+                <ul className="space-y-3 flex flex-col items-start sm:items-start">
+                <li><a href="#" className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>SUPPORT</a></li>
+                 <li><button onClick={() => handlePageNavigation('/premium-support#pricing')} className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>PRICING</button></li>
+                  <li><button onClick={() => handleScrollClick("faq")} className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>FAQ'S</button></li>
                   <li><a href="#" className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>PRIVACY POLICY</a></li>
                   <li><a href="#" className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>TERMS</a></li>
                 </ul>
@@ -69,7 +78,7 @@ export function Footer() {
 
               <div className="col-span-2 lg:col-span-1">
                 <h4 className="text-lg font-semibold mb-6 text-white uppercase tracking-wide">CONTACT US</h4>
-                <div className="flex flex-col gap-4 items-center lg:items-start">
+                <div className="flex flex-col gap-4 items-start lg:items-start">
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-gradient-to-r from-[#EB5E77] to-[#8A51CE] rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                       <Mail className="h-4 w-4 text-white" />

@@ -23,9 +23,6 @@ import {
     fetchPremiumInquiries,
     PremiumInquiry,
     updateInquiryStatus as updatePremiumInquiryStatus,
-    InquiryMessage,
-    subscribeToInquiryMessages,
-    sendInquiryMessage,
 } from "@/services/premiumSupport";
 import {
     Grant,
@@ -93,6 +90,7 @@ const sidebarItems = [
     { name: "Contact Messages", icon: <Mail className="w-4 h-4 mr-2" /> },
     { name: "Incubators", icon: <Briefcase className="w-4 h-4 mr-2" /> },
     { name: "Calendar", icon: <CalendarIcon className="w-4 h-4 mr-2" /> },
+    { name: "Social Apps", icon: <Share2 className="w-4 h-4 mr-2" /> },
     { name: "Home", icon: <Home className="w-4 h-4 mr-2" /> },
 ];
 
@@ -186,7 +184,6 @@ export default function AdminDashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [replyInquiry, setReplyInquiry] = useState<PremiumInquiry | null>(null);
     const [replyMessage, setReplyMessage] = useState("");
-    const [threadMessages, setThreadMessages] = useState<InquiryMessage[]>([]);
     const { logout } = useAuth();
     const [, navigate] = useLocation();
     const { toast } = useToast();
@@ -253,12 +250,13 @@ export default function AdminDashboard() {
     const handleReplySubmit = async () => {
         if (!replyInquiry || !replyInquiry.id || !replyMessage) return;
         try {
-            await sendInquiryMessage({ inquiryId: replyInquiry.id, text: replyMessage, sender: 'admin' });
             await updatePremiumInquiryStatus(replyInquiry.id, 'responded', replyMessage);
+            toast({ title: "Success", description: "Reply sent successfully." });
+            setReplyInquiry(null);
             setReplyMessage("");
-            toast({ title: "Sent", description: "Message sent to user." });
+            loadPremiumInquiries();
         } catch (error) {
-            toast({ title: "Error", description: "Failed to send message.", variant: "destructive" });
+            toast({ title: "Error", description: "Failed to send reply.", variant: "destructive" });
         }
     };
     const handleSidebarItemClick = (item: string) => {
@@ -607,15 +605,15 @@ export default function AdminDashboard() {
 
     return (
         <div className="min-h-screen flex bg-gray-50">
-            <aside className={`fixed md:relative w-64 bg-white shadow-md border-r flex flex-col justify-between h-full z-50 transition-transform duration-300 ease-in-out ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
-                <div>
+            <aside className={`fixed md:relative w-64 bg-white shadow-md border-r flex flex-col h-full z-50 transition-transform duration-300 ease-in-out ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
+                <div className="flex-1 flex flex-col min-h-0">
                     <div className="px-6 py-6 font-bold text-lg border-b text-violet flex items-center justify-between">
                         <span>ADMIN PANEL</span>
                         <button onClick={() => setSidebarOpen(false)} className="md:hidden p-1 rounded-md hover:bg-gray-100">
                             <X className="w-5 h-5" />
                         </button>
                     </div>
-                    <nav className="flex flex-col gap-1 mt-6 px-4 text-sm text-gray-700">
+                    <nav className="flex-1 overflow-y-auto flex flex-col gap-1 mt-6 px-4 text-sm text-gray-700">
                         {sidebarItems.map((item) => (
                             <div key={item.name} className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === item.name ? "bg-violet/10 text-violet font-semibold" : "hover:bg-violet/5"}`} onClick={() => handleSidebarItemClick(item.name)}>
                                 {item.icon} {item.name}
@@ -655,28 +653,21 @@ export default function AdminDashboard() {
                     return handleCreateEvent(data as InsertEvent);
                 }}
             />
-            <Dialog open={!!replyInquiry} onOpenChange={(open) => { if (!open) { setReplyInquiry(null); setThreadMessages([]); } }}>
+            <Dialog open={!!replyInquiry} onOpenChange={() => setReplyInquiry(null)}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Reply to {replyInquiry?.name}</DialogTitle>
                         <DialogDescription>Your response will be visible to the user in their dashboard.</DialogDescription>
                     </DialogHeader>
-                    <div className="py-2">
-                        {replyInquiry?.id && (
-                            <MessagesPanel inquiryId={replyInquiry.id} onMessages={(msgs) => setThreadMessages(msgs)} />
-                        )}
-                    </div>
-                    <div className="py-2">
-                        <Textarea placeholder="Type your message..." value={replyMessage} onChange={(e) => setReplyMessage(e.target.value)} rows={4} />
+                    <div className="py-4">
+                        <Textarea placeholder="Type your response here..." value={replyMessage} onChange={(e) => setReplyMessage(e.target.value)} rows={6} />
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setReplyInquiry(null)}>Cancel</Button>
-                        <Button onClick={handleReplySubmit} disabled={!replyMessage.trim()}>Send</Button>
+                        <Button onClick={handleReplySubmit}>Send Reply</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-            {/* Inline component to stream messages */}
-            {/* Keeping it here for simplicity; can be moved to its own file later */}
             <Dialog open={showPendingModal} onOpenChange={() => { setShowPendingModal(false); setActivePendingPost(null); }}>
                 <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
@@ -700,30 +691,6 @@ export default function AdminDashboard() {
                     )}
                 </DialogContent>
             </Dialog>
-        </div>
-    );
-}
-
-function MessagesPanel({ inquiryId, onMessages }: { inquiryId: string; onMessages?: (msgs: InquiryMessage[]) => void; }) {
-    const [messages, setMessages] = useState<InquiryMessage[]>([]);
-    useEffect(() => {
-        const unsub = subscribeToInquiryMessages(inquiryId, (msgs) => {
-            setMessages(msgs);
-            onMessages?.(msgs);
-        });
-        return () => unsub();
-    }, [inquiryId]);
-    return (
-        <div className="max-h-72 overflow-y-auto space-y-2 pr-1 border rounded p-2 bg-gray-50">
-            {messages.length === 0 && (<p className="text-xs text-gray-500">No messages yet.</p>)}
-            {messages.map((m) => (
-                <div key={m.id} className={`flex ${m.sender === 'admin' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`px-3 py-2 rounded-lg text-sm ${m.sender === 'admin' ? 'bg-violet text-white' : 'bg-white border'}`}>
-                        <div>{m.text}</div>
-                        <div className="text-[10px] opacity-70 mt-1">{m.createdAt.toLocaleString()}</div>
-                    </div>
-                </div>
-            ))}
         </div>
     );
 }
