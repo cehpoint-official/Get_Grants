@@ -44,8 +44,21 @@ service cloud.firestore {
       // Allow anyone to create inquiries (for the contact form)
       allow create: if true;
       
-      // Only admins can read and update inquiries
+      // Admins can read/update inquiries
       allow read, update: if request.auth != null && request.auth.token.admin == true;
+
+      // Messages subcollection: allow owner (by userId) and admins to read/write
+      match /messages/{messageId} {
+        allow create: if request.auth != null && (
+          request.auth.token.admin == true ||
+          // allow the inquiry owner to send messages
+          get(/databases/$(database)/documents/premiumInquiries/$(inquiryId)).data.userId == request.auth.uid
+        );
+        allow read: if request.auth != null && (
+          request.auth.token.admin == true ||
+          get(/databases/$(database)/documents/premiumInquiries/$(inquiryId)).data.userId == request.auth.uid
+        );
+      }
     }
 
     // Fallback deny

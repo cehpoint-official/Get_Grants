@@ -72,18 +72,21 @@ export function useAuth() {
     await signOut(auth);
   };
 
-  const updateUserProfileDetails = async (details: { fullName: string; phoneNumber: string }) => {
+  const updateUserProfileDetails = async (details: { fullName?: string; phoneNumber?: string; avatarUrl?: string }) => {
     if (!auth.currentUser) throw new Error("User not found");
 
     // Update Firebase Auth profile
-    await updateProfile(auth.currentUser, { displayName: details.fullName });
+    if (details.fullName) {
+      await updateProfile(auth.currentUser, { displayName: details.fullName });
+    }
 
     // Update Firestore document
     const userRef = doc(db, "users", auth.currentUser.uid);
-    await updateDoc(userRef, {
-      fullName: details.fullName,
-      phoneNumber: details.phoneNumber,
-    });
+    const updates: any = {};
+    if (details.fullName !== undefined) updates.fullName = details.fullName;
+    if (details.phoneNumber !== undefined) updates.phoneNumber = details.phoneNumber;
+    if (details.avatarUrl !== undefined) updates.avatarUrl = details.avatarUrl;
+    await updateDoc(userRef, updates);
 
     // Update local state
     setUser(prevUser => prevUser ? { ...prevUser, ...details } : null);

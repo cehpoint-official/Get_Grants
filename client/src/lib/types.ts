@@ -14,6 +14,7 @@ export interface UserProfile {
   notifyEmail?: boolean;
   notifyWhatsapp?: boolean;
   notificationConsentGiven?: boolean;
+  avatarUrl?: string;
 }
 
 // Data needed to create a new user profile

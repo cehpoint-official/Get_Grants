@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, getDocs, doc, updateDoc, where } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, getDocs, doc, updateDoc, where, onSnapshot, Unsubscribe, DocumentData } from 'firebase/firestore';
 
 export interface PremiumInquiry {
     id?: string;
@@ -17,6 +17,15 @@ export interface PremiumInquiry {
     userId?: string;
     createdAt: Date;
     updatedAt: Date;
+}
+
+export interface InquiryMessage {
+    id?: string;
+    inquiryId: string;
+    sender: 'user' | 'admin';
+    senderId?: string;
+    text: string;
+    createdAt: Date;
 }
 
 export interface CreatePremiumInquiryData {
@@ -189,4 +198,40 @@ async function notifyAdminNewInquiry(inquiryId: string, data: CreatePremiumInqui
 
 async function notifyUserResponse(inquiryId: string, response: string): Promise<void> {
     console.log('Admin response sent:', { inquiryId, response });
+}
+
+// Messaging APIs
+
+export async function sendInquiryMessage(params: { inquiryId: string; text: string; sender: 'user' | 'admin'; senderId?: string; }): Promise<string> {
+    const { inquiryId, text, sender, senderId } = params;
+    const messagesRef = collection(db, 'premiumInquiries', inquiryId, 'messages');
+    const docRef = await addDoc(messagesRef, {
+        text,
+        sender,
+        senderId: senderId || null,
+        createdAt: serverTimestamp(),
+    });
+    // Optionally bump parent updatedAt
+    const inquiryRef = doc(db, 'premiumInquiries', inquiryId);
+    await updateDoc(inquiryRef, { updatedAt: serverTimestamp(), status: sender === 'admin' ? 'responded' : 'in_progress' });
+    return docRef.id;
+}
+
+export function subscribeToInquiryMessages(inquiryId: string, onChange: (messages: InquiryMessage[]) => void): Unsubscribe {
+    const messagesRef = collection(db, 'premiumInquiries', inquiryId, 'messages');
+    const qMessages = query(messagesRef, orderBy('createdAt', 'asc'));
+    return onSnapshot(qMessages, (snapshot) => {
+        const msgs: InquiryMessage[] = snapshot.docs.map((d) => {
+            const data = d.data() as DocumentData;
+            return {
+                id: d.id,
+                inquiryId,
+                sender: data.sender,
+                senderId: data.senderId || undefined,
+                text: data.text,
+                createdAt: data.createdAt?.toDate?.() || new Date(),
+            } as InquiryMessage;
+        });
+        onChange(msgs);
+    });
 }

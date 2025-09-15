@@ -2,36 +2,31 @@ import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Facebook,
-  Linkedin,
-  Twitter,
-  Instagram,
-  MessageSquare,
-  LoaderCircle,
-} from "lucide-react";
-import React, { useState } from "react";
-import { useAuth } from "@/hooks/use-auth"; 
-import { useToast } from "@/hooks/use-toast";
-import { getFunctions, httpsCallable } from "firebase/functions";
+import { useToast } from "@/hooks/use-toast"; // ERROR FIXED
+import { db } from "@/lib/firebase"; // ERROR FIXED
+import { zodResolver } from "@hookform/resolvers/zod";
+import { addDoc, collection } from "firebase/firestore";
+import { Facebook, Instagram, Linkedin, LoaderCircle, MessageSquare, Twitter } from "lucide-react";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
+import assistanceIcon from "@/assets/logos/assistance.png";
+import locationIcon from "@/assets/logos/location.png";
 import mailIcon from "@/assets/logos/mail.png";
 import phoneIcon from "@/assets/logos/phone.png";
-import locationIcon from "@/assets/logos/location.png";
 import supportIcon from "@/assets/logos/support.png";
-import assistanceIcon from "@/assets/logos/assistance.png";
 
-const InfoCard = ({
-  icon,
-  title,
-  line1,
-  line2,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  line1: string;
-  line2: string;
-}) => (
+const contactSchema = z.object({
+  name: z.string().min(1, { message: "Name is required" }),
+  email: z.string().email({ message: "Invalid email address" }),
+  subject: z.string().min(1, { message: "Subject is required" }),
+  message: z.string().min(1, { message: "Message is required" }),
+});
+
+type FormData = z.infer<typeof contactSchema>;
+
+const InfoCard = ({ icon, title, line1, line2 }: { icon: React.ReactNode; title: string; line1: string; line2: string; }) => (
   <div className="bg-white p-6 rounded-[15px] shadow-[0px_4px_38.1px_0px_#00000012] text-center flex flex-col items-center justify-start h-[256px] w-full max-w-[261px] font-inter relative overflow-hidden pt-8">
     <div className="bg-[#FAF5FF] rounded-full h-[54px] w-[54px] flex items-center justify-center mb-4">
       {icon}
@@ -48,15 +43,7 @@ const InfoCard = ({
   </div>
 );
 
-const SupportCard = ({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}) => (
+const SupportCard = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string; }) => (
   <div className="border border-[#DCDCDC] rounded-[14px] p-6 text-center h-full flex flex-col justify-start items-center relative overflow-visible pt-12 bg-white">
     <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-1 rounded-full border border-[#DCDCDC] shadow-sm">
       <div className="h-10 w-10 flex items-center justify-center bg-white rounded-full">
@@ -69,60 +56,34 @@ const SupportCard = ({
 );
 
 const ContactUs = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
+  const { toast } = useToast();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<FormData>({
+    resolver: zodResolver(contactSchema),
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useAuth(); 
-  const { toast } = useToast(); 
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to send a message.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    
-    const functions = getFunctions();
-    const saveContactMessage = httpsCallable(functions, 'saveContactMessage');
-
+  const onSubmit = async (data: FormData) => {
     try {
-      const result = await saveContactMessage(formData);
-      // @ts-ignore
-      if (result.data.success) {
-        toast({
-          title: "Success!",
-          description: "Your message has been sent successfully!",
-        });
-        setFormData({ name: "", email: "", subject: "", message: "" });
-      }
-    } catch (error: any) {
+      await addDoc(collection(db, "contact-messages"), {
+        ...data,
+        createdAt: new Date(),
+      });
+      toast({
+        title: "Success!",
+        description: "Your message has been sent successfully.",
+      });
+      reset();
+    } catch (error) {
       console.error("Error sending message:", error);
       toast({
         title: "Error",
-        description: error.message || "There was an error sending your message. Please try again.",
+        description: "There was a problem sending your message.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -209,27 +170,31 @@ const ContactUs = () => {
               <h4 className="text-2xl font-semibold text-gray-800 mb-6">
                 Keep in touch
               </h4>
-              <form id="contact-form" onSubmit={handleFormSubmit} className="space-y-5">
+              <form id="contact-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 <div>
                   <label htmlFor="name" className="text-sm font-medium text-gray-700 block mb-1">Name</label>
-                  <Input type="text" name="name" id="name" required value={formData.name} onChange={handleInputChange} className="w-full h-10 px-4 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
+                  <Input type="text" id="name" {...register("name")} className="w-full h-10 px-4 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
+                  {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
                 </div>
                 <div>
                   <label htmlFor="email" className="text-sm font-medium text-gray-700 block mb-1">Email</label>
-                  <Input type="email" name="email" id="email" required value={formData.email} onChange={handleInputChange} className="w-full h-10 px-4 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
+                  <Input type="email" id="email" {...register("email")} className="w-full h-10 px-4 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
+                  {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
                 </div>
                 <div>
                   <label htmlFor="subject" className="text-sm font-medium text-gray-700 block mb-1">Subject</label>
-                  <Input type="text" name="subject" id="subject" required value={formData.subject} onChange={handleInputChange} className="w-full h-10 px-4 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
+                  <Input type="text" id="subject" {...register("subject")} className="w-full h-10 px-4 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
+                  {errors.subject && <p className="text-red-500 text-xs mt-1">{errors.subject.message}</p>}
                 </div>
                 <div>
                   <label htmlFor="message" className="text-sm font-medium text-gray-700 block mb-1">Message</label>
-                  <Textarea name="message" id="message" required value={formData.message} onChange={handleInputChange} rows={4} className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
+                  <Textarea id="message" {...register("message")} rows={4} className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
+                  {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message.message}</p>}
                 </div>
                 <div className="absolute right-6 bottom-6">
                   <Button
                     type="submit"
-                    form="contact-form"
+                    form="contact-form" 
                     disabled={isSubmitting}
                     className="h-10 px-3 text-base font-semibold text-white rounded-lg shadow-sm hover:opacity-90 transition-opacity flex items-center"
                     style={{ background: "linear-gradient(90.24deg, #8541EF 0.21%, #EB5E77 165.86%)" }}

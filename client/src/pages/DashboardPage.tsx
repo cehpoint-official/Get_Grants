@@ -9,7 +9,7 @@ import { fetchUserApplications } from '@/services/applications';
 import { Application, Grant, Payment } from '@shared/schema';
 import { fetchGrantById } from "@/services/grants";
 import { fetchUserPayments } from "@/services/payments";
-import { fetchUserPremiumInquiriesByUserIdOrEmail, PremiumInquiry } from "@/services/premiumSupport";
+import { fetchUserPremiumInquiriesByUserIdOrEmail, PremiumInquiry, InquiryMessage, subscribeToInquiryMessages, sendInquiryMessage } from "@/services/premiumSupport";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -24,6 +24,7 @@ import { Input } from '@/components/ui/input';
 const profileSchema = z.object({
     fullName: z.string().min(2, "Name must be at least 2 characters."),
     phoneNumber: z.string().regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit mobile number."),
+    avatarUrl: z.string().url().optional().or(z.literal('')),
 });
 
 const passwordSchema = z.object({
@@ -58,7 +59,7 @@ const DashboardPage = () => {
 
     const handleTabClick = (tab: string) => {
         setActiveTab(tab);
-        setSidebarOpen(false); // Close sidebar on tab selection
+        setSidebarOpen(false); 
     };
 
     const renderContent = () => {
@@ -76,16 +77,17 @@ const DashboardPage = () => {
         <div className="flex flex-col min-h-screen">
             <main className="flex-grow bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="text-left mb-8">
+                    <div className="text-left mb-8 hidden md:block">
                         <h1 className="text-4xl lg:text-5xl font-extrabold text-violet tracking-tight">My Dashboard</h1>
                         <p className="mt-4 text-lg text-gray-600 max-w-2xl">Welcome back, {user.fullName}! Here's your grant application hub.</p>
                     </div>
 
-                    <div className="md:hidden flex justify-between items-center mb-6">
-                        <h2 className="text-xl font-bold text-gray-800 capitalize">{activeTab.replace('-', ' ')}</h2>
-                        <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
+                    <div className="md:hidden bg-gray-100 border-b px-4 py-3 flex items-center justify-between sticky top-0 z-40 rounded-md">
+                        <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-md text-gray-800 hover:bg-gray-100" aria-label="Open menu">
                             <MenuIcon className="h-6 w-6" />
-                        </Button>
+                        </button>
+                        <h2 className="font-semibold text-gray-800">{activeTab === 'overview' ? 'Dashboard' : activeTab.replace('-', ' ')}</h2>
+                        <div className="w-9"></div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
@@ -93,18 +95,29 @@ const DashboardPage = () => {
                         <div className={`fixed inset-0 z-40 md:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
                             <div className="absolute inset-0 bg-black opacity-50" onClick={() => setSidebarOpen(false)}></div>
                             <aside className={`relative z-50 w-64 h-full bg-white p-4 border-r shadow-lg transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                                <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="absolute top-4 right-4">
-                                    <X className="h-6 w-6" />
-                                </Button>
-                                <nav className="flex flex-col space-y-2 mt-12">
-                                    <Button variant={activeTab === 'overview' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('overview')} className="justify-start"><Home className="mr-2 h-4 w-4" /> Overview</Button>
-                                    <Button variant={activeTab === 'applications' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('applications')} className="justify-start"><FileText className="mr-2 h-4 w-4" /> Applications</Button>
-                                    <Button variant={activeTab === 'saved-grants' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('saved-grants')} className="justify-start"><Bookmark className="mr-2 h-4 w-4" /> Saved Grants</Button>
-                                    <Button variant={activeTab === 'my-queries' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('my-queries')} className="justify-start"><MessageSquare className="mr-2 h-4 w-4" /> My Queries</Button>
-                                    <Button variant={activeTab === 'subscription' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('subscription')} className="justify-start"><CreditCard className="mr-2 h-4 w-4" /> Subscription</Button>
-                                    <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('settings')} className="justify-start"><Shield className="mr-2 h-4 w-4" /> Account Settings</Button>
-                                    <Button variant={'ghost'} onClick={logout} className="justify-start text-red-600 hover:bg-red-50 hover:text-red-600"><LogOut className="mr-2 h-4 w-4" /> Logout</Button>
+                                <button onClick={() => setSidebarOpen(false)} className="absolute top-4 right-4 p-1 rounded-md hover:bg-gray-100" aria-label="Close menu">
+                                    <X className="h-6 w-6 text-violet" />
+                                </button>
+                                <div className="px-2 py-3 border-b flex items-center gap-3">
+                                    <div className="h-9 w-9 rounded-full bg-violet/20 text-violet flex items-center justify-center font-bold">
+                                        {user.fullName?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)}
+                                    </div>
+                                    <div>
+                                        <div className="font-bold text-base text-gray-900">{user.fullName}</div>
+                                        <div className="text-xs text-gray-500">My Dashboard</div>
+                                    </div>
+                                </div>
+                                <nav className="flex flex-col gap-1 mt-6 px-1 text-sm text-gray-700">
+                                    <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === 'overview' ? 'bg-violet/10 text-violet font-semibold' : 'hover:bg-violet/5'}`} onClick={() => handleTabClick('overview')}><Home className="mr-2 h-4 w-4" /> Overview</div>
+                                    <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === 'applications' ? 'bg-violet/10 text-violet font-semibold' : 'hover:bg-violet/5'}`} onClick={() => handleTabClick('applications')}><FileText className="mr-2 h-4 w-4" /> Applications</div>
+                                    <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === 'saved-grants' ? 'bg-violet/10 text-violet font-semibold' : 'hover:bg-violet/5'}`} onClick={() => handleTabClick('saved-grants')}><Bookmark className="mr-2 h-4 w-4" /> Saved Grants</div>
+                                    <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === 'my-queries' ? 'bg-violet/10 text-violet font-semibold' : 'hover:bg-violet/5'}`} onClick={() => handleTabClick('my-queries')}><MessageSquare className="mr-2 h-4 w-4" /> My Queries</div>
+                                    <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === 'subscription' ? 'bg-violet/10 text-violet font-semibold' : 'hover:bg-violet/5'}`} onClick={() => handleTabClick('subscription')}><CreditCard className="mr-2 h-4 w-4" /> Subscription</div>
+                                    <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === 'settings' ? 'bg-violet/10 text-violet font-semibold' : 'hover:bg-violet/5'}`} onClick={() => handleTabClick('settings')}><Shield className="mr-2 h-4 w-4" /> Account Settings</div>
                                 </nav>
+                                <div className="px-1 border-t mt-4 pt-4">
+                                    <Button variant={'ghost'} onClick={logout} className="w-full justify-center text-white font-semibold rounded-lg bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90"><LogOut className="mr-2 h-4 w-4" /> Logout</Button>
+                                </div>
                             </aside>
                         </div>
 
@@ -266,6 +279,10 @@ const MyQueriesSection = () => {
     const { user } = useAuth();
     const [queries, setQueries] = useState<PremiumInquiry[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeInquiryId, setActiveInquiryId] = useState<string | null>(null);
+    const [messages, setMessages] = useState<InquiryMessage[]>([]);
+    const [newMessage, setNewMessage] = useState("");
+    const [subCleanup, setSubCleanup] = useState<null | (() => void)>(null);
 
     useEffect(() => {
         if (user) {
@@ -274,6 +291,25 @@ const MyQueriesSection = () => {
                 .finally(() => setLoading(false));
         }
     }, [user]);
+
+    useEffect(() => {
+        if (subCleanup) { subCleanup(); setSubCleanup(null); }
+        if (activeInquiryId) {
+            const unsub = subscribeToInquiryMessages(activeInquiryId, setMessages);
+            setSubCleanup(() => unsub);
+        }
+        return () => { if (subCleanup) subCleanup(); };
+    }, [activeInquiryId]);
+
+    const handleOpenThread = (inquiryId: string) => {
+        setActiveInquiryId(inquiryId);
+    };
+
+    const handleSend = async () => {
+        if (!activeInquiryId || !newMessage.trim() || !user) return;
+        await sendInquiryMessage({ inquiryId: activeInquiryId, text: newMessage.trim(), sender: 'user', senderId: user.uid });
+        setNewMessage("");
+    };
 
     if (loading) {
         return <div className="flex justify-center items-center p-8"><LoaderCircle className="w-8 h-8 animate-spin text-violet" /></div>;
@@ -288,16 +324,36 @@ const MyQueriesSection = () => {
             <CardContent>
                 <div className="space-y-6">
                     {queries.length > 0 ? queries.map(query => (
-                        <div key={query.id} className="border rounded-lg p-4">
-                            <div className="flex flex-col sm:flex-row justify-between items-start mb-2 gap-2">
-                                <p className="font-semibold text-gray-800 pr-4">{query.specificNeeds}</p>
-                                <Badge variant={query.status === 'responded' ? 'default' : 'secondary'} className="whitespace-nowrap">{query.status}</Badge>
+                        <div key={query.id} className="border rounded-lg">
+                            <div className="p-4">
+                                <div className="flex flex-col sm:flex-row justify-between items-start mb-2 gap-2">
+                                    <p className="font-semibold text-gray-800 pr-4">{query.specificNeeds}</p>
+                                    <Badge variant={query.status === 'responded' ? 'default' : 'secondary'} className="whitespace-nowrap">{query.status}</Badge>
+                                </div>
+                                <p className="text-sm text-gray-500">Submitted on: {query.createdAt.toLocaleDateString()}</p>
+                                <div className="mt-3">
+                                    <Button size="sm" variant="outline" onClick={() => handleOpenThread(query.id!)}>
+                                        {activeInquiryId === query.id ? 'Close thread' : 'Open thread'}
+                                    </Button>
+                                </div>
                             </div>
-                            <p className="text-sm text-gray-500">Submitted on: {query.createdAt.toLocaleDateString()}</p>
-                            {query.adminResponse && (
-                                <div className="mt-4 p-3 bg-violet/5 border-l-4 border-violet rounded-r-lg">
-                                    <p className="font-semibold text-violet mb-1">Admin's Response:</p>
-                                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{query.adminResponse}</p>
+                            {activeInquiryId === query.id && (
+                                <div className="border-t bg-gray-50 p-3">
+                                    <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
+                                        {messages.length === 0 && (<p className="text-xs text-gray-500">No messages yet. Start the conversation.</p>)}
+                                        {messages.map(m => (
+                                            <div key={m.id} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                                <div className={`px-3 py-2 rounded-lg text-sm ${m.sender === 'user' ? 'bg-violet text-white' : 'bg-white border'}`}>
+                                                    <div>{m.text}</div>
+                                                    <div className="text-[10px] opacity-70 mt-1">{m.createdAt.toLocaleString()}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="mt-3 flex gap-2">
+                                        <Input placeholder="Type your message..." value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />
+                                        <Button onClick={handleSend} disabled={!newMessage.trim()}>Send</Button>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -385,16 +441,22 @@ const SettingsSection = () => {
 };
 
 const ProfileSettings = () => {
-    const { user, updateUserProfileDetails } = useAuth();
+    const { user, updateUserProfileDetails, updateUserState } = useAuth();
     const { toast } = useToast();
-    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ProfileFormValues>({
+    const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<ProfileFormValues>({
         resolver: zodResolver(profileSchema),
-        defaultValues: { fullName: user?.fullName || "", phoneNumber: user?.phone || "" },
+        defaultValues: { fullName: user?.fullName || "", phoneNumber: user?.phone || "", avatarUrl: (user as any)?.avatarUrl || "" },
     });
+    const avatarUrl = watch('avatarUrl');
 
     const onSubmit = async (data: ProfileFormValues) => {
         try {
-            await updateUserProfileDetails(data);
+           
+            const updates: any = {};
+            if (data.fullName !== user?.fullName) updates.fullName = data.fullName;
+            if (data.phoneNumber !== (user as any)?.phoneNumber && data.phoneNumber) updates.phoneNumber = data.phoneNumber;
+            if (data.avatarUrl && data.avatarUrl !== (user as any)?.avatarUrl) updates.avatarUrl = data.avatarUrl;
+            await updateUserProfileDetails(updates);
             toast({ title: "Success", description: "Your profile has been updated." });
         } catch (error) {
             toast({ title: "Error", description: "Failed to update profile. Please try again.", variant: "destructive" });
@@ -403,9 +465,30 @@ const ProfileSettings = () => {
 
     return (
         <Card>
-            <CardHeader><CardTitle>Personal Information</CardTitle><CardDescription>Update your name and mobile number.</CardDescription></CardHeader>
+            <CardHeader><CardTitle>Personal Information</CardTitle><CardDescription>Update your name, avatar and mobile number.</CardDescription></CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <div className="flex items-center gap-4">
+                        <img src={avatarUrl || "https://placehold.co/80x80?text=Avatar"} alt="avatar" className="h-16 w-16 rounded-full object-cover border" />
+                        <label className="text-sm font-medium cursor-pointer text-violet">
+                            <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                try {
+                                    const { uploadToCloudinary } = await import('@/services/cloudinary');
+                                    const url = await uploadToCloudinary(file);
+                                    setValue('avatarUrl', url, { shouldDirty: true });
+                                   
+                                    try { await updateUserProfileDetails({ avatarUrl: url }); } catch {}
+                                    updateUserState?.({ avatarUrl: url as any });
+                                    toast({ title: 'Avatar updated', description: 'Image uploaded successfully.' });
+                                } catch (err: any) {
+                                    toast({ title: 'Upload failed', description: err?.message || 'Could not upload image', variant: 'destructive' });
+                                }
+                            }} />
+                            <span className="underline">Change avatar</span>
+                        </label>
+                    </div>
                     <div><label>Full Name</label><Input {...register("fullName")} />{errors.fullName && <p className="text-sm text-red-600 mt-1">{errors.fullName.message}</p>}</div>
                     <div><label>Phone Number</label><Input {...register("phoneNumber")} />{errors.phoneNumber && <p className="text-sm text-red-600 mt-1">{errors.phoneNumber.message}</p>}</div>
                     <Button type="submit" disabled={isSubmitting} className="bg-[#8541EF] hover:bg-[#7a38d9] text-white">{isSubmitting ? <LoaderCircle className="animate-spin" /> : "Save Changes"}</Button>
