@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, LogOut, LoaderCircle, Bookmark, FileText, Home, CreditCard, Clock, MessageSquare } from 'lucide-react';
+import { Shield, LogOut, LoaderCircle, Bookmark, FileText, Home, CreditCard, Clock, MessageSquare, Menu as MenuIcon, X } from 'lucide-react';
 import { Redirect, Link, useLocation } from 'wouter';
 import { fetchUserApplications } from '@/services/applications';
 import { Application, Grant, Payment } from '@shared/schema';
@@ -45,6 +45,7 @@ type DeleteFormValues = z.infer<typeof deleteSchema>;
 const DashboardPage = () => {
     const { user, loading, logout } = useAuth();
     const [activeTab, setActiveTab] = useState('overview');
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [, navigate] = useLocation();
 
     if (loading) {
@@ -54,6 +55,11 @@ const DashboardPage = () => {
     if (!user) {
         return <Redirect to="/" />;
     }
+
+    const handleTabClick = (tab: string) => {
+        setActiveTab(tab);
+        setSidebarOpen(false); // Close sidebar on tab selection
+    };
 
     const renderContent = () => {
         switch (activeTab) {
@@ -70,12 +76,40 @@ const DashboardPage = () => {
         <div className="flex flex-col min-h-screen">
             <main className="flex-grow bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="text-left mb-12">
+                    <div className="text-left mb-8">
                         <h1 className="text-4xl lg:text-5xl font-extrabold text-violet tracking-tight">My Dashboard</h1>
                         <p className="mt-4 text-lg text-gray-600 max-w-2xl">Welcome back, {user.fullName}! Here's your grant application hub.</p>
                     </div>
+
+                    <div className="md:hidden flex justify-between items-center mb-6">
+                        <h2 className="text-xl font-bold text-gray-800 capitalize">{activeTab.replace('-', ' ')}</h2>
+                        <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
+                            <MenuIcon className="h-6 w-6" />
+                        </Button>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
-                        <aside className="md:col-span-1 bg-white p-4 rounded-xl border shadow-sm sticky top-24">
+                        {/* Mobile Sidebar (Drawer) */}
+                        <div className={`fixed inset-0 z-40 md:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
+                            <div className="absolute inset-0 bg-black opacity-50" onClick={() => setSidebarOpen(false)}></div>
+                            <aside className={`relative z-50 w-64 h-full bg-white p-4 border-r shadow-lg transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                                <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="absolute top-4 right-4">
+                                    <X className="h-6 w-6" />
+                                </Button>
+                                <nav className="flex flex-col space-y-2 mt-12">
+                                    <Button variant={activeTab === 'overview' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('overview')} className="justify-start"><Home className="mr-2 h-4 w-4" /> Overview</Button>
+                                    <Button variant={activeTab === 'applications' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('applications')} className="justify-start"><FileText className="mr-2 h-4 w-4" /> Applications</Button>
+                                    <Button variant={activeTab === 'saved-grants' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('saved-grants')} className="justify-start"><Bookmark className="mr-2 h-4 w-4" /> Saved Grants</Button>
+                                    <Button variant={activeTab === 'my-queries' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('my-queries')} className="justify-start"><MessageSquare className="mr-2 h-4 w-4" /> My Queries</Button>
+                                    <Button variant={activeTab === 'subscription' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('subscription')} className="justify-start"><CreditCard className="mr-2 h-4 w-4" /> Subscription</Button>
+                                    <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('settings')} className="justify-start"><Shield className="mr-2 h-4 w-4" /> Account Settings</Button>
+                                    <Button variant={'ghost'} onClick={logout} className="justify-start text-red-600 hover:bg-red-50 hover:text-red-600"><LogOut className="mr-2 h-4 w-4" /> Logout</Button>
+                                </nav>
+                            </aside>
+                        </div>
+
+                        {/* Desktop Sidebar */}
+                        <aside className="hidden md:block md:col-span-1 bg-white p-4 rounded-xl border shadow-sm sticky top-24">
                             <nav className="flex flex-col space-y-1">
                                 <Button variant={activeTab === 'overview' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('overview')} className="justify-start"><Home className="mr-2 h-4 w-4" /> Overview</Button>
                                 <Button variant={activeTab === 'applications' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('applications')} className="justify-start"><FileText className="mr-2 h-4 w-4" /> Applications</Button>
@@ -86,7 +120,8 @@ const DashboardPage = () => {
                                 <Button variant={'ghost'} onClick={logout} className="justify-start text-red-600 hover:bg-red-50 hover:text-red-600"><LogOut className="mr-2 h-4 w-4" /> Logout</Button>
                             </nav>
                         </aside>
-                        <main className="md:col-span-3">
+
+                        <main className="col-span-1 md:col-span-3">
                             {renderContent()}
                         </main>
                     </div>
@@ -167,7 +202,7 @@ const ApplicationTracking = () => {
             <CardContent>
                 <div className="space-y-4">
                     {applications.length > 0 ? applications.map(app => (
-                        <div key={app.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div key={app.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg gap-4">
                             <div>
                                 <p className="font-semibold text-gray-800">{app.startupName || "Grant Application"}</p>
                                 <p className="text-sm text-gray-500 flex items-center mt-1"><Clock size={14} className="mr-1.5" /> Applied on {app.submittedAt ? new Date(app.submittedAt.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
@@ -254,7 +289,7 @@ const MyQueriesSection = () => {
                 <div className="space-y-6">
                     {queries.length > 0 ? queries.map(query => (
                         <div key={query.id} className="border rounded-lg p-4">
-                            <div className="flex justify-between items-start mb-2">
+                            <div className="flex flex-col sm:flex-row justify-between items-start mb-2 gap-2">
                                 <p className="font-semibold text-gray-800 pr-4">{query.specificNeeds}</p>
                                 <Badge variant={query.status === 'responded' ? 'default' : 'secondary'} className="whitespace-nowrap">{query.status}</Badge>
                             </div>
@@ -298,33 +333,35 @@ const SubscriptionSection = () => {
                     <CardDescription>View your current plan and payment history.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex justify-between items-center p-4 bg-violet/5 border border-violet/20 rounded-lg">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-violet/5 border border-violet/20 rounded-lg gap-4">
                         <div>
                             <p className="font-semibold text-gray-800">Current Plan: <span className="text-violet">{plan}</span></p>
                             <p className="text-sm text-gray-500">Expires on: {expiresOn}</p>
                         </div>
                         <Badge className={status === 'premium' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>{status}</Badge>
                     </div>
-                    {plan === 'Free' && <Button onClick={handleViewPricing} className="mt-4 bg-violet hover:bg-pink text-white">Upgrade Now</Button>}
+                    {plan === 'Free' && <Button onClick={handleViewPricing} className="mt-4 bg-[#8541EF] hover:bg-[#7a38d9] text-white">Upgrade Now</Button>}
                 </CardContent>
             </Card>
             <Card>
                 <CardHeader><CardTitle>Payment History</CardTitle></CardHeader>
                 <CardContent>
                     {loading ? <LoaderCircle className="animate-spin" /> : (
-                        <table className="w-full text-sm">
-                            <thead><tr className="text-left text-gray-500"><th className="py-2">Date</th><th className="py-2">Plan</th><th className="py-2">Amount</th><th className="py-2">Status</th></tr></thead>
-                            <tbody>
-                                {payments.length > 0 ? payments.map(p => (
-                                    <tr key={p.id} className="border-t">
-                                        <td className="py-3">{p.date.toLocaleDateString()}</td>
-                                        <td className="py-3">{p.plan}</td>
-                                        <td className="py-3">₹{p.amount.toFixed(2)}</td>
-                                        <td className="py-3"><Badge variant="secondary" className="bg-green-50 text-green-700">{p.status}</Badge></td>
-                                    </tr>
-                                )) : <tr><td colSpan={4} className="text-center py-4 text-gray-500">No payment history found.</td></tr>}
-                            </tbody>
-                        </table>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead><tr className="text-left text-gray-500"><th className="py-2 px-2">Date</th><th className="py-2 px-2">Plan</th><th className="py-2 px-2">Amount</th><th className="py-2 px-2">Status</th></tr></thead>
+                                <tbody>
+                                    {payments.length > 0 ? payments.map(p => (
+                                        <tr key={p.id} className="border-t">
+                                            <td className="py-3 px-2">{p.date.toLocaleDateString()}</td>
+                                            <td className="py-3 px-2">{p.plan}</td>
+                                            <td className="py-3 px-2">₹{p.amount.toFixed(2)}</td>
+                                            <td className="py-3 px-2"><Badge variant="secondary" className="bg-green-50 text-green-700">{p.status}</Badge></td>
+                                        </tr>
+                                    )) : <tr><td colSpan={4} className="text-center py-4 text-gray-500">No payment history found.</td></tr>}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
                 </CardContent>
             </Card>
@@ -335,7 +372,7 @@ const SubscriptionSection = () => {
 const SettingsSection = () => {
     return (
         <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto">
                 <TabsTrigger value="profile">Edit Profile</TabsTrigger>
                 <TabsTrigger value="password">Change Password</TabsTrigger>
                 <TabsTrigger value="delete">Delete Account</TabsTrigger>
@@ -371,7 +408,7 @@ const ProfileSettings = () => {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div><label>Full Name</label><Input {...register("fullName")} />{errors.fullName && <p className="text-sm text-red-600 mt-1">{errors.fullName.message}</p>}</div>
                     <div><label>Phone Number</label><Input {...register("phoneNumber")} />{errors.phoneNumber && <p className="text-sm text-red-600 mt-1">{errors.phoneNumber.message}</p>}</div>
-                    <Button type="submit" disabled={isSubmitting} className="bg-violet hover:bg-pink text-white">{isSubmitting ? <LoaderCircle className="animate-spin" /> : "Save Changes"}</Button>
+                    <Button type="submit" disabled={isSubmitting} className="bg-[#8541EF] hover:bg-[#7a38d9] text-white">{isSubmitting ? <LoaderCircle className="animate-spin" /> : "Save Changes"}</Button>
                 </form>
             </CardContent>
         </Card>
@@ -400,7 +437,7 @@ const PasswordSettings = () => {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div><label>New Password</label><Input type="password" {...register("newPassword")} />{errors.newPassword && <p className="text-sm text-red-600 mt-1">{errors.newPassword.message}</p>}</div>
                     <div><label>Confirm New Password</label><Input type="password" {...register("confirmPassword")} />{errors.confirmPassword && <p className="text-sm text-red-600 mt-1">{errors.confirmPassword.message}</p>}</div>
-                    <Button type="submit" disabled={isSubmitting} className="bg-violet hover:bg-pink text-white">{isSubmitting ? <LoaderCircle className="animate-spin" /> : "Update Password"}</Button>
+                    <Button type="submit" disabled={isSubmitting} className="bg-[#8541EF] hover:bg-[#7a38d9] text-white">{isSubmitting ? <LoaderCircle className="animate-spin" /> : "Update Password"}</Button>
                 </form>
             </CardContent>
         </Card>

@@ -159,7 +159,7 @@ export function CreatePostModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#F8F5FA]">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#F8F5FA] p-8 rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-[#30343B]">
             {initialData ? "Edit Post" : "Create New Post"}
@@ -167,7 +167,7 @@ export function CreatePostModal({
           <p className="text-[#565F6C] mt-2">Create and publish your blog post</p>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmitForm)} className="space-y-6 bg-white p-6 rounded-xl">
+          <form onSubmit={form.handleSubmit(handleSubmitForm)} className="space-y-6 bg-white p-6 rounded-xl shadow-lg">
             <FormField
               control={form.control}
               name="title"
@@ -178,7 +178,7 @@ export function CreatePostModal({
                     <Input 
                       placeholder="Enter post title" 
                       {...field} 
-                      className="bg-white border-gray-300 focus:border-[#EB5E77] focus:ring-[#EB5E77] rounded-lg"
+                      className="bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg"
                     />
                   </FormControl>
                   <FormMessage />
@@ -194,7 +194,7 @@ export function CreatePostModal({
                   <FormLabel className="text-[#30343B] font-semibold">Category</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger className="bg-white border-gray-300 focus:border-[#EB5E77] focus:ring-[#EB5E77] rounded-lg">
+                      <SelectTrigger className="bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg">
                         <SelectValue placeholder="Select Category" />
                       </SelectTrigger>
                     </FormControl>
@@ -215,7 +215,7 @@ export function CreatePostModal({
 
             <div className="space-y-3">
               <Label className="text-[#30343B] font-semibold">Featured Image</Label>
-              <div className="border-2 border-dashed border-[#EB5E77]/30 rounded-xl p-8 text-center bg-white hover:border-[#EB5E77]/50 transition-colors">
+              <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center bg-white hover:border-[#8541EF]/50 transition-colors">
                 {imagePreview ? (
                   <div className="relative">
                     <img
@@ -235,7 +235,7 @@ export function CreatePostModal({
                   </div>
                 ) : (
                   <div>
-                    <Upload className="h-12 w-12 mx-auto text-[#EB5E77] mb-4" />
+                    <Upload className="h-12 w-12 mx-auto text-[#8541EF] mb-4" />
                     <p className="text-[#565F6C] mb-4 font-medium">Upload a featured image for your post</p>
                     <Input
                       type="file"
@@ -247,7 +247,7 @@ export function CreatePostModal({
                     <Button
                       type="button"
                       onClick={() => document.getElementById('image-upload')?.click()}
-                      className="bg-[#EB5E77] hover:bg-[#d4556a] text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                      className="bg-[#8541EF] hover:bg-[#7a38d9] text-white px-6 py-3 rounded-lg font-semibold transition-colors"
                     >
                       Choose Image
                     </Button>
@@ -265,7 +265,7 @@ export function CreatePostModal({
                   <FormControl>
                     <Textarea
                       placeholder="Enter post content"
-                      className="min-h-[200px] bg-white border-gray-300 focus:border-[#EB5E77] focus:ring-[#EB5E77] rounded-lg resize-none"
+                      className="min-h-[200px] bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg resize-none"
                       {...field}
                     />
                   </FormControl>
@@ -285,7 +285,7 @@ export function CreatePostModal({
               </Button>
               <Button
                 type="submit"
-                className="bg-[#EB5E77] hover:bg-[#d4556a] text-white px-8 py-3 rounded-lg font-semibold disabled:opacity-50 min-w-[120px]"
+                className="bg-[#8541EF] hover:bg-[#7a38d9] text-white px-8 py-3 rounded-lg font-semibold disabled:opacity-50 min-w-[120px]"
                 disabled={form.formState.isSubmitting || uploadingImage}
               >
                 {form.formState.isSubmitting || uploadingImage

@@ -8,9 +8,11 @@ import {
   Twitter,
   Instagram,
   MessageSquare,
-  LoaderCircle, // Loading icon ke liye import karein
+  LoaderCircle,
 } from "lucide-react";
 import React, { useState } from "react";
+import { useAuth } from "@/hooks/use-auth"; 
+import { useToast } from "@/hooks/use-toast";
 import { getFunctions, httpsCallable } from "firebase/functions";
 
 import mailIcon from "@/assets/logos/mail.png";
@@ -74,6 +76,8 @@ const ContactUs = () => {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth(); 
+  const { toast } = useToast(); 
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -84,19 +88,39 @@ const ContactUs = () => {
 
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to send a message.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (isSubmitting) return;
     setIsSubmitting(true);
-
+    
     const functions = getFunctions();
     const saveContactMessage = httpsCallable(functions, 'saveContactMessage');
+
     try {
       const result = await saveContactMessage(formData);
-      console.log(result.data);
-      alert("Your message has been sent successfully!");
-      setFormData({ name: "", email: "", subject: "", message: "" });
-    } catch (error) {
+      // @ts-ignore
+      if (result.data.success) {
+        toast({
+          title: "Success!",
+          description: "Your message has been sent successfully!",
+        });
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      }
+    } catch (error: any) {
       console.error("Error sending message:", error);
-      alert("There was an error sending your message. Please try again.");
+      toast({
+        title: "Error",
+        description: error.message || "There was an error sending your message. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -185,7 +209,6 @@ const ContactUs = () => {
               <h4 className="text-2xl font-semibold text-gray-800 mb-6">
                 Keep in touch
               </h4>
-              {/* ===== STEP 1: Form ko ek 'id' dein ===== */}
               <form id="contact-form" onSubmit={handleFormSubmit} className="space-y-5">
                 <div>
                   <label htmlFor="name" className="text-sm font-medium text-gray-700 block mb-1">Name</label>
@@ -203,12 +226,10 @@ const ContactUs = () => {
                   <label htmlFor="message" className="text-sm font-medium text-gray-700 block mb-1">Message</label>
                   <Textarea name="message" id="message" required value={formData.message} onChange={handleInputChange} rows={4} className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-[#8541EF] focus:border-[#8541EF]"/>
                 </div>
-                {/* Submit button ko form ke andar rakhein, lekin design wahi rahega */}
                 <div className="absolute right-6 bottom-6">
-                  {/* ===== STEP 2: Button ko 'form' attribute se jodein ===== */}
                   <Button
                     type="submit"
-                    form="contact-form" // Yeh form ki ID se match hona chahiye
+                    form="contact-form"
                     disabled={isSubmitting}
                     className="h-10 px-3 text-base font-semibold text-white rounded-lg shadow-sm hover:opacity-90 transition-opacity flex items-center"
                     style={{ background: "linear-gradient(90.24deg, #8541EF 0.21%, #EB5E77 165.86%)" }}

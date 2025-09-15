@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { User, Mail, Lock, Eye, EyeOff, Phone } from "lucide-react";
-import { useToast } from "@/hooks/use-toast"; 
+import { useToast } from "@/hooks/use-toast";
+
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -66,7 +67,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRed
 
         
         setFullName('');
-       
+        setEmail(''); // Keep email for login convenience
         setMobile('');
         setPassword('');
         setConfirmPassword('');
@@ -83,16 +84,16 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRed
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-white p-8 rounded-2xl shadow-2xl">
+      <DialogContent className="sm:max-w-md bg-[#F8F5FA] p-8 rounded-2xl shadow-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-violet mb-2 text-center">
+          <DialogTitle className="text-2xl font-bold text-[#30343B] mb-2 text-center">
             {authMode === 'login' ? 'Welcome Back!' : 'Create Your Account'}
           </DialogTitle>
           <DialogDescription className="text-center text-gray-600 mb-6">
             {authMode === 'login' ? 'Login to access your dashboard.' : 'Sign up to get started.'}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl">
           <div className="space-y-4">
             {authMode === 'signup' && (
               <div className="relative">
@@ -104,7 +105,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRed
                   value={fullName} 
                   onChange={(e) => setFullName(e.target.value)} 
                   required 
-                  className="w-full p-3 pl-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"
+                  className="w-full p-3 pl-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-[#8541EF] transition-colors"
                 />
               </div>
             )}
@@ -117,7 +118,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRed
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)} 
                 required 
-                className="w-full p-3 pl-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"
+                className="w-full p-3 pl-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-[#8541EF] transition-colors"
               />
             </div>
               {authMode === 'signup' && (
@@ -130,7 +131,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRed
                   value={mobile} 
                   onChange={(e) => setMobile(e.target.value)} 
                   required 
-                  className="w-full p-3 pl-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"
+                  className="w-full p-3 pl-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-[#8541EF] transition-colors"
                 />
               </div>
             )}
@@ -143,7 +144,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRed
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)} 
                 required 
-                className="w-full p-3 pl-10 pr-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"
+                className="w-full p-3 pl-10 pr-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-[#8541EF] transition-colors"
               />
               <button
                 type="button"
@@ -163,7 +164,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRed
                   value={confirmPassword} 
                   onChange={(e) => setConfirmPassword(e.target.value)} 
                   required 
-                  className="w-full p-3 pl-10 pr-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-gray-500 transition-colors"
+                  className="w-full p-3 pl-10 pr-10 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-0 focus:border-[#8541EF] transition-colors"
                 />
                   <button
                     type="button"
@@ -176,7 +177,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRed
             )}
             {error && <p className="text-sm text-red-500 text-center pt-2">{error}</p>}
           </div>
-          <Button type="submit" className="w-full mt-6 bg-violet hover:bg-pink text-white rounded-xl shadow-lg font-semibold py-3 text-lg" disabled={loading}>
+          <Button type="submit" className="w-full mt-6 bg-[#8541EF] hover:bg-[#7a38d9] text-white rounded-xl shadow-lg font-semibold py-3 text-lg" disabled={loading}>
             {loading ? 'Processing...' : (authMode === 'login' ? 'Login' : 'Create Account')}
           </Button>
         </form>
@@ -188,7 +189,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccessRed
               setAuthMode(authMode === 'login' ? 'signup' : 'login');
               setError('');
             }}
-            className="font-medium text-violet hover:text-pink hover:underline transition-colors"
+            className="font-medium text-[#8541EF] hover:text-[#7a38d9] hover:underline transition-colors"
           >
             {authMode === 'login' ? 'Sign up' : 'Login'}
           </button>

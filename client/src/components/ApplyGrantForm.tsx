@@ -4,9 +4,22 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { submitApplication } from "@/services/applications";
 import { useAuth } from "@/hooks/use-auth";
 import { InsertApplication } from "@shared/schema";
+import { CheckCircle2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 
 const formSchema = z.object({
   name: z.string()
@@ -27,51 +40,48 @@ const formSchema = z.object({
     .max(500, "Description must be less than 500 characters"),
   supportAreas: z.array(z.string())
     .min(1, "Please select at least one support area")
-    .max(7, "You can select maximum 7 areas"),
+    .max(7, "You can select a maximum of 7 areas"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+const supportAreasList = [
+  "Grants and incubation support",
+  "Pitch deck",
+  "Financial and valuation report",
+  "Startup india registration",
+  "Developing MVP",
+  "Marketing",
+  "Other areas"
+];
 
 export const GrantApplicationForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const [_, navigate] = useLocation();
   const { user } = useAuth();
+  const { toast } = useToast(); // Initialize useToast
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    setValue,
-    formState: { errors, isSubmitting },
-  } = useForm<FormValues>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      supportAreas: []
-    }
+      name: "",
+      phone: "",
+      email: "",
+      helpDescription: "",
+      supportAreas: [],
+    },
   });
 
-  const supportAreas = [
-    "Grants and incubation support",
-    "Pitch deck",
-    "Financial and valuation report",
-    "Startup india registration",
-    "Developing MVP",
-    "Marketing",
-    "Other areas"
-  ];
-
-  const selectedAreas = watch("supportAreas") || [];
-
-  const handleCheckboxChange = (area: string) => {
-    const currentAreas = selectedAreas;
-    const updatedAreas = currentAreas.includes(area)
-      ? currentAreas.filter(item => item !== area)
-      : [...currentAreas, area];
-    setValue("supportAreas", updatedAreas, { shouldValidate: true });
-  };
-
   const onSubmit = async (data: FormValues) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to submit your application.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const submissionData: InsertApplication = {
         name: data.name,
@@ -79,9 +89,8 @@ export const GrantApplicationForm = () => {
         email: data.email,
         helpDescription: data.helpDescription,
         supportAreas: data.supportAreas,
-        userId: user?.uid,
+        userId: user.uid,
         status: "Pending",
-        // Optional fields ko undefined bhejein agar unki value nahi hai
         startupName: "",
         founderName: "",
         stage: "",
@@ -91,155 +100,170 @@ export const GrantApplicationForm = () => {
 
       await submitApplication(submissionData);
       setSubmitted(true);
-      reset();
-      setTimeout(() => navigate("/"), 2000);
+      form.reset();
+      setTimeout(() => navigate("/"), 3000);
     } catch (err) {
       console.error("Submission failed", err);
-      // Aap yahan user ko error message dikha sakte hain
+      toast({
+        title: "Submission Failed",
+        description: "There was an error submitting your application. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
+  const { isSubmitting } = form.formState;
+
   return (
-    <div
-      className="shadow-2xl rounded-2xl p-6 md:p-10 max-w-3xl mx-auto mt-10"
-    >
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-violet mb-2">Grants Support Form</h2>
-        <p className="text-gray-700 text-base max-w-xl mx-auto">
-          We help Indian founders identify relevant grants, validate readiness, and submit applications.
-          Fill in the details — our team will get in touch if you're a fit.
-        </p>
-      </div>
-
-      {submitted ? (
-        <div className="text-center p-6 bg-green-100 border-2 border-green-300 rounded-xl">
-          <span className="text-5xl">✅</span>
-          <p className="text-green-800 font-semibold text-xl mt-4">Form submitted successfully!</p>
-          <p className="text-green-700">We will get back to you shortly.</p>
+    <div className="min-h-screen bg-[#F8F5FA] flex items-center justify-center p-4">
+      <div className="w-full max-w-3xl">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-[#30343B]">Grants Support Form</h2>
+          <p className="text-[#565F6C] mt-2 max-w-xl mx-auto">
+            We help Indian founders identify relevant grants, validate readiness, and submit applications.
+            Fill in the details — our team will get in touch if you're a fit.
+          </p>
         </div>
-      ) : (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              {...register("name")}
-              type="text"
-              className={`w-full px-4 py-3 border-2 rounded-lg transition-colors focus:outline-none ${
-                errors.name
-                  ? 'border-red-400 bg-red-50'
-                  : 'border-gray-400 bg-white focus:border-gray-500'
-              }`}
-              placeholder="Enter your full name"
-            />
-            {errors.name && (
-              <p className="mt-2 text-sm text-red-600 font-medium">{errors.name.message}</p>
-            )}
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Phone Number <span className="text-red-500">*</span>
-            </label>
-            <input
-              {...register("phone")}
-              type="tel"
-              className={`w-full px-4 py-3 border-2 rounded-lg transition-colors focus:outline-none ${
-                errors.phone
-                  ? 'border-red-400 bg-red-50'
-                  : 'border-gray-400 bg-white focus:border-gray-500'
-              }`}
-              placeholder="Enter 10-digit mobile number"
-              maxLength={10}
-            />
-            {errors.phone && (
-              <p className="mt-2 text-sm text-red-600 font-medium">{errors.phone.message}</p>
-            )}
+        {submitted ? (
+          <div className="bg-white p-8 rounded-xl shadow-lg text-center">
+            <CheckCircle2 className="h-16 w-16 mx-auto text-green-500 mb-4" />
+            <h3 className="text-2xl font-bold text-green-700">Application Submitted!</h3>
+            <p className="text-gray-600 mt-2">Thank you for reaching out. We will get back to you shortly.</p>
           </div>
+        ) : (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-xl shadow-lg">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField name="name" control={form.control} render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[#30343B] font-semibold">Full Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Enter your full name"
+                        className="bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email <span className="text-red-500">*</span>
-            </label>
-            <input
-              {...register("email")}
-              type="email"
-              className={`w-full px-4 py-3 border-2 rounded-lg transition-colors focus:outline-none ${
-                errors.email
-                  ? 'border-red-400 bg-red-50'
-                  : 'border-gray-400 bg-white focus:border-gray-500'
-              }`}
-              placeholder="Enter your email address"
-            />
-            {errors.email && (
-              <p className="mt-2 text-sm text-red-600 font-medium">{errors.email.message}</p>
-            )}
-          </div>
+                <FormField name="phone" control={form.control} render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[#30343B] font-semibold">Phone Number</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="tel"
+                        maxLength={10}
+                        placeholder="Enter 10-digit mobile number"
+                        className="bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
 
-          <div>
-            <label htmlFor="helpDescription" className="block text-sm font-medium text-gray-700 mb-1">
-              What do you need help with? <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              id="helpDescription"
-              {...register("helpDescription")}
-              rows={4}
-              placeholder="Please describe in detail what kind of support your startup is looking for..."
-              className={`mt-1 block w-full rounded-lg border-2 shadow-sm sm:text-sm px-4 py-3 transition-colors focus:outline-none ${
-                errors.helpDescription
-                  ? 'border-red-400 bg-red-50'
-                  : 'border-gray-400 bg-white focus:border-gray-500'
-              }`}
-              maxLength={500}
-            />
-            <div className="text-right text-xs text-gray-500 mt-1">
-              {watch("helpDescription")?.length || 0}/500
-            </div>
-            {errors.helpDescription && (
-              <p className="mt-1 text-sm text-red-600 font-medium">{errors.helpDescription.message}</p>
-            )}
-          </div>
+              <FormField name="email" control={form.control} render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[#30343B] font-semibold">Email Address</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="email"
+                      placeholder="you@example.com"
+                      className="bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-          <div className={`border-2 rounded-lg p-4 transition-colors ${
-            errors.supportAreas ? 'bg-red-50 border-red-400' : 'bg-white border-gray-400'
-          }`}>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Select areas where you need support <span className="text-red-500">*</span>
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {supportAreas.map((area) => (
-                <div key={area} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={area}
-                    checked={selectedAreas.includes(area)}
-                    onChange={() => handleCheckboxChange(area)}
-                    className="h-4 w-4 text-violet focus:ring-violet border-violet rounded transition-colors cursor-pointer"
-                  />
-                  <label htmlFor={area} className="ml-2 text-sm text-gray-700 cursor-pointer select-none">
-                    {area}
-                  </label>
-                </div>
-              ))}
-            </div>
-            <div className="text-right mt-2 text-xs text-violet">
-              {selectedAreas.length}/7 selected
-            </div>
-            {errors.supportAreas && (
-               <p className="mt-2 text-sm text-red-600 font-medium">{errors.supportAreas.message}</p>
-            )}
-          </div>
+              <FormField name="helpDescription" control={form.control} render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[#30343B] font-semibold">What do you need help with?</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      rows={5}
+                      maxLength={500}
+                      placeholder="Please describe in detail what kind of support your startup is looking for..."
+                      className="bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg resize-none"
+                    />
+                  </FormControl>
+                   <div className="text-right text-xs text-gray-500 mt-1">
+                      {field.value?.length || 0}/500
+                    </div>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-violet hover:bg-pink text-white font-semibold text-lg py-3 rounded-xl shadow-lg transition-all duration-300 disabled:opacity-50"
-          >
-            {isSubmitting ? "Submitting..." : "Submit Application"}
-          </Button>
-        </form>
-      )}
+              <FormField
+                control={form.control}
+                name="supportAreas"
+                render={() => (
+                  <FormItem className="border border-gray-200 rounded-lg p-4">
+                    <div className="mb-4">
+                      <FormLabel className="text-base font-semibold text-[#30343B]">
+                        Select areas where you need support
+                      </FormLabel>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {supportAreasList.map((area) => (
+                        <FormField
+                          key={area}
+                          control={form.control}
+                          name="supportAreas"
+                          render={({ field }) => {
+                            return (
+                              <FormItem key={area} className="flex flex-row items-center space-x-3 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value?.includes(area)}
+                                    onCheckedChange={(checked) => {
+                                      return checked
+                                        ? field.onChange([...field.value, area])
+                                        : field.onChange(
+                                            field.value?.filter(
+                                              (value) => value !== area
+                                            )
+                                          );
+                                    }}
+                                    className="data-[state=checked]:bg-[#8541EF] data-[state=checked]:text-white data-[state=checked]:border-[#8541EF] focus-visible:ring-[#8541EF]"
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-normal text-sm text-gray-700">
+                                  {area}
+                                </FormLabel>
+                              </FormItem>
+                            );
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <div className="text-right mt-2 text-xs text-[#8541EF]">
+                        {form.watch("supportAreas").length}/7 selected
+                    </div>
+                    <FormMessage className="mt-2" />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="flex justify-center pt-4 border-t border-gray-200">
+                  <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="bg-[#8541EF] hover:bg-[#7a38d9] text-white px-8 py-3 rounded-lg font-semibold disabled:opacity-50 min-w-[150px] text-base"
+                  >
+                      {isSubmitting ? "Submitting..." : "Submit Application"}
+                  </Button>
+              </div>
+            </form>
+          </Form>
+        )}
+      </div>
     </div>
   );
 };

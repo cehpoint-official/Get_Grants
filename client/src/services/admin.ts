@@ -1,6 +1,5 @@
-// client/src/services/admin.ts
 import { db } from "@/lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 
 export interface DashboardStats {
   totalUsers: number;
@@ -31,4 +30,25 @@ export const fetchDashboardStats = async (): Promise<DashboardStats> => {
       totalGrants: 0,
     };
   }
+};
+
+// --- YAHAN NAYA CODE JODA GAYA HAI ---
+
+export interface ContactMessage {
+    id: string;
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+    createdAt: Date;
+}
+
+export const fetchContactMessages = async (): Promise<ContactMessage[]> => {
+    const q = query(collection(db, "contactMessages"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt.toDate(),
+    } as ContactMessage));
 };
