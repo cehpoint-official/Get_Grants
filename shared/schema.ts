@@ -133,6 +133,34 @@ export const insertEventSchema = z.object({
   location: z.string().optional(),
 });
 
+// --- Inquiry Schemas ---
+export const premiumInquirySchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string(),
+    phone: z.string(),
+    companyName: z.string().optional(),
+    currentPlan: z.string(),
+    budget: z.string(),
+    timeline: z.string(),
+    specificNeeds: z.string(),
+    message: z.string().optional(),
+    status: z.enum(['new', 'in_progress', 'meeting_scheduled', 'meeting_done', 'responded', 'closed']),
+    adminResponse: z.string().optional(),
+    userId: z.string().optional(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+});
+
+export const inquiryMessageSchema = z.object({
+    id: z.string(),
+    inquiryId: z.string(),
+    sender: z.enum(['user', 'admin']),
+    senderId: z.string().optional(),
+    text: z.string(),
+    createdAt: z.date(),
+});
+
 
 // --- All Types ---
 export type User = z.infer<typeof userSchema>;
@@ -145,3 +173,5 @@ export type Grant = z.infer<typeof grantSchema>;
 export type InsertGrant = z.infer<typeof insertGrantSchema>;
 export type CalendarEvent = z.infer<typeof eventSchema>;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
+export type InquiryMessage = z.infer<typeof inquiryMessageSchema>;
+export type PremiumInquiry = z.infer<typeof premiumInquirySchema>;

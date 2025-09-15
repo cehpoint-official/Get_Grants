@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { auth, db } from "@/lib/firebase"; // db ko import karein
+import { auth, db } from "@/lib/firebase";
 import {
   User as FirebaseUser,
   signInWithEmailAndPassword,
@@ -12,7 +12,7 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider,
 } from "firebase/auth";
-import { doc, updateDoc } from "firebase/firestore"; // firestore se imports
+import { doc, updateDoc } from "firebase/firestore";
 import { UserProfile, CreateUserData } from "@/lib/types";
 import { getUserProfile, createUserProfile } from "@/lib/userService";
 import { isAdminUser } from "@/lib/adminUtils";
@@ -72,23 +72,20 @@ export function useAuth() {
     await signOut(auth);
   };
 
-  const updateUserProfileDetails = async (details: { fullName?: string; phoneNumber?: string; avatarUrl?: string }) => {
+  const updateUserProfileDetails = async (details: { fullName?: string; phone?: string; avatarUrl?: string }) => {
     if (!auth.currentUser) throw new Error("User not found");
 
-    // Update Firebase Auth profile
-    if (details.fullName) {
-      await updateProfile(auth.currentUser, { displayName: details.fullName });
+    const authUpdates: { displayName?: string; photoURL?: string } = {};
+    if (details.fullName) authUpdates.displayName = details.fullName;
+    if (details.avatarUrl) authUpdates.photoURL = details.avatarUrl;
+    
+    if (Object.keys(authUpdates).length > 0) {
+        await updateProfile(auth.currentUser, authUpdates);
     }
 
-    // Update Firestore document
     const userRef = doc(db, "users", auth.currentUser.uid);
-    const updates: any = {};
-    if (details.fullName !== undefined) updates.fullName = details.fullName;
-    if (details.phoneNumber !== undefined) updates.phoneNumber = details.phoneNumber;
-    if (details.avatarUrl !== undefined) updates.avatarUrl = details.avatarUrl;
-    await updateDoc(userRef, updates);
+    await updateDoc(userRef, details);
 
-    // Update local state
     setUser(prevUser => prevUser ? { ...prevUser, ...details } : null);
   };
 
@@ -101,11 +98,9 @@ export function useAuth() {
     const currentUser = auth.currentUser;
     if (!currentUser || !currentUser.email) throw new Error("User not found or email is missing");
     
-    // Re-authenticate user before deletion for security
     const credential = EmailAuthProvider.credential(currentUser.email, password);
     await reauthenticateWithCredential(currentUser, credential);
     
-    // User re-authenticated, now delete
     await deleteUser(currentUser);
   };
 

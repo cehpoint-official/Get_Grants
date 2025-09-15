@@ -1,32 +1,6 @@
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, getDocs, doc, updateDoc, where, onSnapshot, Unsubscribe, DocumentData } from 'firebase/firestore';
-
-export interface PremiumInquiry {
-    id?: string;
-    name: string;
-    email: string;
-    phone: string;
-    companyName?: string;
-    currentPlan: string;
-    budget: string;
-    timeline: string;
-    specificNeeds: string;
-    message?: string;
-    status: 'new' | 'in_progress' | 'meeting_scheduled' | 'meeting_done' | 'responded' | 'closed';
-    adminResponse?: string;
-    userId?: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-export interface InquiryMessage {
-    id?: string;
-    inquiryId: string;
-    sender: 'user' | 'admin';
-    senderId?: string;
-    text: string;
-    createdAt: Date;
-}
+import { InquiryMessage, PremiumInquiry } from '@shared/schema';
 
 export interface CreatePremiumInquiryData {
     name: string;

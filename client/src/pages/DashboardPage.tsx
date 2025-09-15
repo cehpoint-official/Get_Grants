@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, LogOut, LoaderCircle, Bookmark, FileText, Home, CreditCard, Clock, MessageSquare, Menu as MenuIcon, X } from 'lucide-react';
+import { Shield, LogOut, LoaderCircle, Bookmark, FileText, Home, CreditCard, Clock, MessageSquare, Menu as MenuIcon, X, Send, Crown } from 'lucide-react';
 import { Redirect, Link, useLocation } from 'wouter';
 import { fetchUserApplications } from '@/services/applications';
-import { Application, Grant, Payment } from '@shared/schema';
+import { Application, Grant, Payment, PremiumInquiry, InquiryMessage } from '@shared/schema';
 import { fetchGrantById } from "@/services/grants";
 import { fetchUserPayments } from "@/services/payments";
-import { fetchUserPremiumInquiriesByUserIdOrEmail, PremiumInquiry, InquiryMessage, subscribeToInquiryMessages, sendInquiryMessage } from "@/services/premiumSupport";
+import { fetchUserPremiumInquiriesByUserIdOrEmail, subscribeToInquiryMessages, sendInquiryMessage } from "@/services/premiumSupport";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -17,13 +17,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogCancel
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from '@/components/ui/badge';
 import { useToast } from "@/hooks/use-toast";
 import { Input } from '@/components/ui/input';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 
 const profileSchema = z.object({
     fullName: z.string().min(2, "Name must be at least 2 characters."),
-    phoneNumber: z.string().regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit mobile number."),
+    phone: z.string()
+        .refine((val) => val === '' || /^[6-9]\d{9}$/.test(val), {
+            message: "Please enter a valid 10-digit mobile number.",
+        }),
     avatarUrl: z.string().url().optional().or(z.literal('')),
 });
 
@@ -44,10 +49,9 @@ type PasswordFormValues = z.infer<typeof passwordSchema>;
 type DeleteFormValues = z.infer<typeof deleteSchema>;
 
 const DashboardPage = () => {
-    const { user, loading, logout } = useAuth();
+    const { user, loading } = useAuth();
     const [activeTab, setActiveTab] = useState('overview');
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [, navigate] = useLocation();
 
     if (loading) {
         return <div className="flex justify-center items-center h-screen"><LoaderCircle className="w-10 h-10 animate-spin text-violet" /></div>;
@@ -59,83 +63,46 @@ const DashboardPage = () => {
 
     const handleTabClick = (tab: string) => {
         setActiveTab(tab);
-        setSidebarOpen(false); 
+        setSidebarOpen(false);
     };
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'overview': return <DashboardOverview />;
+            case 'overview': return <DashboardOverview setActiveTab={handleTabClick} />;
             case 'applications': return <ApplicationTracking />;
             case 'saved-grants': return <SavedGrantsSection />;
             case 'my-queries': return <MyQueriesSection />;
             case 'settings': return <SettingsSection />;
             case 'subscription': return <SubscriptionSection />;
-            default: return <DashboardOverview />;
+            default: return <DashboardOverview setActiveTab={handleTabClick} />;
         }
     };
     return (
-        <div className="flex flex-col min-h-screen">
-            <main className="flex-grow bg-gray-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="text-left mb-8 hidden md:block">
+        <div className="flex flex-col min-h-screen bg-gray-50">
+            <main className="flex-grow">
+                 <div className="md:hidden bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-40 shadow-sm">
+                    <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-md text-gray-800 hover:bg-gray-100" aria-label="Open menu">
+                        <MenuIcon className="h-6 w-6" />
+                    </button>
+                    <h2 className="font-semibold text-gray-800 text-lg capitalize">{activeTab.replace('-', ' ')}</h2>
+                    <div className="w-9"></div>
+                </div>
+
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+                     <div className="hidden md:block mb-8">
                         <h1 className="text-4xl lg:text-5xl font-extrabold text-violet tracking-tight">My Dashboard</h1>
                         <p className="mt-4 text-lg text-gray-600 max-w-2xl">Welcome back, {user.fullName}! Here's your grant application hub.</p>
                     </div>
 
-                    <div className="md:hidden bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-40 rounded-md shadow-sm">
-                        <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-md text-gray-800 hover:bg-gray-100" aria-label="Open menu">
-                            <MenuIcon className="h-6 w-6" />
-                        </button>
-                        <h2 className="font-semibold text-gray-800 text-lg">My Dashboard</h2>
-                        <div className="w-9"></div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start mt-6 md:mt-0">
-                        <div className={`fixed inset-0 z-40 md:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
-                            <div className="absolute inset-0 bg-black opacity-50" onClick={() => setSidebarOpen(false)}></div>
-                            <aside className={`relative z-50 w-64 h-full bg-white p-4 border-r shadow-lg transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                                <button onClick={() => setSidebarOpen(false)} className="absolute top-4 right-4 p-1 rounded-md hover:bg-gray-100" aria-label="Close menu">
-                                    <X className="h-6 w-6 text-violet" />
-                                </button>
-                                <div className="px-2 py-3 border-b flex items-center gap-3">
-                                    <div className="h-9 w-9 rounded-full bg-violet/20 text-violet flex items-center justify-center font-bold">
-                                        {user.fullName?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)}
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-base text-gray-900">{user.fullName}</div>
-                                        <div className="text-xs text-gray-500">My Dashboard</div>
-                                    </div>
-                                </div>
-                                <nav className="flex flex-col gap-1 mt-6 px-1 text-sm text-gray-700">
-                                    <Link href="/">
-                                        <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center hover:bg-violet/5`}><Home className="mr-2 h-4 w-4" /> Home Page</div>
-                                    </Link>
-                                    <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === 'overview' ? 'bg-violet/10 text-violet font-semibold' : 'hover:bg-violet/5'}`} onClick={() => handleTabClick('overview')}><Home className="mr-2 h-4 w-4" /> Overview</div>
-                                    <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === 'applications' ? 'bg-violet/10 text-violet font-semibold' : 'hover:bg-violet/5'}`} onClick={() => handleTabClick('applications')}><FileText className="mr-2 h-4 w-4" /> Applications</div>
-                                    <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === 'saved-grants' ? 'bg-violet/10 text-violet font-semibold' : 'hover:bg-violet/5'}`} onClick={() => handleTabClick('saved-grants')}><Bookmark className="mr-2 h-4 w-4" /> Saved Grants</div>
-                                    <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === 'my-queries' ? 'bg-violet/10 text-violet font-semibold' : 'hover:bg-violet/5'}`} onClick={() => handleTabClick('my-queries')}><MessageSquare className="mr-2 h-4 w-4" /> My Queries</div>
-                                    <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === 'subscription' ? 'bg-violet/10 text-violet font-semibold' : 'hover:bg-violet/5'}`} onClick={() => handleTabClick('subscription')}><CreditCard className="mr-2 h-4 w-4" /> Subscription</div>
-                                    <div className={`px-3 py-2.5 rounded-md cursor-pointer transition-all flex items-center ${activeTab === 'settings' ? 'bg-violet/10 text-violet font-semibold' : 'hover:bg-violet/5'}`} onClick={() => handleTabClick('settings')}><Shield className="mr-2 h-4 w-4" /> Account Settings</div>
-                                </nav>
-                                <div className="px-1 border-t mt-4 pt-4">
-                                    <Button variant={'ghost'} onClick={logout} className="w-full justify-center text-white font-semibold rounded-lg bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90"><LogOut className="mr-2 h-4 w-4" /> Logout</Button>
-                                </div>
-                            </aside>
-                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
+                        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+                            <SheetContent side="left" className="w-64 p-0 flex flex-col">
+                                <SidebarContent user={user} activeTab={activeTab} handleTabClick={handleTabClick} />
+                            </SheetContent>
+                        </Sheet>
                         
                         <aside className="hidden md:block md:col-span-1 bg-white p-4 rounded-xl border shadow-sm sticky top-24">
-                            <nav className="flex flex-col space-y-1">
-                                <Link href="/">
-                                    <Button variant={'ghost'} className="w-full justify-start"><Home className="mr-2 h-4 w-4" /> Home Page</Button>
-                                </Link>
-                                <Button variant={activeTab === 'overview' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('overview')} className="justify-start"><Home className="mr-2 h-4 w-4" /> Overview</Button>
-                                <Button variant={activeTab === 'applications' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('applications')} className="justify-start"><FileText className="mr-2 h-4 w-4" /> Applications</Button>
-                                <Button variant={activeTab === 'saved-grants' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('saved-grants')} className="justify-start"><Bookmark className="mr-2 h-4 w-4" /> Saved Grants</Button>
-                                <Button variant={activeTab === 'my-queries' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('my-queries')} className="justify-start"><MessageSquare className="mr-2 h-4 w-4" /> My Queries</Button>
-                                <Button variant={activeTab === 'subscription' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('subscription')} className="justify-start"><CreditCard className="mr-2 h-4 w-4" /> Subscription</Button>
-                                <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('settings')} className="justify-start"><Shield className="mr-2 h-4 w-4" /> Account Settings</Button>
-                                <Button variant={'ghost'} onClick={logout} className="justify-start text-red-600 hover:bg-red-50 hover:text-red-600"><LogOut className="mr-2 h-4 w-4" /> Logout</Button>
-                            </nav>
+                            <SidebarContent user={user} activeTab={activeTab} handleTabClick={handleTabClick} />
                         </aside>
 
                         <main className="col-span-1 md:col-span-3">
@@ -149,7 +116,40 @@ const DashboardPage = () => {
     );
 };
 
-const DashboardOverview = () => {
+const SidebarContent = ({ user, activeTab, handleTabClick }: { user: any, activeTab: string, handleTabClick: (tab: string) => void }) => {
+    const { logout } = useAuth();
+    const isPremium = user.subscriptionStatus === 'premium' || (user.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date());
+    
+    return (
+        <>
+        <div className="px-4 py-4 border-b flex items-center gap-3">
+            <Avatar className="h-12 w-12 border-2 border-violet/50">
+                <AvatarImage src={user.avatarUrl} alt={user.fullName}/>
+                <AvatarFallback className="bg-violet/20 text-violet font-bold">
+                    {user.fullName?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
+                </AvatarFallback>
+            </Avatar>
+            <div>
+                <div className="font-bold text-base text-gray-900 flex items-center">{user.fullName} {isPremium && <Crown className="ml-1 h-4 w-4 text-yellow-500"/>}</div>
+                <div className="text-xs text-gray-500">Founder</div>
+            </div>
+        </div>
+        <nav className="flex flex-col gap-1 p-2 flex-grow">
+            <Button variant={activeTab === 'overview' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('overview')} className="justify-start"><Home className="mr-2 h-4 w-4" /> Overview</Button>
+            <Button variant={activeTab === 'applications' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('applications')} className="justify-start"><FileText className="mr-2 h-4 w-4" /> Applications</Button>
+            <Button variant={activeTab === 'saved-grants' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('saved-grants')} className="justify-start"><Bookmark className="mr-2 h-4 w-4" /> Saved Grants</Button>
+            <Button variant={activeTab === 'my-queries' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('my-queries')} className="justify-start"><MessageSquare className="mr-2 h-4 w-4" /> My Queries</Button>
+            <Button variant={activeTab === 'subscription' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('subscription')} className="justify-start"><CreditCard className="mr-2 h-4 w-4" /> Subscription</Button>
+            <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('settings')} className="justify-start"><Shield className="mr-2 h-4 w-4" /> Account Settings</Button>
+        </nav>
+        <div className="p-2">
+            <Button variant={'ghost'} onClick={logout} className="w-full justify-start text-red-600 hover:bg-red-50 hover:text-red-600"><LogOut className="mr-2 h-4 w-4" /> Logout</Button>
+        </div>
+        </>
+    )
+}
+
+const DashboardOverview = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) => {
     const { user } = useAuth();
     const [applicationCount, setApplicationCount] = useState(0);
 
@@ -160,22 +160,33 @@ const DashboardOverview = () => {
     }, [user]);
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Welcome to your Dashboard!</CardTitle>
-                <CardDescription>Here is a summary of your activity.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card>
-                    <CardHeader><CardTitle className="text-lg">Saved Grants</CardTitle></CardHeader>
-                    <CardContent><p className="text-3xl font-bold">{user?.savedGrants?.length || 0}</p></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader><CardTitle className="text-lg">Applications</CardTitle></CardHeader>
-                    <CardContent><p className="text-3xl font-bold">{applicationCount}</p></CardContent>
-                </Card>
-            </CardContent>
-        </Card>
+        <div className="space-y-6">
+            <Card className="bg-gradient-to-r from-violet to-pink text-white shadow-lg">
+                <CardHeader>
+                    <CardTitle className="text-2xl">Welcome, {user?.fullName?.split(' ')[0]}!</CardTitle>
+                    <CardDescription className="text-violet-200">Here's a quick summary of your grant journey.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div onClick={() => setActiveTab('saved-grants')} className="bg-white/20 p-4 rounded-lg cursor-pointer hover:bg-white/30 transition-colors">
+                        <p className="text-3xl font-bold">{user?.savedGrants?.length || 0}</p>
+                        <p className="text-sm font-medium">Saved Grants</p>
+                    </div>
+                    <div onClick={() => setActiveTab('applications')} className="bg-white/20 p-4 rounded-lg cursor-pointer hover:bg-white/30 transition-colors">
+                        <p className="text-3xl font-bold">{applicationCount}</p>
+                        <p className="text-sm font-medium">Applications Submitted</p>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Next Steps</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                   <Link href="/grants"><Button variant="outline" className="w-full justify-start text-left h-auto py-3"> <span className="text-violet font-bold mr-3">1.</span> Explore and find the perfect grants for your startup.</Button></Link>
+                   <Link href="/premium-support"><Button variant="outline" className="w-full justify-start text-left h-auto py-3"><span className="text-violet font-bold mr-3">2.</span> Need help? Upgrade to premium for expert assistance.</Button></Link>
+                </CardContent>
+            </Card>
+        </div>
     );
 };
 
@@ -196,16 +207,6 @@ const ApplicationTracking = () => {
         loadApplications();
     }, [user]);
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'Pending': return 'bg-yellow-100 text-yellow-800';
-            case 'Reviewed': return 'bg-blue-100 text-blue-800';
-            case 'Approved': return 'bg-green-100 text-green-800';
-            case 'Rejected': return 'bg-red-100 text-red-800';
-            default: return 'bg-gray-100 text-gray-800';
-        }
-    };
-
     if (loading) {
         return <div className="flex justify-center items-center p-8"><LoaderCircle className="w-8 h-8 animate-spin text-violet" /></div>;
     }
@@ -224,7 +225,7 @@ const ApplicationTracking = () => {
                                 <p className="font-semibold text-gray-800">{app.startupName || "Grant Application"}</p>
                                 <p className="text-sm text-gray-500 flex items-center mt-1"><Clock size={14} className="mr-1.5" /> Applied on {app.submittedAt ? new Date(app.submittedAt.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
                             </div>
-                            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(app.status || 'Pending')}`}>{app.status || 'Pending'}</span>
+                            <Badge variant={app.status === 'Approved' ? 'default' : app.status === 'Rejected' ? 'destructive' : 'secondary'}>{app.status || 'Pending'}</Badge>
                         </div>
                     )) : (<p className="text-center text-gray-500 py-8">You haven't submitted any applications yet.</p>)}
                 </div>
@@ -265,7 +266,7 @@ const SavedGrantsSection = () => {
                     <div className="space-y-4">
                         {savedGrants.map((grant) => (
                             <Link key={grant.id} href={`/grant/${grant.id}`}>
-                                <a className="block p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <a className="block p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
                                     <h3 className="font-semibold text-violet">{grant.title}</h3>
                                     <p className="text-sm text-gray-600">{grant.organization}</p>
                                     <p className="text-sm text-gray-500 mt-1">Funding: {grant.fundingAmount}</p>
@@ -283,10 +284,10 @@ const MyQueriesSection = () => {
     const { user } = useAuth();
     const [queries, setQueries] = useState<PremiumInquiry[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeInquiryId, setActiveInquiryId] = useState<string | null>(null);
+    const [activeInquiry, setActiveInquiry] = useState<PremiumInquiry | null>(null);
     const [messages, setMessages] = useState<InquiryMessage[]>([]);
     const [newMessage, setNewMessage] = useState("");
-    const [subCleanup, setSubCleanup] = useState<null | (() => void)>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (user) {
@@ -297,21 +298,20 @@ const MyQueriesSection = () => {
     }, [user]);
 
     useEffect(() => {
-        if (subCleanup) { subCleanup(); setSubCleanup(null); }
-        if (activeInquiryId) {
-            const unsub = subscribeToInquiryMessages(activeInquiryId, setMessages);
-            setSubCleanup(() => unsub);
+        if (activeInquiry?.id) {
+            const unsubscribe = subscribeToInquiryMessages(activeInquiry.id, setMessages);
+            return () => unsubscribe();
         }
-        return () => { if (subCleanup) subCleanup(); };
-    }, [activeInquiryId]);
+    }, [activeInquiry]);
 
-    const handleOpenThread = (inquiryId: string) => {
-        setActiveInquiryId(activeInquiryId === inquiryId ? null : inquiryId);
-    };
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
 
-    const handleSend = async () => {
-        if (!activeInquiryId || !newMessage.trim() || !user) return;
-        await sendInquiryMessage({ inquiryId: activeInquiryId, text: newMessage.trim(), sender: 'user', senderId: user.uid });
+    const handleSend = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!activeInquiry?.id || !newMessage.trim() || !user) return;
+        await sendInquiryMessage({ inquiryId: activeInquiry.id, text: newMessage.trim(), sender: 'user', senderId: user.uid });
         setNewMessage("");
     };
 
@@ -328,42 +328,47 @@ const MyQueriesSection = () => {
             <CardContent>
                 <div className="space-y-6">
                     {queries.length > 0 ? queries.map(query => (
-                        <div key={query.id} className="border rounded-lg">
-                            <div className="p-4">
-                                <div className="flex flex-col sm:flex-row justify-between items-start mb-2 gap-2">
-                                    <p className="font-semibold text-gray-800 pr-4">{query.specificNeeds}</p>
-                                    <Badge variant={query.status === 'responded' ? 'default' : 'secondary'} className="whitespace-nowrap">{query.status}</Badge>
-                                </div>
-                                <p className="text-sm text-gray-500">Submitted on: {query.createdAt.toLocaleDateString()}</p>
-                                <div className="mt-3">
-                                    <Button size="sm" variant="outline" onClick={() => handleOpenThread(query.id!)}>
-                                        {activeInquiryId === query.id ? 'Close thread' : 'Open thread'}
-                                    </Button>
-                                </div>
-                            </div>
-                            {activeInquiryId === query.id && (
-                                <div className="border-t bg-gray-50 p-3">
-                                    <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
-                                        {messages.length === 0 && (<p className="text-xs text-gray-500">No messages yet. Start the conversation.</p>)}
-                                        {messages.map(m => (
-                                            <div key={m.id} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                                <div className={`px-3 py-2 rounded-lg text-sm ${m.sender === 'user' ? 'bg-violet text-white' : 'bg-white border'}`}>
-                                                    <div>{m.text}</div>
-                                                    <div className="text-[10px] opacity-70 mt-1">{m.createdAt.toLocaleString()}</div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="mt-3 flex gap-2">
-                                        <Input placeholder="Type your message..." value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />
-                                        <Button onClick={handleSend} disabled={!newMessage.trim()}>Send</Button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                        <Card key={query.id} className="overflow-hidden">
+                            <CardHeader className="flex flex-row justify-between items-start bg-gray-50 p-4 border-b">
+                               <div>
+                                 <CardTitle className="text-base">{query.specificNeeds || "General Inquiry"}</CardTitle>
+                                 <CardDescription>Submitted on: {query.createdAt.toLocaleDateString()}</CardDescription>
+                               </div>
+                               <Badge variant={query.status === 'responded' ? 'default' : 'secondary'} className="whitespace-nowrap">{query.status}</Badge>
+                            </CardHeader>
+                            <CardContent className="p-4">
+                               <Button size="sm" variant="outline" onClick={() => setActiveInquiry(query)}>
+                                    <MessageSquare className="mr-2 h-4 w-4"/> View Conversation
+                               </Button>
+                            </CardContent>
+                        </Card>
                     )) : (<p className="text-center text-gray-500 py-8">You haven't submitted any queries yet.</p>)}
                 </div>
             </CardContent>
+
+             <Sheet open={!!activeInquiry} onOpenChange={() => setActiveInquiry(null)}>
+                <SheetContent className="flex flex-col">
+                    <SheetHeader>
+                        <SheetTitle>Conversation</SheetTitle>
+                        <SheetDescription>{activeInquiry?.specificNeeds}</SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto pr-4 -mr-6 mt-4 space-y-4">
+                        {messages.map((msg) => (
+                           <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                               <div className={`rounded-lg px-4 py-2 max-w-xs lg:max-w-md ${msg.sender === 'user' ? 'bg-violet text-white' : 'bg-gray-200 text-gray-800'}`}>
+                                   <p className="text-sm">{msg.text}</p>
+                                   <p className={`text-xs mt-1 ${msg.sender === 'user' ? 'text-violet-200' : 'text-gray-500'}`}>{msg.createdAt.toLocaleTimeString()}</p>
+                               </div>
+                           </div>
+                        ))}
+                        <div ref={messagesEndRef} />
+                    </div>
+                    <form onSubmit={handleSend} className="flex gap-2 w-full mt-4 border-t pt-4">
+                       <Input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Type your message..."/>
+                       <Button type="submit"><Send className="h-4 w-4"/></Button>
+                    </form>
+                </SheetContent>
+            </Sheet>
         </Card>
     );
 };
@@ -381,9 +386,9 @@ const SubscriptionSection = () => {
         }
     }, [user]);
 
-    const plan = user?.subscriptionStatus === 'premium' ? 'Premium' : 'Free';
-    const status = user?.subscriptionStatus || 'free';
-    const expiresOn = user?.subscriptionEndDate ? user.subscriptionEndDate.toLocaleDateString() : 'N/A';
+    const isPremium = user?.subscriptionStatus === 'premium' || (user?.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date());
+    const plan = isPremium ? (user?.subscriptionPlan || 'Premium') : 'Free';
+    const expiresOn = user?.subscriptionEndDate ? new Date(user.subscriptionEndDate).toLocaleDateString() : 'N/A';
 
     return (
         <div className="space-y-6">
@@ -393,14 +398,14 @@ const SubscriptionSection = () => {
                     <CardDescription>View your current plan and payment history.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-violet/5 border border-violet/20 rounded-lg gap-4">
-                        <div>
-                            <p className="font-semibold text-gray-800">Current Plan: <span className="text-violet">{plan}</span></p>
-                            <p className="text-sm text-gray-500">Expires on: {expiresOn}</p>
+                    <div className="p-4 bg-violet/5 border border-violet/20 rounded-lg">
+                        <div className="flex justify-between items-center">
+                           <p className="font-semibold text-gray-800">Current Plan: <span className="text-violet capitalize">{plan}</span></p>
+                           {isPremium ? <Badge className="bg-green-100 text-green-800">Active</Badge> : <Badge variant="secondary">Free Tier</Badge>}
                         </div>
-                        <Badge className={status === 'premium' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>{status}</Badge>
+                        {isPremium && <p className="text-sm text-gray-500 mt-1">Expires on: {expiresOn}</p>}
                     </div>
-                    {plan === 'Free' && <Button onClick={handleViewPricing} className="mt-4 bg-[#8541EF] hover:bg-[#7a38d9] text-white">Upgrade Now</Button>}
+                    {!isPremium && <Button onClick={handleViewPricing} className="mt-4 bg-violet hover:bg-violet/90 text-white">Upgrade to Premium</Button>}
                 </CardContent>
             </Card>
             <Card>
@@ -414,9 +419,9 @@ const SubscriptionSection = () => {
                                     {payments.length > 0 ? payments.map(p => (
                                         <tr key={p.id} className="border-t">
                                             <td className="py-3 px-2">{p.date.toLocaleDateString()}</td>
-                                            <td className="py-3 px-2">{p.plan}</td>
+                                            <td className="py-3 px-2 capitalize">{p.plan}</td>
                                             <td className="py-3 px-2">₹{p.amount.toFixed(2)}</td>
-                                            <td className="py-3 px-2"><Badge variant="secondary" className="bg-green-50 text-green-700">{p.status}</Badge></td>
+                                            <td className="py-3 px-2"><Badge variant="secondary" className="bg-green-100 text-green-800">{p.status}</Badge></td>
                                         </tr>
                                     )) : <tr><td colSpan={4} className="text-center py-4 text-gray-500">No payment history found.</td></tr>}
                                 </tbody>
@@ -445,24 +450,50 @@ const SettingsSection = () => {
 };
 
 const ProfileSettings = () => {
-    const { user, updateUserProfileDetails, updateUserState } = useAuth();
+    const { user, updateUserProfileDetails } = useAuth();
     const { toast } = useToast();
-    const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<ProfileFormValues>({
+    
+    const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileSchema),
-        defaultValues: { fullName: user?.fullName || "", phoneNumber: user?.phone || "", avatarUrl: (user as any)?.avatarUrl || "" },
+        defaultValues: {
+            fullName: user?.fullName || "",
+            phone: user?.phone || "",
+            avatarUrl: user?.avatarUrl || "",
+        },
     });
-    const avatarUrl = watch('avatarUrl');
 
     const onSubmit = async (data: ProfileFormValues) => {
         try {
-            const updates: any = {};
-            if (data.fullName !== user?.fullName) updates.fullName = data.fullName;
-            if (data.phoneNumber !== (user as any)?.phoneNumber && data.phoneNumber) updates.phoneNumber = data.phoneNumber;
-            if (data.avatarUrl && data.avatarUrl !== (user as any)?.avatarUrl) updates.avatarUrl = data.avatarUrl;
-            await updateUserProfileDetails(updates);
-            toast({ title: "Success", description: "Your profile has been updated." });
+            const updates: { [key: string]: any } = {};
+            
+            if (data.fullName !== user?.fullName) {
+                updates.fullName = data.fullName;
+            }
+            if (data.phone !== user?.phone) {
+                updates.phone = data.phone;
+            }
+
+            if (Object.keys(updates).length > 0) {
+                await updateUserProfileDetails(updates);
+                toast({ title: "Success", description: "Your profile has been updated." });
+            } else {
+                 toast({ title: "No Changes", description: "You haven't made any changes." });
+            }
         } catch (error) {
             toast({ title: "Error", description: "Failed to update profile. Please try again.", variant: "destructive" });
+        }
+    };
+    
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        try {
+            const { uploadToCloudinary } = await import('@/services/cloudinary');
+            const url = await uploadToCloudinary(file);
+            await updateUserProfileDetails({ avatarUrl: url });
+            toast({ title: 'Avatar Updated', description: 'Your new avatar has been saved.' });
+        } catch (err: any) {
+            toast({ title: 'Upload Failed', description: err?.message || 'Could not upload image', variant: 'destructive' });
         }
     };
 
@@ -470,30 +501,30 @@ const ProfileSettings = () => {
         <Card>
             <CardHeader><CardTitle>Personal Information</CardTitle><CardDescription>Update your name, avatar and mobile number.</CardDescription></CardHeader>
             <CardContent>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <div className="flex items-center gap-4">
-                        <img src={avatarUrl || "https://placehold.co/80x80?text=Avatar"} alt="avatar" className="h-16 w-16 rounded-full object-cover border" />
-                        <label className="text-sm font-medium cursor-pointer text-violet">
-                            <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
-                                try {
-                                    const { uploadToCloudinary } = await import('@/services/cloudinary');
-                                    const url = await uploadToCloudinary(file);
-                                    setValue('avatarUrl', url, { shouldDirty: true });
-                                    try { await updateUserProfileDetails({ avatarUrl: url }); } catch {}
-                                    updateUserState?.({ avatarUrl: url as any });
-                                    toast({ title: 'Avatar updated', description: 'Image uploaded successfully.' });
-                                } catch (err: any) {
-                                    toast({ title: 'Upload failed', description: err?.message || 'Could not upload image', variant: 'destructive' });
-                                }
-                            }} />
-                            <span className="underline">Change avatar</span>
+                        <Avatar className="h-20 w-20">
+                           <AvatarImage src={user?.avatarUrl} alt={user?.fullName}/>
+                           <AvatarFallback className="text-2xl">{user?.fullName?.[0]}</AvatarFallback>
+                        </Avatar>
+                        <label className="text-sm font-medium cursor-pointer text-violet hover:underline">
+                            <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                            <span>Change avatar</span>
                         </label>
                     </div>
-                    <div><label>Full Name</label><Input {...register("fullName")} />{errors.fullName && <p className="text-sm text-red-600 mt-1">{errors.fullName.message}</p>}</div>
-                    <div><label>Phone Number</label><Input {...register("phoneNumber")} />{errors.phoneNumber && <p className="text-sm text-red-600 mt-1">{errors.phoneNumber.message}</p>}</div>
-                    <Button type="submit" disabled={isSubmitting} className="bg-[#8541EF] hover:bg-[#7a38d9] text-white">{isSubmitting ? <LoaderCircle className="animate-spin" /> : "Save Changes"}</Button>
+                    <div>
+                        <label className="font-medium">Full Name</label>
+                        <Input {...form.register("fullName")} />
+                        {form.formState.errors.fullName && <p className="text-sm text-red-600 mt-1">{form.formState.errors.fullName.message}</p>}
+                    </div>
+                    <div>
+                        <label className="font-medium">Phone Number</label>
+                        <Input {...form.register("phone")} />
+                        {form.formState.errors.phone && <p className="text-sm text-red-600 mt-1">{form.formState.errors.phone.message}</p>}
+                    </div>
+                    <Button type="submit" disabled={form.formState.isSubmitting} className="bg-violet hover:bg-violet/90 text-white">
+                        {form.formState.isSubmitting ? <LoaderCircle className="animate-spin" /> : "Save Changes"}
+                    </Button>
                 </form>
             </CardContent>
         </Card>
@@ -522,7 +553,7 @@ const PasswordSettings = () => {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div><label>New Password</label><Input type="password" {...register("newPassword")} />{errors.newPassword && <p className="text-sm text-red-600 mt-1">{errors.newPassword.message}</p>}</div>
                     <div><label>Confirm New Password</label><Input type="password" {...register("confirmPassword")} />{errors.confirmPassword && <p className="text-sm text-red-600 mt-1">{errors.confirmPassword.message}</p>}</div>
-                    <Button type="submit" disabled={isSubmitting} className="bg-[#8541EF] hover:bg-[#7a38d9] text-white">{isSubmitting ? <LoaderCircle className="animate-spin" /> : "Update Password"}</Button>
+                    <Button type="submit" disabled={isSubmitting} className="bg-violet hover:bg-violet/90 text-white">{isSubmitting ? <LoaderCircle className="animate-spin" /> : "Update Password"}</Button>
                 </form>
             </CardContent>
         </Card>
@@ -547,7 +578,7 @@ const DeleteAccountSettings = () => {
     };
 
     return (
-        <Card className="border-red-500 bg-red-50">
+        <Card className="border-red-500 bg-red-50/50">
             <CardHeader><CardTitle className="text-red-700">Delete Account</CardTitle></CardHeader>
             <CardContent>
                 <p className="text-sm text-red-600 mb-4">Permanently delete your account and all associated data. This action cannot be undone.</p>

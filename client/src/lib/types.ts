@@ -1,4 +1,4 @@
-// client/src/lib/types.ts
+
 
 // Firestore user profile data
 export interface UserProfile {
@@ -6,11 +6,12 @@ export interface UserProfile {
   fullName: string;
   email: string;
   role: 'founder' | 'incubator';
-  subscriptionStatus: 'free' | 'premium';
+  subscriptionStatus: 'free' | 'premium' | 'active' | 'inactive' | 'expired'; // Updated
+  subscriptionPlan?: 'monthly' | 'quarterly' | 'free'; // Added
   subscriptionEndDate?: Date | null;
   savedGrants?: string[];
   createdAt: Date;
-  phone?: string; 
+  phone?: string;
   notifyEmail?: boolean;
   notifyWhatsapp?: boolean;
   notificationConsentGiven?: boolean;
