@@ -1,15 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, LogOut, LoaderCircle, Bookmark, FileText, Home, CreditCard, Clock, MessageSquare, Menu as MenuIcon, X, Send, Crown } from 'lucide-react';
+import { Shield, LogOut, LoaderCircle, Bookmark, Home, CreditCard, MessageSquare, Menu as MenuIcon, Crown, Send, Search, Star, ArrowRight, PlusCircle } from 'lucide-react';
 import { Redirect, Link, useLocation } from 'wouter';
-import { fetchUserApplications } from '@/services/applications';
-import { Application, Grant, Payment, PremiumInquiry, InquiryMessage } from '@shared/schema';
+import { Grant, Payment, PremiumInquiry } from '@shared/schema';
 import { fetchGrantById } from "@/services/grants";
 import { fetchUserPayments } from "@/services/payments";
-import { fetchUserPremiumInquiriesByUserIdOrEmail, subscribeToInquiryMessages, sendInquiryMessage } from "@/services/premiumSupport";
+import { fetchUserPremiumInquiriesByUserIdOrEmail } from "@/services/premiumSupport";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,7 +20,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from '@/components/ui/badge';
 import { useToast } from "@/hooks/use-toast";
 import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { ChatInterface } from '@/components/ChatInterface';
 
 const profileSchema = z.object({
     fullName: z.string().min(2, "Name must be at least 2 characters."),
@@ -68,13 +68,12 @@ const DashboardPage = () => {
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'overview': return <DashboardOverview setActiveTab={handleTabClick} />;
-            case 'applications': return <ApplicationTracking />;
+            case 'overview': return <DashboardOverview />;
             case 'saved-grants': return <SavedGrantsSection />;
             case 'my-queries': return <MyQueriesSection />;
             case 'settings': return <SettingsSection />;
             case 'subscription': return <SubscriptionSection />;
-            default: return <DashboardOverview setActiveTab={handleTabClick} />;
+            default: return <DashboardOverview />;
         }
     };
     return (
@@ -136,7 +135,6 @@ const SidebarContent = ({ user, activeTab, handleTabClick }: { user: any, active
         </div>
         <nav className="flex flex-col gap-1 p-2 flex-grow">
             <Button variant={activeTab === 'overview' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('overview')} className="justify-start"><Home className="mr-2 h-4 w-4" /> Overview</Button>
-            <Button variant={activeTab === 'applications' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('applications')} className="justify-start"><FileText className="mr-2 h-4 w-4" /> Applications</Button>
             <Button variant={activeTab === 'saved-grants' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('saved-grants')} className="justify-start"><Bookmark className="mr-2 h-4 w-4" /> Saved Grants</Button>
             <Button variant={activeTab === 'my-queries' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('my-queries')} className="justify-start"><MessageSquare className="mr-2 h-4 w-4" /> My Queries</Button>
             <Button variant={activeTab === 'subscription' ? 'secondary' : 'ghost'} onClick={() => handleTabClick('subscription')} className="justify-start"><CreditCard className="mr-2 h-4 w-4" /> Subscription</Button>
@@ -149,88 +147,56 @@ const SidebarContent = ({ user, activeTab, handleTabClick }: { user: any, active
     )
 }
 
-const DashboardOverview = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) => {
+const DashboardOverview = () => {
     const { user } = useAuth();
-    const [applicationCount, setApplicationCount] = useState(0);
-
-    useEffect(() => {
-        if (user?.uid) {
-            fetchUserApplications(user.uid).then(apps => setApplicationCount(apps.length));
-        }
-    }, [user]);
 
     return (
-        <div className="space-y-6">
-            <Card className="bg-gradient-to-r from-violet to-pink text-white shadow-lg">
-                <CardHeader>
-                    <CardTitle className="text-2xl">Welcome, {user?.fullName?.split(' ')[0]}!</CardTitle>
-                    <CardDescription className="text-violet-200">Here's a quick summary of your grant journey.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div onClick={() => setActiveTab('saved-grants')} className="bg-white/20 p-4 rounded-lg cursor-pointer hover:bg-white/30 transition-colors">
-                        <p className="text-3xl font-bold">{user?.savedGrants?.length || 0}</p>
-                        <p className="text-sm font-medium">Saved Grants</p>
-                    </div>
-                    <div onClick={() => setActiveTab('applications')} className="bg-white/20 p-4 rounded-lg cursor-pointer hover:bg-white/30 transition-colors">
-                        <p className="text-3xl font-bold">{applicationCount}</p>
-                        <p className="text-sm font-medium">Applications Submitted</p>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Next Steps</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                   <Link href="/grants"><Button variant="outline" className="w-full justify-start text-left h-auto py-3"> <span className="text-violet font-bold mr-3">1.</span> Explore and find the perfect grants for your startup.</Button></Link>
-                   <Link href="/premium-support"><Button variant="outline" className="w-full justify-start text-left h-auto py-3"><span className="text-violet font-bold mr-3">2.</span> Need help? Upgrade to premium for expert assistance.</Button></Link>
-                </CardContent>
-            </Card>
-        </div>
-    );
-};
-
-const ApplicationTracking = () => {
-    const { user } = useAuth();
-    const [applications, setApplications] = useState<Application[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const loadApplications = async () => {
-            if (user?.uid) {
-                setLoading(true);
-                const userApps = await fetchUserApplications(user.uid);
-                setApplications(userApps);
-                setLoading(false);
-            }
-        };
-        loadApplications();
-    }, [user]);
-
-    if (loading) {
-        return <div className="flex justify-center items-center p-8"><LoaderCircle className="w-8 h-8 animate-spin text-violet" /></div>;
-    }
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Application Tracking</CardTitle>
-                <CardDescription>Track the status of your grant applications.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-4">
-                    {applications.length > 0 ? applications.map(app => (
-                        <div key={app.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg gap-4">
-                            <div>
-                                <p className="font-semibold text-gray-800">{app.startupName || "Grant Application"}</p>
-                                <p className="text-sm text-gray-500 flex items-center mt-1"><Clock size={14} className="mr-1.5" /> Applied on {app.submittedAt ? new Date(app.submittedAt.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
-                            </div>
-                            <Badge variant={app.status === 'Approved' ? 'default' : app.status === 'Rejected' ? 'destructive' : 'secondary'}>{app.status || 'Pending'}</Badge>
-                        </div>
-                    )) : (<p className="text-center text-gray-500 py-8">You haven't submitted any applications yet.</p>)}
+        <div className="space-y-8">
+            <Card className="bg-gradient-to-r from-violet to-pink text-white shadow-lg overflow-hidden">
+                <div className="p-6">
+                    <CardTitle className="text-2xl md:text-3xl">Welcome, {user?.fullName?.split(' ')[0]}!</CardTitle>
+                    <CardDescription className="text-violet-200 mt-1">Here's a quick summary of your grant journey.</CardDescription>
                 </div>
-            </CardContent>
-        </Card>
+                <div className="bg-white/20 p-6">
+                    <p className="text-4xl font-bold">{user?.savedGrants?.length || 0}</p>
+                    <p className="text-sm font-medium">Saved Grants</p>
+                </div>
+            </Card>
+
+            <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">What's Next?</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Link href="/grants">
+                        <a className="group block p-6 bg-white rounded-xl border hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-violet/10 p-3 rounded-full">
+                                    <Search className="h-6 w-6 text-violet" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-lg text-gray-900">Explore Grants</h3>
+                                    <p className="text-sm text-gray-500">Find the perfect grants</p>
+                                </div>
+                                <ArrowRight className="h-5 w-5 text-gray-400 ml-auto group-hover:text-violet transition-colors"/>
+                            </div>
+                        </a>
+                    </Link>
+                    <Link href="/premium-support">
+                        <a className="group block p-6 bg-white rounded-xl border hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-pink/10 p-3 rounded-full">
+                                    <Star className="h-6 w-6 text-pink" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-lg text-gray-900">Get Expert Help</h3>
+                                    <p className="text-sm text-gray-500">Upgrade to premium</p>
+                                </div>
+                                <ArrowRight className="h-5 w-5 text-gray-400 ml-auto group-hover:text-pink transition-colors"/>
+                            </div>
+                        </a>
+                    </Link>
+                </div>
+            </div>
+        </div>
     );
 };
 
@@ -279,99 +245,91 @@ const SavedGrantsSection = () => {
         </Card>
     );
 };
-
 const MyQueriesSection = () => {
     const { user } = useAuth();
     const [queries, setQueries] = useState<PremiumInquiry[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeInquiry, setActiveInquiry] = useState<PremiumInquiry | null>(null);
-    const [messages, setMessages] = useState<InquiryMessage[]>([]);
-    const [newMessage, setNewMessage] = useState("");
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const { toast } = useToast();
 
-    useEffect(() => {
+    const loadQueries = async () => {
         if (user) {
-            fetchUserPremiumInquiriesByUserIdOrEmail({ userId: user.uid, email: user.email })
-                .then(setQueries)
-                .finally(() => setLoading(false));
+            setLoading(true);
+            try {
+                const userQueries = await fetchUserPremiumInquiriesByUserIdOrEmail({ userId: user.uid, email: user.email });
+                setQueries(userQueries);
+                if (userQueries.length > 0 && !activeInquiry) {
+                    setActiveInquiry(userQueries[0]);
+                }
+            } catch (error) {
+                console.error("Failed to load queries", error);
+                toast({ title: "Error", description: "Could not load your conversations.", variant: "destructive" });
+            } finally {
+                setLoading(false);
+            }
         }
-    }, [user]);
-
-    useEffect(() => {
-        if (activeInquiry?.id) {
-            const unsubscribe = subscribeToInquiryMessages(activeInquiry.id, setMessages);
-            return () => unsubscribe();
-        }
-    }, [activeInquiry]);
-
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
-
-    const handleSend = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!activeInquiry?.id || !newMessage.trim() || !user) return;
-        await sendInquiryMessage({ inquiryId: activeInquiry.id, text: newMessage.trim(), sender: 'user', senderId: user.uid });
-        setNewMessage("");
     };
 
-    if (loading) {
-        return <div className="flex justify-center items-center p-8"><LoaderCircle className="w-8 h-8 animate-spin text-violet" /></div>;
-    }
-
+    useEffect(() => {
+        loadQueries();
+    }, [user]);
+    
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>My Queries</CardTitle>
-                <CardDescription>View your submitted queries and responses from our team.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-6">
-                    {queries.length > 0 ? queries.map(query => (
-                        <Card key={query.id} className="overflow-hidden">
-                            <CardHeader className="flex flex-row justify-between items-start bg-gray-50 p-4 border-b">
-                               <div>
-                                 <CardTitle className="text-base">{query.specificNeeds || "General Inquiry"}</CardTitle>
-                                 <CardDescription>Submitted on: {query.createdAt.toLocaleDateString()}</CardDescription>
-                               </div>
-                               <Badge variant={query.status === 'responded' ? 'default' : 'secondary'} className="whitespace-nowrap">{query.status}</Badge>
-                            </CardHeader>
-                            <CardContent className="p-4">
-                               <Button size="sm" variant="outline" onClick={() => setActiveInquiry(query)}>
-                                    <MessageSquare className="mr-2 h-4 w-4"/> View Conversation
-                               </Button>
-                            </CardContent>
-                        </Card>
-                    )) : (<p className="text-center text-gray-500 py-8">You haven't submitted any queries yet.</p>)}
-                </div>
-            </CardContent>
-
-             <Sheet open={!!activeInquiry} onOpenChange={() => setActiveInquiry(null)}>
-                <SheetContent className="flex flex-col">
-                    <SheetHeader>
-                        <SheetTitle>Conversation</SheetTitle>
-                        <SheetDescription>{activeInquiry?.specificNeeds}</SheetDescription>
-                    </SheetHeader>
-                    <div className="flex-1 overflow-y-auto pr-4 -mr-6 mt-4 space-y-4">
-                        {messages.map((msg) => (
-                           <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                               <div className={`rounded-lg px-4 py-2 max-w-xs lg:max-w-md ${msg.sender === 'user' ? 'bg-violet text-white' : 'bg-gray-200 text-gray-800'}`}>
-                                   <p className="text-sm">{msg.text}</p>
-                                   <p className={`text-xs mt-1 ${msg.sender === 'user' ? 'text-violet-200' : 'text-gray-500'}`}>{msg.createdAt.toLocaleTimeString()}</p>
-                               </div>
-                           </div>
-                        ))}
-                        <div ref={messagesEndRef} />
+        <Card className="overflow-hidden h-[75vh]">
+            <div className="flex flex-col md:flex-row h-full w-full">
+                <div className="md:w-1/3 w-full border-r flex flex-col bg-gray-50/50">
+                    <div className="p-4 border-b">
+                       <h3 className="font-semibold text-lg text-gray-800">Conversations</h3>
                     </div>
-                    <form onSubmit={handleSend} className="flex gap-2 w-full mt-4 border-t pt-4">
-                       <Input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Type your message..."/>
-                       <Button type="submit"><Send className="h-4 w-4"/></Button>
-                    </form>
-                </SheetContent>
-            </Sheet>
+                    <div className="flex-1 overflow-y-auto">
+                        {loading ? (
+                            <div className="p-4 text-center text-sm text-gray-500">Loading chats...</div>
+                        ) : queries.length > 0 ? (
+                            queries.map(query => (
+                                <div
+                                    key={query.id}
+                                    onClick={() => setActiveInquiry(query)}
+                                    className={`p-4 cursor-pointer border-l-4 ${activeInquiry?.id === query.id ? 'bg-violet/10 border-violet' : 'border-transparent hover:bg-gray-100'}`}
+                                >
+                                    <p className="font-semibold text-sm text-gray-800 line-clamp-1">{query.specificNeeds}</p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Last update: {query.updatedAt.toLocaleDateString()}
+                                    </p>
+                                </div>
+                            ))
+                        ) : (
+                             <div className="p-4 text-center text-sm text-gray-500 h-full flex items-center justify-center">
+                                <div>
+                                    <MessageSquare className="h-10 w-10 mx-auto text-gray-300 mb-2"/>
+                                    <p>No conversations yet.</p>
+                                </div>
+                             </div>
+                        )}
+                    </div>
+                </div>
+                <div className="md:w-2/3 w-full flex flex-col bg-white">
+                    {loading ? (
+                         <div className="flex-grow flex items-center justify-center">
+                            <LoaderCircle className="h-8 w-8 animate-spin text-violet"/>
+                         </div>
+                    ) : activeInquiry ? (
+                        <ChatInterface 
+                            initialInquiryId={activeInquiry.id} 
+                            onChatStarted={loadQueries}
+                        />
+                    ) : (
+                         <div className="flex-grow flex flex-col items-center justify-center text-center text-gray-500 p-4">
+                          <MessageSquare className="h-12 w-12 text-gray-300 mb-4"/>
+                          <h3 className="font-semibold">Select a conversation</h3>
+                          <p className="text-sm">Select a conversation from the left to see messages.</p>
+                         </div>
+                    )}
+                </div>
+            </div>
         </Card>
     );
 };
+
 
 const SubscriptionSection = () => {
     const { user } = useAuth();
@@ -383,6 +341,8 @@ const SubscriptionSection = () => {
     useEffect(() => {
         if (user?.uid) {
             fetchUserPayments(user.uid).then(data => { setPayments(data); setLoading(false); });
+        } else {
+            setLoading(false);
         }
     }, [user]);
 

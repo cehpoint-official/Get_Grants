@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronDown, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { AuthModal } from "../components/AuthModal";
 import { useAuth } from "@/hooks/use-auth";
@@ -21,17 +21,21 @@ export default function PremiumSupportPage() {
 
   const handlePlanClick = (mode: 'login' | 'signup') => {
     if (user) {
+      
       navigate("#");
     } else {
       setAuthInitialMode(mode);
       setIsAuthModalOpen(true);
     }
   };
-
-  const scrollToPricing = () => {
-    const pricingSection = document.getElementById("pricing");
-    if (pricingSection) {
-      pricingSection.scrollIntoView({ behavior: "smooth" });
+  
+  const handleCustomPlanClick = () => {
+    const zcalLink = "https://zcal.co/blackleoventures/GetGrants"; 
+    if (user) {
+      window.open(zcalLink, '_blank');
+    } else {
+      setAuthInitialMode('login');
+      setIsAuthModalOpen(true);
     }
   };
 
@@ -86,20 +90,20 @@ export default function PremiumSupportPage() {
                   <span className="text-gray-700">Access to grant details</span>
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle2 className="h-5 w-5 text-gray-300 mr-3 flex-shrink-0" />
-                  <span className="text-gray-400">Application deadline reminders</span>
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span className="text-gray-700">Application deadline reminders</span>
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle2 className="h-5 w-5 text-gray-300 mr-3 flex-shrink-0" />
-                  <span className="text-gray-400">Priority support</span>
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span className="text-gray-700">Priority support</span>
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle2 className="h-5 w-5 text-gray-300 mr-3 flex-shrink-0" />
-                  <span className="text-gray-400">Grant eligibility checker</span>
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span className="text-gray-700">Grant eligibility checker</span>
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle2 className="h-5 w-5 text-gray-300 mr-3 flex-shrink-0" />
-                  <span className="text-gray-400">Early access to new features</span>
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span className="text-gray-700">Early access to new features</span>
                 </li>
               </ul>
               <Button onClick={() => handlePlanClick('login')} className="w-full text-[#8541EF] group-hover:bg-[#8541EF] group-hover:text-dark-violet rounded-xl font-semibold h-10 border border-[#8541EF]" style={{backgroundColor: '#8541EF17'}}>Get started</Button>
@@ -123,53 +127,7 @@ export default function PremiumSupportPage() {
                 <p className="text-[#565F6C] h-16 text-sm leading-5">Our most popular plan. Track grants over a three-month period and increase your chances</p>
               </div>
               <ul className="text-left space-y-3 mb-6">
-                <li className="flex items-center">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span className="text-gray-700">Unlimited grant access</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span className="text-gray-700">Basic search functionality</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span className="text-gray-700">Email notifications for new grants</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span className="text-gray-700">Access to grant details</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span className="text-gray-700">Application deadline reminders</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <span className="text-gray-700">Priority support</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle2 className="h-5 w-5 text-gray-300 mr-3 flex-shrink-0" />
-                  <span className="text-gray-400">Grant eligibility checker</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle2 className="h-5 w-5 text-gray-300 mr-3 flex-shrink-0" />
-                  <span className="text-gray-400">Early access to new features</span>
-                </li>
-              </ul>
-              <Button onClick={() => handlePlanClick('login')} className="w-full bg-[#8541EF] hover:bg-[#7a38d9] text-white rounded-xl font-semibold h-10">Get started</Button>
-            </div>
-
-            {/* Pro Plan */}
-            <div className="group bg-white rounded-2xl p-6 text-center shadow-lg border w-full max-w-sm transition-all duration-300 ease-in-out hover:scale-105">
-              <div className="mb-6">
-                <div className="inline-flex items-center justify-center bg-[#FEF3C7] text-[#92400E] px-4 py-1.5 rounded-full text-sm font-medium mb-4">Custom Plan</div>
-                <div className="mb-4 flex items-baseline justify-center">
-                  <span className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Inter', fontWeight: 700 }}>₹3999</span>
-                </div>
-                <p className="text-[#565F6C] h-16 text-sm leading-5">This is a premium, personalized service where users can schedule a meeting</p>
-              </div>
-              <ul className="text-left space-y-3 mb-6">
-                <li className="flex items-center">
+                 <li className="flex items-center">
                   <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
                   <span className="text-gray-700">Unlimited grant access</span>
                 </li>
@@ -202,7 +160,53 @@ export default function PremiumSupportPage() {
                   <span className="text-gray-700">Early access to new features</span>
                 </li>
               </ul>
-              <Button onClick={() => handlePlanClick('login')} className="w-full text-[#8541EF] group-hover:bg-[#8541EF] group-hover:text-dark-violet rounded-xl font-semibold h-10 border border-[#8541EF]" style={{backgroundColor: '#8541EF17'}}>Get started</Button>
+              <Button onClick={() => handlePlanClick('login')} className="w-full bg-[#8541EF] hover:bg-[#7a38d9] text-white rounded-xl font-semibold h-10">Get started</Button>
+            </div>
+
+            {/* Pro Plan */}
+            <div className="group bg-white rounded-2xl p-6 text-center shadow-lg border w-full max-w-sm transition-all duration-300 ease-in-out hover:scale-105">
+              <div className="mb-6">
+                <div className="inline-flex items-center justify-center bg-[#FEF3C7] text-[#92400E] px-4 py-1.5 rounded-full text-sm font-medium mb-4">Custom Plan</div>
+                <div className="mb-4 flex items-baseline justify-center">
+                <span className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Inter', fontWeight: 700 }}>₹3999</span>
+                 </div>
+                <p className="text-[#565F6C] h-16 text-sm leading-5">A premium, personalized service where you can schedule a meeting with our experts.</p>
+              </div>
+              <ul className="text-left space-y-3 mb-6">
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span className="text-gray-700">Grant applications by our experts</span>
+                </li>
+                 <li className="flex items-center">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span className="text-gray-700">Selection of the best incubators</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span className="text-gray-700">WhatsApp support for quick help</span>
+                </li>
+                 <li className="flex items-center">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span className="text-gray-700">Video meeting support for guidance</span>
+                </li>
+                 <li className="flex items-center">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span className="text-gray-700">Pitch deck review and feedback</span>
+                </li>
+                 <li className="flex items-center">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span className="text-gray-700">Financial modeling assistance</span>
+                </li>
+                 <li className="flex items-center">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span className="text-gray-700">Compliance document preparation</span>
+                </li>
+                 <li className="flex items-center">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                  <span className="text-gray-700">Direct 1:1 access to grant experts</span>
+                </li>
+              </ul>
+              <Button onClick={handleCustomPlanClick} className="w-full text-[#8541EF] group-hover:bg-[#8541EF] group-hover:text-dark-violet rounded-xl font-semibold h-10 border border-[#8541EF]" style={{backgroundColor: '#8541EF17'}}>Schedule a Meeting</Button>
             </div>
           </div>
         </div>

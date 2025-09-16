@@ -1,58 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Plus, User, Mail, Phone, Building, MessageSquare } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { useToast } from "@/hooks/use-toast";
-import { createPremiumInquiry } from "@/services/premiumSupport";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Plus } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { AuthModal } from "./AuthModal";
+import { ChatInterface } from "./ChatInterface";
+import { fetchUserPremiumInquiriesByUserIdOrEmail } from "@/services/premiumSupport";
+import { PremiumInquiry } from "@shared/schema";
 
-const inquiryFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  companyName: z.string().min(1, "Company name is required"),
-  queryText: z.string().min(10, "Query must be at least 10 characters"),
-});
-
-type PremiumInquiryForm = z.infer<typeof inquiryFormSchema>;
-
-export default function PremiumSupport() {
+export default function Faq() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  const { toast } = useToast();
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { user } = useAuth();
+  const [latestInquiry, setLatestInquiry] = useState<PremiumInquiry | null>(null);
 
-  const form = useForm<PremiumInquiryForm>({
-    resolver: zodResolver(inquiryFormSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      companyName: "",
-      queryText: "",
-    },
-  });
-
-  const { isSubmitting } = form.formState;
+  useEffect(() => {
+    const fetchLatestInquiry = async () => {
+      if (user && isChatModalOpen) {
+        const inquiries = await fetchUserPremiumInquiriesByUserIdOrEmail({ userId: user.uid, email: user.email });
+        if (inquiries.length > 0) {
+          setLatestInquiry(inquiries[0]); // The list is sorted by date
+        } else {
+          setLatestInquiry(null);
+        }
+      }
+    };
+    fetchLatestInquiry();
+  }, [user, isChatModalOpen]);
 
   const faqs = [
     { question: "What kind of support can I expect?", answer: "Our premium support includes end-to-end grant application assistance, professional review of your pitch deck and compliance documents, and direct 1:1 access to our grant experts for personalized advice." },
@@ -66,41 +41,11 @@ export default function PremiumSupport() {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
   };
 
-  const onSubmit = async (data: PremiumInquiryForm) => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to submit your inquiry.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      await createPremiumInquiry({
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        companyName: data.companyName,
-        specificNeeds: data.queryText,
-        userId: user.uid,
-        currentPlan: "Not Specified",
-        budget: "Not Specified",
-        timeline: "Not Specified",
-        message: "",
-      });
-      toast({
-        title: "Inquiry Submitted Successfully!",
-        description: "Our team will get back to you shortly.",
-      });
-      form.reset();
-      setIsContactModalOpen(false);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to submit inquiry. Please try again.",
-        variant: "destructive",
-      });
+  const handleChatClick = () => {
+    if (user) {
+      setIsChatModalOpen(true);
+    } else {
+      setIsAuthModalOpen(true);
     }
   };
 
@@ -139,89 +84,25 @@ export default function PremiumSupport() {
           </div>
         </div>
         <div className="text-center mt-16">
-          <Button onClick={() => setIsContactModalOpen(true)} className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-2 font-semibold text-base rounded-lg shadow-lg transition-opacity h-auto">
-            Have Any Queries
+          <Button onClick={handleChatClick} className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-8 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity h-auto">
+            {user ? "Chat With Our Experts" : "Login to Chat"}
           </Button>
         </div>
       </div>
 
-      <Dialog open={isContactModalOpen} onOpenChange={setIsContactModalOpen}>
-        <DialogContent className="sm:max-w-lg bg-[#F8F5FA] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-center text-[#30343B]">Ask Us Anything</DialogTitle>
-            <DialogDescription className="text-[#565F6C] mt-2">
-              Have a question? Fill out the form and we'll get back to you.
-            </DialogDescription>
-          </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-white p-6 rounded-xl">
-              <FormField name="name" control={form.control} render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[#30343B] font-semibold">Full Name</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                      <Input {...field} placeholder="Your Name" className="pl-10 bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg" />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField name="email" control={form.control} render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[#30343B] font-semibold">Email</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                      <Input {...field} type="email" placeholder="Your Email" className="pl-10 bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg" />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField name="phone" control={form.control} render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[#30343B] font-semibold">Phone Number</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                      <Input {...field} type="tel" placeholder="Phone Number" className="pl-10 bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg" />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField name="companyName" control={form.control} render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[#30343B] font-semibold">Company/Startup Name</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Building className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                      <Input {...field} placeholder="Company/Startup Name" className="pl-10 bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg" />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField name="queryText" control={form.control} render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[#30343B] font-semibold">Your Query/Requirement</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <MessageSquare className="absolute left-3 top-5 -translate-y-1/2 text-gray-400" size={20} />
-                      <Textarea {...field} placeholder="Your query/Requirement" rows={4} className="pl-10 bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg resize-none" />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <div className="flex justify-center pt-4">
-                <Button type="submit" disabled={isSubmitting} className="bg-[#8541EF] hover:bg-[#7a38d9] text-white px-8 py-3 rounded-lg font-semibold disabled:opacity-50 min-w-[150px] text-base">
-                  {isSubmitting ? "Submitting..." : "Submit Inquiry"}
-                </Button>
-              </div>
-            </form>
-          </Form>
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      
+      <Dialog open={isChatModalOpen} onOpenChange={setIsChatModalOpen}>
+        <DialogContent className="sm:max-w-lg p-0 h-[70vh] flex flex-col">
+            <DialogHeader className="p-4 border-b">
+              <DialogTitle className="text-xl font-bold text-center text-[#30343B]">Conversation with Admin</DialogTitle>
+            </DialogHeader>
+            <ChatInterface 
+              initialInquiryId={latestInquiry?.id || null}
+              onChatStarted={(newId) => {
+                setLatestInquiry({ id: newId, ...latestInquiry } as PremiumInquiry);
+              }}
+            />
         </DialogContent>
       </Dialog>
     </div>
