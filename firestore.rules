@@ -1,3 +1,5 @@
+
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -6,52 +8,48 @@ service cloud.firestore {
     // Blog posts: Public can read only published; users can create pending; only admin can publish/reject/delete
     match /posts/{postId} {
       allow get: if resource.data.status == 'published';
-      allow list: if true; // listing is allowed, but client should filter to published via queries
+      allow list: if true;
       allow create: if request.auth != null && request.resource.data.status == 'pending';
       allow update, delete: if request.auth != null && request.auth.token.admin == true;
     }
 
-    // ✅ NEW RULE: Grants collection 
-    // Isse koi bhi user grants dekh sakta hai, par badal sirf admin sakta hai.
+    // Grants collection 
     match /grants/{grantId} {
       allow read: if true;
       allow create, update, delete: if request.auth != null && request.auth.token.admin == true;
     }
-        // NEW RULE: Contact Messages
-       match /contactMessages/{messageId} {
+    
+    // Testimonials collection
+    match /testimonials/{testimonialId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Contact Messages
+    match /contactMessages/{messageId} {
       allow create: if request.auth != null;
       allow read, write: if request.auth != null && request.auth.token.admin == true;
     }
 
-
-    // ✅ Authenticated users can create incubator requests
+    // Authenticated users can create incubator requests
     match /incubator_requests/{docId} {
       allow create: if request.auth != null;
       allow read, update, delete: if request.auth != null && request.auth.token.admin == true;
     }
 
-    // ✅ Users collection for incubator signups
+    // Users collection
     match /users/{userId} {
-      // Allow the user to read/write their own document
       allow read, write: if request.auth != null && request.auth.uid == userId;
-
-      // Allow admins to manage any user
       allow read, update, delete: if request.auth != null && request.auth.token.admin == true;
     }
 
-    // ✅ Premium Support Inquiries collection
+    // Premium Support Inquiries collection
     match /premiumInquiries/{inquiryId} {
-      // Allow anyone to create inquiries (for the contact form)
       allow create: if true;
-      
-      // Admins can read/update inquiries
       allow read, update: if request.auth != null && request.auth.token.admin == true;
-
-      // Messages subcollection: allow owner (by userId) and admins to read/write
       match /messages/{messageId} {
         allow create: if request.auth != null && (
           request.auth.token.admin == true ||
-          // allow the inquiry owner to send messages
           get(/databases/$(database)/documents/premiumInquiries/$(inquiryId)).data.userId == request.auth.uid
         );
         allow read: if request.auth != null && (

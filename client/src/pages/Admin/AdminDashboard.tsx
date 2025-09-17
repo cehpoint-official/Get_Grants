@@ -1,3 +1,5 @@
+
+
 import { useEffect, useState, useMemo, useRef } from "react";
 import "react-calendar/dist/Calendar.css";
 import {
@@ -13,8 +15,9 @@ import { fetchAllUsers } from "@/services/users";
 import {
     fetchPremiumInquiries, sendInquiryMessage, subscribeToInquiryMessages, subscribeToLastMessage,
 } from "@/services/premiumSupport";
+
 import {
-    Grant, InsertGrant, Post, InsertPost, Application, User, CalendarEvent, InsertEvent, InquiryMessage, PremiumInquiry,
+    Grant, InsertGrant, Post, InsertPost, Application, User, CalendarEvent, InsertEvent, InquiryMessage, PremiumInquiry, Testimonial
 } from "@shared/schema";
 import { CreatePostModal } from "@/components/create-post-modal";
 import { CreateGrantModal } from "@/components/create-grant-modal";
@@ -23,7 +26,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import {
-    X, LayoutDashboard, Inbox, Home, BookOpen, Menu as MenuIcon, Users, FileCheck, Award, LoaderCircle, Calendar as CalendarIcon, Briefcase, Share2, MessageSquare, Mail, LogOut, Check, Trash2, Edit, PlusCircle, MoreHorizontal, Download, Send, ChevronLeft, ChevronRight,
+   
+    X, LayoutDashboard, Inbox, Home, BookOpen, Menu as MenuIcon, Users, FileCheck, Award, LoaderCircle, Calendar as CalendarIcon, Briefcase, Share2, MessageSquare, Mail, LogOut, Check, Trash2, Edit, PlusCircle, MoreHorizontal, Download, Send, ChevronLeft, ChevronRight, MessageCircle
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { fetchDashboardStats, DashboardStats, fetchContactMessages, ContactMessage } from "@/services/admin";
@@ -44,8 +48,11 @@ import { exportToExcel } from "@/lib/excelUtils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
+
+import { CreateTestimonialModal } from "@/components/create-testimonial-modal";
+
+import { db } from "@/lib/firebase";
+import { collection, query, orderBy, getDocs, Timestamp, deleteDoc as deleteFirestoreDoc, doc } from "firebase/firestore";
 
 const sidebarItems = [
     { name: "Dashboard", icon: LayoutDashboard },
@@ -53,6 +60,8 @@ const sidebarItems = [
     { name: "Applications", icon: Inbox },
     { name: "Users", icon: Users },
     { name: "Blogs", icon: BookOpen },
+   
+    { name: "Testimonials", icon: MessageCircle },
     { name: "Users Queries", icon: MessageSquare },
     { name: "Contact Messages", icon: Mail },
     { name: "Incubators", icon: Briefcase },
@@ -112,7 +121,7 @@ const PlaceholderContent = ({ title }: { title: string }) => (
     </div>
 );
 
-const AdminChatInterface = ({ activeInquiry, isMobile, onBack }: { activeInquiry: PremiumInquiry | null, isMobile: boolean, onBack: () => void }) => {
+const AdminChatInterface = ({ activeInquiry }: { activeInquiry: PremiumInquiry | null }) => {
     const [messages, setMessages] = useState<InquiryMessage[]>([]);
     const [newMessage, setNewMessage] = useState("");
     const { user: adminUser } = useAuth();
@@ -150,26 +159,19 @@ const AdminChatInterface = ({ activeInquiry, isMobile, onBack }: { activeInquiry
     
     if (!activeInquiry) {
         return (
-            <div className="flex h-full flex-col items-center justify-center text-center text-gray-500 p-4 bg-white rounded-lg">
+            <div className="flex h-full flex-col items-center justify-center text-center text-gray-500 p-4">
                 <MessageSquare className="h-12 w-12 text-gray-300 mb-4"/>
-                <h3 className="font-semibold text-black">Select a conversation</h3>
-                <p className="text-sm text-gray-500">Select a conversation from the left to see messages.</p>
+                <h3 className="font-semibold">Select a conversation</h3>
+                <p className="text-sm">Select a conversation from the left to see messages.</p>
             </div>
         )
     }
 
     return (
-         <div className="flex flex-col h-full bg-white">
-            <div className="p-4 border-b flex items-center gap-2">
-                 {isMobile && (
-                    <Button variant="ghost" size="icon" className="mr-2" onClick={onBack}>
-                        <ChevronLeft className="h-5 w-5" />
-                    </Button>
-                )}
-                <div>
-                    <h3 className="font-semibold text-gray-800">{activeInquiry.name}</h3>
-                    <p className="text-xs text-gray-500">{activeInquiry.email}</p>
-                </div>
+       <div className="flex flex-col h-full bg-white">
+            <div className="p-4 border-b">
+                <h3 className="font-semibold text-gray-800">{activeInquiry.name}</h3>
+                <p className="text-xs text-gray-500">{activeInquiry.email}</p>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                  {messages.map((msg) => (
@@ -239,15 +241,11 @@ export default function AdminDashboard() {
     const [, navigate] = useLocation();
     const [currentPage, setCurrentPage] = useState(1);
     const grantsPerPage = 6;
-    const isMobile = useIsMobile();
+    
+    const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+    const [showTestimonialModal, setShowTestimonialModal] = useState(false);
+    const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
 
-    const loadPremiumInquiries = async () => {
-        const inquiries = await fetchPremiumInquiries();
-        setPremiumInquiries(inquiries);
-        if (!isMobile && inquiries.length > 0 && !activeInquiry) {
-            setActiveInquiry(inquiries[0]);
-        }
-    };
 
     useEffect(() => {
         const tabActions: { [key: string]: () => void } = {
@@ -256,12 +254,14 @@ export default function AdminDashboard() {
             "Calendar": loadEvents,
             "Applications": loadApplications,
             "Users": loadUsers,
+           
+            "Testimonials": loadTestimonials,
             "Users Queries": loadPremiumInquiries,
             "Contact Messages": loadContactMessages,
             "Home": () => navigate("/"),
         };
         tabActions[activeTab]?.();
-    }, [activeTab, navigate, isMobile]);
+    }, [activeTab, navigate]);
     
     const loadPosts = async () => setPosts(await fetchPosts() as Post[]);
     const loadPending = async () => setPendingPosts(await fetchPendingPosts() as Post[]);
@@ -269,7 +269,26 @@ export default function AdminDashboard() {
     const loadApplications = async () => setApplications(await fetchAllApplications());
     const loadUsers = async () => setUsers(await fetchAllUsers());
     const loadEvents = async () => setEvents((await fetchEvents()).sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime()));
+    const loadPremiumInquiries = async () => {
+        const inquiries = await fetchPremiumInquiries();
+        setPremiumInquiries(inquiries);
+        if (inquiries.length > 0 && !activeInquiry) {
+            setActiveInquiry(inquiries[0]);
+        }
+    };
     const loadContactMessages = async () => setContactMessages(await fetchContactMessages());
+
+   
+    const loadTestimonials = async () => {
+        const q = query(collection(db, "testimonials"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        const data = snapshot.docs.map(d => ({ 
+            id: d.id, 
+            ...d.data(), 
+            createdAt: (d.data().createdAt as Timestamp).toDate() 
+        } as Testimonial));
+        setTestimonials(data);
+    };
 
     useEffect(() => {
         if (activeTab === "Users Queries" && premiumInquiries.length > 0) {
@@ -292,6 +311,14 @@ export default function AdminDashboard() {
     const handleUpdateEvent = async (data: InsertEvent & { id: string }) => { await updateCalendarEvent(data.id, data); await loadEvents(); setEditingEvent(null); setShowEventModal(false); };
     const handleDeleteEvent = async (id: string) => { if (window.confirm("Delete this event?")) { await deleteCalendarEvent(id); await loadEvents(); } };
     
+  
+    const handleDeleteTestimonial = async (id: string) => {
+        if (window.confirm("Are you sure you want to delete this testimonial?")) {
+            await deleteFirestoreDoc(doc(db, "testimonials", id));
+            loadTestimonials();
+        }
+    };
+
     const handleSidebarItemClick = (item: string) => { setActiveTab(item); setSidebarOpen(false); };
     
     const eventsForSelectedDate = useMemo(() => {
@@ -328,10 +355,40 @@ export default function AdminDashboard() {
         switch (activeTab) {
             case "Dashboard": return <DashboardAnalytics setActiveTab={setActiveTab} />;
             
+           
+            case "Testimonials":
+              return (
+                <div>
+                  <div className="flex justify-between items-center mb-6">
+                    <h1 className="text-3xl font-bold text-gray-800">Testimonials</h1>
+                    <Button onClick={() => { setEditingTestimonial(null); setShowTestimonialModal(true); }} className="bg-violet hover:bg-violet/90"><PlusCircle className="mr-2 h-4 w-4" /> Add Testimonial</Button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {testimonials.map(t => (
+                      <Card key={t.id}>
+                        <CardHeader>
+                          <CardTitle>{t.author}</CardTitle>
+                          <CardDescription>{t.title}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="italic">"{t.quote}"</p>
+                          <p className="mt-2 font-semibold">{t.amountSecured}</p>
+                        </CardContent>
+                        <div className="p-4 border-t flex gap-2">
+                            <Button size="sm" variant="outline" className="w-full" onClick={() => {setEditingTestimonial(t); setShowTestimonialModal(true);}}><Edit className="mr-2 h-4 w-4"/> Edit</Button>
+                            <Button size="sm" variant="destructive" className="w-full" onClick={() => handleDeleteTestimonial(t.id)}><Trash2 className="mr-2 h-4 w-4"/> Delete</Button>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              );
+
+           
             case "Users Queries": return (
                 <Card className="overflow-hidden h-full">
                     <div className="flex flex-col md:flex-row h-full w-full">
-                        <div className={cn("md:w-1/3 w-full border-r flex flex-col bg-gray-50/50", isMobile && activeInquiry ? 'hidden' : 'flex')}>
+                        <div className="md:w-1/3 w-full border-r flex flex-col bg-gray-50/50">
                             <div className="p-4 border-b">
                                <h3 className="font-semibold text-lg text-gray-800">User Chats</h3>
                             </div>
@@ -343,8 +400,8 @@ export default function AdminDashboard() {
                                         className={`p-4 cursor-pointer border-l-4 ${activeInquiry?.id === inquiry.id ? 'bg-violet/10 border-violet' : 'border-transparent hover:bg-gray-100'}`}
                                     >
                                         <div className="flex justify-between items-center">
-                                          <p className="font-semibold text-sm text-gray-800 line-clamp-1">{inquiry.name}</p>
-                                          {inquiry.status === 'new' && <Badge className="bg-green-500 text-white">New</Badge>}
+                                            <p className="font-semibold text-sm text-gray-800 line-clamp-1">{inquiry.name}</p>
+                                            {inquiry.status === 'new' && <Badge className="bg-green-500 text-white">New</Badge>}
                                         </div>
                                         <p className="text-xs text-gray-500 mt-1 line-clamp-1">
                                             {lastMessages[inquiry.id] || inquiry.specificNeeds}
@@ -353,17 +410,13 @@ export default function AdminDashboard() {
                                 ))}
                                 {premiumInquiries.length === 0 && (
                                      <div className="p-4 text-center text-sm text-gray-500 h-full flex items-center justify-center">
-                                         <p>No user queries yet.</p>
+                                          <p>No user queries yet.</p>
                                      </div>
                                 )}
                             </div>
                         </div>
-                        <div className={cn("md:w-2/3 w-full flex-col", isMobile && !activeInquiry ? 'hidden' : 'flex')}>
-                            <AdminChatInterface 
-                                activeInquiry={activeInquiry} 
-                                isMobile={isMobile} 
-                                onBack={() => setActiveInquiry(null)}
-                            />
+                        <div className="md:w-2/3 w-full flex flex-col">
+                            <AdminChatInterface activeInquiry={activeInquiry} />
                         </div>
                     </div>
                 </Card>
@@ -380,17 +433,17 @@ export default function AdminDashboard() {
                       <Card key={grant.id} className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow flex flex-col overflow-hidden">
                         <CardHeader>
                           <div className="flex justify-between items-start">
-                               <CardTitle className="text-lg font-bold text-gray-800 line-clamp-2 leading-tight">{grant.title}</CardTitle>
-                               <Badge variant={grant.status === "Active" ? "default" : "destructive"} className={`${grant.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{grant.status}</Badge>
+                              <CardTitle className="text-lg font-bold text-gray-800 line-clamp-2 leading-tight">{grant.title}</CardTitle>
+                              <Badge variant={grant.status === "Active" ? "default" : "destructive"} className={`${grant.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{grant.status}</Badge>
                           </div>
                           <CardDescription className="text-sm text-gray-500 pt-1">{grant.organization}</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-grow">
                           <p className="text-sm text-gray-600 mb-4 line-clamp-3">{grant.description}</p>
-                           <div className="text-xs text-gray-500 space-y-2">
-                               <p><strong>Funding:</strong> <span className="font-semibold text-violet">{grant.fundingAmount}</span></p>
-                               <p><strong>Deadline:</strong> {new Date(grant.deadline).toLocaleDateString()}</p>
-                           </div>
+                            <div className="text-xs text-gray-500 space-y-2">
+                                <p><strong>Funding:</strong> <span className="font-semibold text-violet">{grant.fundingAmount}</span></p>
+                                <p><strong>Deadline:</strong> {new Date(grant.deadline).toLocaleDateString()}</p>
+                            </div>
                         </CardContent>
                         <div className="p-4 border-t bg-gray-50 flex gap-2">
                           <Button size="sm" variant="outline" className="w-full" onClick={() => { setEditingGrant(grant); setShowGrantModal(true); }}><Edit className="mr-2 h-4 w-4"/>Edit</Button>
@@ -497,16 +550,16 @@ export default function AdminDashboard() {
                             <th className="px-6 py-4">Message</th>
                           </tr>
                         </thead>
-                           <tbody>
-                              {contactMessages.map((msg) => (
-                                  <tr key={msg.id} className="border-b hover:bg-gray-50">
-                                      <td className="px-6 py-4 text-gray-500">{msg.createdAt.toLocaleString()}</td>
-                                      <td className="px-6 py-4 font-medium">{msg.name}<br/><span className="text-xs text-gray-400">{msg.email}</span></td>
-                                      <td className="px-6 py-4 font-semibold">{msg.subject}</td>
-                                      <td className="px-6 py-4 max-w-sm truncate text-gray-600">{msg.message}</td>
-                                  </tr>
-                              ))}
-                           </tbody>
+                          <tbody>
+                            {contactMessages.map((msg) => (
+                                <tr key={msg.id} className="border-b hover:bg-gray-50">
+                                    <td className="px-6 py-4 text-gray-500">{msg.createdAt.toLocaleString()}</td>
+                                    <td className="px-6 py-4 font-medium">{msg.name}<br/><span className="text-xs text-gray-400">{msg.email}</span></td>
+                                    <td className="px-6 py-4 font-semibold">{msg.subject}</td>
+                                    <td className="px-6 py-4 max-w-sm truncate text-gray-600">{msg.message}</td>
+                                </tr>
+                            ))}
+                          </tbody>
                       </table>
                     </div>
                   </Card>
@@ -525,21 +578,21 @@ export default function AdminDashboard() {
                      </CardHeader>
                      <CardContent>
                        {pendingPosts.length > 0 ? (
-                            <div className="space-y-3">
-                                {pendingPosts.map((p) => (
-                                    <div key={p.id} className="border rounded-lg p-3 flex justify-between items-center">
-                                       <div>
-                                         <p className="font-semibold text-gray-800">{p.title}</p>
-                                         <p className="text-xs text-gray-500">By {p.authorName || p.author}</p>
-                                       </div>
-                                       <div className="flex gap-2">
-                                           <Button size="sm" variant="outline" onClick={() => { setActivePendingPost(p); setShowPendingModal(true); }}>View</Button>
-                                           <Button size="sm" className="bg-green-100 text-green-800 hover:bg-green-200" onClick={async () => { await approvePost(p.id); await loadPending(); await loadPosts(); }}><Check className="h-4 w-4"/></Button>
-                                           <Button size="sm" variant="destructive" onClick={async () => { await rejectPost(p.id); await loadPending(); }}><X className="h-4 w-4"/></Button>
-                                       </div>
-                                    </div>
-                                ))}
-                            </div>
+                           <div className="space-y-3">
+                             {pendingPosts.map((p) => (
+                                 <div key={p.id} className="border rounded-lg p-3 flex justify-between items-center">
+                                   <div>
+                                     <p className="font-semibold text-gray-800">{p.title}</p>
+                                     <p className="text-xs text-gray-500">By {p.authorName || p.author}</p>
+                                   </div>
+                                   <div className="flex gap-2">
+                                     <Button size="sm" variant="outline" onClick={() => { setActivePendingPost(p); setShowPendingModal(true); }}>View</Button>
+                                     <Button size="sm" className="bg-green-100 text-green-800 hover:bg-green-200" onClick={async () => { await approvePost(p.id); await loadPending(); await loadPosts(); }}><Check className="h-4 w-4"/></Button>
+                                     <Button size="sm" variant="destructive" onClick={async () => { await rejectPost(p.id); await loadPending(); }}><X className="h-4 w-4"/></Button>
+                                   </div>
+                                 </div>
+                             ))}
+                           </div>
                          ) : (<div className="text-center py-6 text-gray-500">No pending posts for approval.</div>)}
                      </CardContent>
                   </Card>
@@ -578,24 +631,24 @@ export default function AdminDashboard() {
                        <CardHeader><CardTitle>Events on {selectedDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardTitle></CardHeader>
                        <CardContent>
                          <div className="space-y-4">
-                             {eventsForSelectedDate.length > 0 ? (eventsForSelectedDate.map((ev) => (
-                                 <div key={ev.id} className="border-l-4 border-violet pl-4 py-2">
-                                     <div className="flex justify-between items-start">
-                                       <div>
-                                         <p className="font-semibold text-gray-800">{ev.title}</p>
-                                         <p className="text-xs text-gray-500">{formatEventTime(ev)} {ev.location && `• ${ev.location}`}</p>
-                                       </div>
-                                       <DropdownMenu>
-                                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal/></Button></DropdownMenuTrigger>
-                                         <DropdownMenuContent>
-                                           <DropdownMenuItem onClick={() => { setEditingEvent(ev); setShowEventModal(true); }}>Edit</DropdownMenuItem>
-                                           <DropdownMenuItem onClick={() => handleDeleteEvent(ev.id)} className="text-red-600">Delete</DropdownMenuItem>
-                                         </DropdownMenuContent>
-                                       </DropdownMenu>
-                                     </div>
-                                     {ev.description && (<p className="text-sm text-gray-600 mt-1">{ev.description}</p>)}
+                           {eventsForSelectedDate.length > 0 ? (eventsForSelectedDate.map((ev) => (
+                               <div key={ev.id} className="border-l-4 border-violet pl-4 py-2">
+                                 <div className="flex justify-between items-start">
+                                   <div>
+                                     <p className="font-semibold text-gray-800">{ev.title}</p>
+                                     <p className="text-xs text-gray-500">{formatEventTime(ev)} {ev.location && `• ${ev.location}`}</p>
+                                   </div>
+                                   <DropdownMenu>
+                                     <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal/></Button></DropdownMenuTrigger>
+                                     <DropdownMenuContent>
+                                       <DropdownMenuItem onClick={() => { setEditingEvent(ev); setShowEventModal(true); }}>Edit</DropdownMenuItem>
+                                       <DropdownMenuItem onClick={() => handleDeleteEvent(ev.id)} className="text-red-600">Delete</DropdownMenuItem>
+                                     </DropdownMenuContent>
+                                   </DropdownMenu>
                                  </div>
-                               ))) : (<p className="text-sm text-center text-gray-500 py-8">No events for this day.</p>)}
+                                 {ev.description && (<p className="text-sm text-gray-600 mt-1">{ev.description}</p>)}
+                               </div>
+                             ))) : (<p className="text-sm text-center text-gray-500 py-8">No events for this day.</p>)}
                          </div>
                        </CardContent>
                     </Card>
@@ -603,25 +656,25 @@ export default function AdminDashboard() {
                   <Card className="mt-6">
                       <CardHeader><CardTitle>All Upcoming Events</CardTitle></CardHeader>
                       <CardContent>
-                          <div className="space-y-4">
-                              {events.length > 0 ? (events.map((ev) => (
-                                 <div key={ev.id} className="border-l-4 border-gray-300 pl-4 py-2">
-                                     <div className="flex justify-between items-start">
-                                       <div>
-                                         <p className="font-semibold text-gray-800">{ev.title}</p>
-                                          <p className="text-xs text-gray-500">{new Date(ev.start).toLocaleDateString()} • {formatEventTime(ev)} {ev.location && `• ${ev.location}`}</p>
-                                       </div>
-                                       <DropdownMenu>
-                                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal/></Button></DropdownMenuTrigger>
-                                         <DropdownMenuContent>
-                                           <DropdownMenuItem onClick={() => { setEditingEvent(ev); setShowEventModal(true); }}>Edit</DropdownMenuItem>
-                                           <DropdownMenuItem onClick={() => handleDeleteEvent(ev.id)} className="text-red-600">Delete</DropdownMenuItem>
-                                         </DropdownMenuContent>
-                                       </DropdownMenu>
-                                     </div>
-                                 </div>
-                               ))) : (<p className="text-sm text-center text-gray-500 py-8">No events scheduled.</p>)}
-                          </div>
+                        <div className="space-y-4">
+                          {events.length > 0 ? (events.map((ev) => (
+                              <div key={ev.id} className="border-l-4 border-gray-300 pl-4 py-2">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <p className="font-semibold text-gray-800">{ev.title}</p>
+                                     <p className="text-xs text-gray-500">{new Date(ev.start).toLocaleDateString()} • {formatEventTime(ev)} {ev.location && `• ${ev.location}`}</p>
+                                  </div>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal/></Button></DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                      <DropdownMenuItem onClick={() => { setEditingEvent(ev); setShowEventModal(true); }}>Edit</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleDeleteEvent(ev.id)} className="text-red-600">Delete</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
+                              </div>
+                            ))) : (<p className="text-sm text-center text-gray-500 py-8">No events scheduled.</p>)}
+                        </div>
                       </CardContent>
                   </Card>
                 </div>
@@ -645,12 +698,12 @@ export default function AdminDashboard() {
         </div>
         <div className="p-4 border-t flex items-center gap-3">
              <Avatar>
-                <AvatarImage src={adminUser?.avatarUrl} />
-                <AvatarFallback>{adminUser?.fullName?.[0]}</AvatarFallback>
+               <AvatarImage src={adminUser?.avatarUrl} />
+               <AvatarFallback>{adminUser?.fullName?.[0]}</AvatarFallback>
              </Avatar>
              <div className="flex-1">
-                <p className="text-sm font-semibold truncate">{adminUser?.fullName}</p>
-                <p className="text-xs text-gray-500 truncate">{adminUser?.email}</p>
+               <p className="text-sm font-semibold truncate">{adminUser?.fullName}</p>
+               <p className="text-xs text-gray-500 truncate">{adminUser?.email}</p>
              </div>
              <Button variant="ghost" size="icon" onClick={logout} className="text-gray-500 hover:text-red-500 hover:bg-red-50"><LogOut className="h-5 w-5"/></Button>
         </div>
@@ -691,6 +744,14 @@ export default function AdminDashboard() {
                 onSubmit={(data: any) => editingEvent ? handleUpdateEvent({ ...data, id: editingEvent.id }) : handleCreateEvent(data)}
             />
             
+          
+            <CreateTestimonialModal 
+                isOpen={showTestimonialModal}
+                onClose={() => { setEditingTestimonial(null); setShowTestimonialModal(false); }}
+                initialData={editingTestimonial}
+                onSuccess={loadTestimonials}
+            />
+
             <Dialog open={showPendingModal} onOpenChange={() => { setShowPendingModal(false); setActivePendingPost(null); }}>
                 <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader><DialogTitle>Pending Blog Preview</DialogTitle></DialogHeader>

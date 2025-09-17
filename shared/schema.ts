@@ -1,3 +1,5 @@
+
+
 import { z } from "zod";
 
 // --- User & Payment Schemas ---
@@ -161,6 +163,18 @@ export const inquiryMessageSchema = z.object({
     createdAt: z.date(),
 });
 
+// --- Testimonial Schemas ---
+export const testimonialSchema = z.object({
+    id: z.string(),
+    author: z.string(),
+    title: z.string(),
+    quote: z.string(),
+    amountSecured: z.string(),
+    createdAt: z.date(),
+});
+
+export const insertTestimonialSchema = testimonialSchema.omit({ id: true, createdAt: true });
+
 
 // --- All Types ---
 export type User = z.infer<typeof userSchema>;
@@ -175,3 +189,5 @@ export type CalendarEvent = z.infer<typeof eventSchema>;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type InquiryMessage = z.infer<typeof inquiryMessageSchema>;
 export type PremiumInquiry = z.infer<typeof premiumInquirySchema>;
+export type Testimonial = z.infer<typeof testimonialSchema>;
+export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;

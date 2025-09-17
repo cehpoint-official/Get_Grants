@@ -1,16 +1,21 @@
-import React from 'react';
+// client/src/components/Testimonials.tsx
+
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { db } from '@/lib/firebase';
+import { collection, query, orderBy, getDocs, Timestamp } from 'firebase/firestore';
+import { Testimonial as TestimonialType } from '@shared/schema';
 
 type TestimonialCardProps = {
   name: string;
   title: string;
   quote: string;
   amountSecured: string;
-  initial: string;
+  
 };
 
-const TestimonialCard: React.FC<TestimonialCardProps> = ({ name, title, quote, amountSecured, initial }) => {
+const TestimonialCard: React.FC<TestimonialCardProps> = ({ name, title, quote, amountSecured }) => {
   return (
     <div className="bg-white p-6 rounded-xl border border-purple-100 shadow-sm hover:shadow-lg transition-shadow duration-300">
       <div className="flex justify-between items-start mb-4">
@@ -19,16 +24,14 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ name, title, quote, a
           <p className="text-sm text-gray-500">{title}</p>
         </div>
         <div className="flex-shrink-0 ml-4">
-          <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center">
-            <span className="text-white text-xl font-bold">{initial}</span>
-          </div>
+          
         </div>
       </div>
       <blockquote className="text-gray-600 mb-4">
         <p>"{quote}"</p>
       </blockquote>
-      <a href="#" className="text-purple-600 font-semibold hover:underline">
-        {amountSecured}
+      <a href="#" className="text-purple-600 font-bold "><span className='font-bold'>Secured ₹ {amountSecured} Lakhs </span> 
+       
       </a>
     </div>
   );
@@ -36,46 +39,39 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ name, title, quote, a
 
 export default function Testimonials() {
   const [, navigate] = useLocation();
-  const testimonials: TestimonialCardProps[] = [
-    {
-      name: "Krunal Chachiya",
-      title: "Founder Of SeaFreshh",
-      quote:
-        "We secured ₹7 lakhs in grant funding within our first month of using this platform. The live grants notification saved us from missing a crucial opportunity.",
-      amountSecured: "Secured ₹18 Lakhs",
-      initial: "K",
-    },
-    {
-      name: "Krunal Chachiya",
-      title: "Founder Of SeaFreshh",
-      quote:
-        "We secured ₹7 lakhs in grant funding within our first month of using this platform. The live grants notification saved us from missing a crucial opportunity.",
-      amountSecured: "Secured ₹18 Lakhs",
-      initial: "K",
-    },
-    {
-      name: "Krunal Chachiya",
-      title: "Founder Of SeaFreshh",
-      quote:
-        "We secured ₹7 lakhs in grant funding within our first month of using this platform. The live grants notification saved us from missing a crucial opportunity.",
-      amountSecured: "Secured ₹18 Lakhs",
-      initial: "K",
-    },
-    {
-      name: "Krunal Chachiya",
-      title: "Founder Of SeaFreshh",
-      quote:
-        "We secured ₹7 lakhs in grant funding within our first month of using this platform. The live grants notification saved us from missing a crucial opportunity.",
-      amountSecured: "Secured ₹18 Lakhs",
-      initial: "K",
-    },
-  ];
+  const [testimonials, setTestimonials] = useState<TestimonialType[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      setLoading(true);
+      try {
+        const q = query(collection(db, "testimonials"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        const fetchedTestimonials = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            createdAt: (data.createdAt as Timestamp).toDate(),
+          } as TestimonialType;
+        });
+        setTestimonials(fetchedTestimonials);
+      } catch (error) {
+        console.error("Error fetching testimonials: ", error);
+       
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTestimonials();
+  }, []);
 
   return (
     <section className="bg-white py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-          {/* Updated this div for mobile center alignment */}
           <div className="space-y-6 self-start text-center lg:text-left">
             <span className="inline-block text-sm font-semibold bg-purple-100 text-purple-700 px-3 py-1 rounded-full">
               Case Studies
@@ -86,7 +82,6 @@ export default function Testimonials() {
             <p className="text-lg text-gray-600">
               Meet the entrepreneurs who raised capital on our platform
             </p>
-            {/* Added a wrapper for the button */}
             <div className="flex justify-center lg:justify-start">
               <Button
                 onClick={() => navigate('/grants')}
@@ -98,16 +93,22 @@ export default function Testimonials() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {testimonials.map((testimonial, index) => (
-              <TestimonialCard
-                key={index}
-                name={testimonial.name}
-                title={testimonial.title}
-                quote={testimonial.quote}
-                amountSecured={testimonial.amountSecured}
-                initial={testimonial.initial}
-              />
-            ))}
+            {loading ? (
+              <p>Loading testimonials...</p>
+            ) : testimonials.length > 0 ? (
+              testimonials.map((testimonial) => (
+                <TestimonialCard
+                  key={testimonial.id}
+                  name={testimonial.author}
+                  title={testimonial.title}
+                  quote={testimonial.quote}
+                  amountSecured={testimonial.amountSecured}
+                 
+                />
+              ))
+            ) : (
+                <p>No testimonials available yet.</p>
+            )}
           </div>
         </div>
       </div>
