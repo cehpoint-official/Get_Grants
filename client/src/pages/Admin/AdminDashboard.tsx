@@ -32,18 +32,20 @@ import {
     fetchEvents, createEvent as createCalendarEvent, updateEvent as updateCalendarEvent, deleteEvent as deleteCalendarEvent,
 } from "@/services/events";
 import {
-    Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
+    Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { exportToExcel } from "@/lib/excelUtils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 const sidebarItems = [
     { name: "Dashboard", icon: LayoutDashboard },
@@ -110,7 +112,7 @@ const PlaceholderContent = ({ title }: { title: string }) => (
     </div>
 );
 
-const AdminChatInterface = ({ activeInquiry }: { activeInquiry: PremiumInquiry | null }) => {
+const AdminChatInterface = ({ activeInquiry, isMobile, onBack }: { activeInquiry: PremiumInquiry | null, isMobile: boolean, onBack: () => void }) => {
     const [messages, setMessages] = useState<InquiryMessage[]>([]);
     const [newMessage, setNewMessage] = useState("");
     const { user: adminUser } = useAuth();
@@ -148,19 +150,26 @@ const AdminChatInterface = ({ activeInquiry }: { activeInquiry: PremiumInquiry |
     
     if (!activeInquiry) {
         return (
-            <div className="flex h-full flex-col items-center justify-center text-center text-gray-500 p-4">
+            <div className="flex h-full flex-col items-center justify-center text-center text-gray-500 p-4 bg-white rounded-lg">
                 <MessageSquare className="h-12 w-12 text-gray-300 mb-4"/>
-                <h3 className="font-semibold">Select a conversation</h3>
-                <p className="text-sm">Select a conversation from the left to see messages.</p>
+                <h3 className="font-semibold text-black">Select a conversation</h3>
+                <p className="text-sm text-gray-500">Select a conversation from the left to see messages.</p>
             </div>
         )
     }
 
     return (
          <div className="flex flex-col h-full bg-white">
-            <div className="p-4 border-b">
-                <h3 className="font-semibold text-gray-800">{activeInquiry.name}</h3>
-                <p className="text-xs text-gray-500">{activeInquiry.email}</p>
+            <div className="p-4 border-b flex items-center gap-2">
+                 {isMobile && (
+                    <Button variant="ghost" size="icon" className="mr-2" onClick={onBack}>
+                        <ChevronLeft className="h-5 w-5" />
+                    </Button>
+                )}
+                <div>
+                    <h3 className="font-semibold text-gray-800">{activeInquiry.name}</h3>
+                    <p className="text-xs text-gray-500">{activeInquiry.email}</p>
+                </div>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                  {messages.map((msg) => (
@@ -230,6 +239,15 @@ export default function AdminDashboard() {
     const [, navigate] = useLocation();
     const [currentPage, setCurrentPage] = useState(1);
     const grantsPerPage = 6;
+    const isMobile = useIsMobile();
+
+    const loadPremiumInquiries = async () => {
+        const inquiries = await fetchPremiumInquiries();
+        setPremiumInquiries(inquiries);
+        if (!isMobile && inquiries.length > 0 && !activeInquiry) {
+            setActiveInquiry(inquiries[0]);
+        }
+    };
 
     useEffect(() => {
         const tabActions: { [key: string]: () => void } = {
@@ -243,7 +261,7 @@ export default function AdminDashboard() {
             "Home": () => navigate("/"),
         };
         tabActions[activeTab]?.();
-    }, [activeTab, navigate]);
+    }, [activeTab, navigate, isMobile]);
     
     const loadPosts = async () => setPosts(await fetchPosts() as Post[]);
     const loadPending = async () => setPendingPosts(await fetchPendingPosts() as Post[]);
@@ -251,13 +269,6 @@ export default function AdminDashboard() {
     const loadApplications = async () => setApplications(await fetchAllApplications());
     const loadUsers = async () => setUsers(await fetchAllUsers());
     const loadEvents = async () => setEvents((await fetchEvents()).sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime()));
-    const loadPremiumInquiries = async () => {
-        const inquiries = await fetchPremiumInquiries();
-        setPremiumInquiries(inquiries);
-        if (inquiries.length > 0 && !activeInquiry) {
-            setActiveInquiry(inquiries[0]);
-        }
-    };
     const loadContactMessages = async () => setContactMessages(await fetchContactMessages());
 
     useEffect(() => {
@@ -320,7 +331,7 @@ export default function AdminDashboard() {
             case "Users Queries": return (
                 <Card className="overflow-hidden h-full">
                     <div className="flex flex-col md:flex-row h-full w-full">
-                        <div className="md:w-1/3 w-full border-r flex flex-col bg-gray-50/50">
+                        <div className={cn("md:w-1/3 w-full border-r flex flex-col bg-gray-50/50", isMobile && activeInquiry ? 'hidden' : 'flex')}>
                             <div className="p-4 border-b">
                                <h3 className="font-semibold text-lg text-gray-800">User Chats</h3>
                             </div>
@@ -347,8 +358,12 @@ export default function AdminDashboard() {
                                 )}
                             </div>
                         </div>
-                        <div className="md:w-2/3 w-full flex flex-col">
-                            <AdminChatInterface activeInquiry={activeInquiry} />
+                        <div className={cn("md:w-2/3 w-full flex-col", isMobile && !activeInquiry ? 'hidden' : 'flex')}>
+                            <AdminChatInterface 
+                                activeInquiry={activeInquiry} 
+                                isMobile={isMobile} 
+                                onBack={() => setActiveInquiry(null)}
+                            />
                         </div>
                     </div>
                 </Card>

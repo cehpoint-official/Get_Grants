@@ -245,16 +245,15 @@ const SavedGrantsSection = () => {
         </Card>
     );
 };
+
 const MyQueriesSection = () => {
     const { user } = useAuth();
     const [queries, setQueries] = useState<PremiumInquiry[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
-    // This is the latest inquiry. It can be null if the user has never started a chat.
     const latestInquiry = useMemo(() => {
         if (queries.length > 0) {
-            // The list is already sorted by date in the fetch function
             return queries[0];
         }
         return null;
@@ -279,7 +278,6 @@ const MyQueriesSection = () => {
         loadQueries();
     }, [user]);
     
-    // This function will be passed to ChatInterface to reload inquiries when a new chat is started.
     const handleChatStarted = () => {
         loadQueries();
     };
@@ -290,17 +288,14 @@ const MyQueriesSection = () => {
                 <CardTitle>My Queries</CardTitle>
                 <CardDescription>Chat directly with our experts for assistance.</CardDescription>
             </CardHeader>
-            <CardContent className="flex-grow p-0">
+            <CardContent className="flex-grow p-0 overflow-y-auto custom-scrollbar">
                 {loading ? (
                     <div className="flex h-full items-center justify-center">
                         <LoaderCircle className="h-8 w-8 animate-spin text-violet"/>
                     </div>
                 ) : (
                     <ChatInterface 
-                        // Pass the latest inquiry ID, or null if there is no inquiry yet.
-                        // The ChatInterface component will handle starting a new chat if the ID is null.
                         initialInquiryId={latestInquiry?.id || null}
-                        // When a new chat starts from this component, reload the inquiries.
                         onChatStarted={handleChatStarted}
                     />
                 )}
