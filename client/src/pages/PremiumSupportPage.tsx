@@ -30,7 +30,7 @@ export default function PremiumSupportPage() {
   };
   
   const handleCustomPlanClick = () => {
-    const zcalLink = "https://zcal.co/blackleoventures/GetGrants"; 
+    const zcalLink = import.meta.env.VITE_ZCAL_LINK;
     if (user) {
       window.open(zcalLink, '_blank');
     } else {

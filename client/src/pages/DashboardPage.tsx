@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect ,useMemo} from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
@@ -249,8 +249,16 @@ const MyQueriesSection = () => {
     const { user } = useAuth();
     const [queries, setQueries] = useState<PremiumInquiry[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeInquiry, setActiveInquiry] = useState<PremiumInquiry | null>(null);
     const { toast } = useToast();
+
+    // This is the latest inquiry. It can be null if the user has never started a chat.
+    const latestInquiry = useMemo(() => {
+        if (queries.length > 0) {
+            // The list is already sorted by date in the fetch function
+            return queries[0];
+        }
+        return null;
+    }, [queries]);
 
     const loadQueries = async () => {
         if (user) {
@@ -258,9 +266,6 @@ const MyQueriesSection = () => {
             try {
                 const userQueries = await fetchUserPremiumInquiriesByUserIdOrEmail({ userId: user.uid, email: user.email });
                 setQueries(userQueries);
-                if (userQueries.length > 0 && !activeInquiry) {
-                    setActiveInquiry(userQueries[0]);
-                }
             } catch (error) {
                 console.error("Failed to load queries", error);
                 toast({ title: "Error", description: "Could not load your conversations.", variant: "destructive" });
@@ -274,58 +279,32 @@ const MyQueriesSection = () => {
         loadQueries();
     }, [user]);
     
+    // This function will be passed to ChatInterface to reload inquiries when a new chat is started.
+    const handleChatStarted = () => {
+        loadQueries();
+    };
+
     return (
-        <Card className="overflow-hidden h-[75vh]">
-            <div className="flex flex-col md:flex-row h-full w-full">
-                <div className="md:w-1/3 w-full border-r flex flex-col bg-gray-50/50">
-                    <div className="p-4 border-b">
-                       <h3 className="font-semibold text-lg text-gray-800">Conversations</h3>
+        <Card className="overflow-hidden h-[75vh] flex flex-col">
+            <CardHeader>
+                <CardTitle>My Queries</CardTitle>
+                <CardDescription>Chat directly with our experts for assistance.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-grow p-0">
+                {loading ? (
+                    <div className="flex h-full items-center justify-center">
+                        <LoaderCircle className="h-8 w-8 animate-spin text-violet"/>
                     </div>
-                    <div className="flex-1 overflow-y-auto">
-                        {loading ? (
-                            <div className="p-4 text-center text-sm text-gray-500">Loading chats...</div>
-                        ) : queries.length > 0 ? (
-                            queries.map(query => (
-                                <div
-                                    key={query.id}
-                                    onClick={() => setActiveInquiry(query)}
-                                    className={`p-4 cursor-pointer border-l-4 ${activeInquiry?.id === query.id ? 'bg-violet/10 border-violet' : 'border-transparent hover:bg-gray-100'}`}
-                                >
-                                    <p className="font-semibold text-sm text-gray-800 line-clamp-1">{query.specificNeeds}</p>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Last update: {query.updatedAt.toLocaleDateString()}
-                                    </p>
-                                </div>
-                            ))
-                        ) : (
-                             <div className="p-4 text-center text-sm text-gray-500 h-full flex items-center justify-center">
-                                <div>
-                                    <MessageSquare className="h-10 w-10 mx-auto text-gray-300 mb-2"/>
-                                    <p>No conversations yet.</p>
-                                </div>
-                             </div>
-                        )}
-                    </div>
-                </div>
-                <div className="md:w-2/3 w-full flex flex-col bg-white">
-                    {loading ? (
-                         <div className="flex-grow flex items-center justify-center">
-                            <LoaderCircle className="h-8 w-8 animate-spin text-violet"/>
-                         </div>
-                    ) : activeInquiry ? (
-                        <ChatInterface 
-                            initialInquiryId={activeInquiry.id} 
-                            onChatStarted={loadQueries}
-                        />
-                    ) : (
-                         <div className="flex-grow flex flex-col items-center justify-center text-center text-gray-500 p-4">
-                          <MessageSquare className="h-12 w-12 text-gray-300 mb-4"/>
-                          <h3 className="font-semibold">Select a conversation</h3>
-                          <p className="text-sm">Select a conversation from the left to see messages.</p>
-                         </div>
-                    )}
-                </div>
-            </div>
+                ) : (
+                    <ChatInterface 
+                        // Pass the latest inquiry ID, or null if there is no inquiry yet.
+                        // The ChatInterface component will handle starting a new chat if the ID is null.
+                        initialInquiryId={latestInquiry?.id || null}
+                        // When a new chat starts from this component, reload the inquiries.
+                        onChatStarted={handleChatStarted}
+                    />
+                )}
+            </CardContent>
         </Card>
     );
 };
