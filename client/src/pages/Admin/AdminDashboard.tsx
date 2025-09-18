@@ -54,6 +54,9 @@ import { CreateTestimonialModal } from "@/components/create-testimonial-modal";
 import { db } from "@/lib/firebase";
 import { collection, query, orderBy, getDocs, Timestamp, deleteDoc as deleteFirestoreDoc, doc } from "firebase/firestore";
 
+// NEW: Mobile detection hook import
+import { useIsMobile } from "@/hooks/use-mobile";
+
 const sidebarItems = [
     { name: "Dashboard", icon: LayoutDashboard },
     { name: "Grants", icon: Award },
@@ -122,7 +125,8 @@ const PlaceholderContent = ({ title }: { title: string }) => (
     </div>
 );
 
-const AdminChatInterface = ({ activeInquiry }: { activeInquiry: PremiumInquiry | null }) => {
+// NEW: AdminChatInterface component now accepts isMobile and onBack props
+const AdminChatInterface = ({ activeInquiry, isMobile, onBack }: { activeInquiry: PremiumInquiry | null; isMobile?: boolean; onBack?: () => void; }) => {
     const [messages, setMessages] = useState<InquiryMessage[]>([]);
     const [newMessage, setNewMessage] = useState("");
     const { user: adminUser } = useAuth();
@@ -170,9 +174,17 @@ const AdminChatInterface = ({ activeInquiry }: { activeInquiry: PremiumInquiry |
 
     return (
        <div className="flex flex-col h-full bg-white">
-            <div className="p-4 border-b">
-                <h3 className="font-semibold text-gray-800">{activeInquiry.name}</h3>
-                <p className="text-xs text-gray-500">{activeInquiry.email}</p>
+            <div className="p-4 border-b flex items-center">
+                {/* NEW: Back button for mobile view */}
+                {isMobile && onBack && (
+                    <Button variant="ghost" size="icon" className="mr-2" onClick={onBack}>
+                        <ChevronLeft className="h-5 w-5" />
+                    </Button>
+                )}
+                <div>
+                    <h3 className="font-semibold text-gray-800">{activeInquiry.name}</h3>
+                    <p className="text-xs text-gray-500">{activeInquiry.email}</p>
+                </div>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                  {messages.map((msg) => (
@@ -247,7 +259,10 @@ export default function AdminDashboard() {
     const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
     const [showTestimonialModal, setShowTestimonialModal] = useState(false);
     const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
-
+    
+    // NEW: state for mobile chat view
+    const isMobile = useIsMobile();
+    const [mobileChatVisible, setMobileChatVisible] = useState(false);
 
     useEffect(() => {
         const tabActions: { [key: string]: () => void } = {
@@ -275,7 +290,8 @@ export default function AdminDashboard() {
     const loadPremiumInquiries = async () => {
         const inquiries = await fetchPremiumInquiries();
         setPremiumInquiries(inquiries);
-        if (inquiries.length > 0 && !activeInquiry) {
+        // NEW: Don't auto-select on mobile
+        if (!isMobile && inquiries.length > 0 && !activeInquiry) {
             setActiveInquiry(inquiries[0]);
         }
     };
@@ -446,42 +462,93 @@ export default function AdminDashboard() {
                 );
 
             
-            case "Users Queries": return (
-                <Card className="overflow-hidden h-full">
-                    <div className="flex flex-col md:flex-row h-full w-full">
-                        <div className="md:w-1/3 w-full border-r flex flex-col bg-gray-50/50">
-                            <div className="p-4 border-b">
-                               <h3 className="font-semibold text-lg text-gray-800">User Chats</h3>
-                            </div>
-                            <div className="flex-1 overflow-y-auto">
-                                {premiumInquiries.map(inquiry => (
-                                    <div
-                                        key={inquiry.id}
-                                        onClick={() => setActiveInquiry(inquiry)}
-                                        className={`p-4 cursor-pointer border-l-4 ${activeInquiry?.id === inquiry.id ? 'bg-violet/10 border-violet' : 'border-transparent hover:bg-gray-100'}`}
-                                    >
-                                        <div className="flex justify-between items-center">
-                                            <p className="font-semibold text-sm text-gray-800 line-clamp-1">{inquiry.name}</p>
-                                            {inquiry.status === 'new' && <Badge className="bg-green-500 text-white">New</Badge>}
-                                        </div>
-                                        <p className="text-xs text-gray-500 mt-1 line-clamp-1">
-                                            {lastMessages[inquiry.id] || inquiry.specificNeeds}
-                                        </p>
+            // NEW: Mobile responsive chat UI
+            case "Users Queries":
+                if (isMobile) {
+                    return (
+                        <Card className="overflow-hidden h-full flex flex-col">
+                            {mobileChatVisible && activeInquiry ? (
+                                <AdminChatInterface 
+                                    activeInquiry={activeInquiry} 
+                                    isMobile={true} 
+                                    onBack={() => {
+                                        setMobileChatVisible(false);
+                                        setActiveInquiry(null);
+                                    }}
+                                />
+                            ) : (
+                                <div className="flex flex-col h-full w-full">
+                                    <div className="p-4 border-b">
+                                       <h3 className="font-semibold text-lg text-gray-800">User Chats</h3>
                                     </div>
-                                ))}
-                                {premiumInquiries.length === 0 && (
-                                     <div className="p-4 text-center text-sm text-gray-500 h-full flex items-center justify-center">
-                                         <p>No user queries yet.</p>
-                                     </div>
-                                )}
+                                    <div className="flex-1 overflow-y-auto">
+                                        {premiumInquiries.map(inquiry => (
+                                            <div
+                                                key={inquiry.id}
+                                                onClick={() => {
+                                                    setActiveInquiry(inquiry);
+                                                    setMobileChatVisible(true);
+                                                }}
+                                                className={`p-4 cursor-pointer border-l-4 ${activeInquiry?.id === inquiry.id ? 'bg-violet/10 border-violet' : 'border-transparent hover:bg-gray-100'}`}
+                                            >
+                                                <div className="flex justify-between items-center">
+                                                    <p className="font-semibold text-sm text-gray-800 line-clamp-1">{inquiry.name}</p>
+                                                    {inquiry.status === 'new' && <Badge className="bg-green-500 text-white">New</Badge>}
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-1 line-clamp-1">
+                                                    {lastMessages[inquiry.id] || inquiry.specificNeeds}
+                                                </p>
+                                            </div>
+                                        ))}
+                                        {premiumInquiries.length === 0 && (
+                                             <div className="p-4 text-center text-sm text-gray-500 h-full flex items-center justify-center">
+                                                 <p>No user queries yet.</p>
+                                             </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </Card>
+                    );
+                }
+                
+                // Desktop view
+                return (
+                    <Card className="overflow-hidden h-full">
+                        <div className="flex flex-row h-full w-full">
+                            <div className="w-1/3 border-r flex flex-col bg-gray-50/50">
+                                <div className="p-4 border-b">
+                                   <h3 className="font-semibold text-lg text-gray-800">User Chats</h3>
+                                </div>
+                                <div className="flex-1 overflow-y-auto">
+                                    {premiumInquiries.map(inquiry => (
+                                        <div
+                                            key={inquiry.id}
+                                            onClick={() => setActiveInquiry(inquiry)}
+                                            className={`p-4 cursor-pointer border-l-4 ${activeInquiry?.id === inquiry.id ? 'bg-violet/10 border-violet' : 'border-transparent hover:bg-gray-100'}`}
+                                        >
+                                            <div className="flex justify-between items-center">
+                                                <p className="font-semibold text-sm text-gray-800 line-clamp-1">{inquiry.name}</p>
+                                                {inquiry.status === 'new' && <Badge className="bg-green-500 text-white">New</Badge>}
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-1 line-clamp-1">
+                                                {lastMessages[inquiry.id] || inquiry.specificNeeds}
+                                            </p>
+                                        </div>
+                                    ))}
+                                    {premiumInquiries.length === 0 && (
+                                         <div className="p-4 text-center text-sm text-gray-500 h-full flex items-center justify-center">
+                                             <p>No user queries yet.</p>
+                                         </div>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="w-2/3 flex flex-col">
+                                <AdminChatInterface activeInquiry={activeInquiry} />
                             </div>
                         </div>
-                        <div className="md:w-2/3 w-full flex flex-col">
-                            <AdminChatInterface activeInquiry={activeInquiry} />
-                        </div>
-                    </div>
-                </Card>
-            );
+                    </Card>
+                );
             
             case "Grants": return (
                 <div>

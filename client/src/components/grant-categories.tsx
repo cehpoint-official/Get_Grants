@@ -1766,7 +1766,7 @@ export function GrantCategories() {
  };
  
  return (
-   <section id="grant-library" className="py-10 sm:py-20 min-h-screen" style={{
+   <section id="grant-library" className="py-10 sm:py-20 " style={{
        background: 'white'
      }}>
       <GrantLeadModal
