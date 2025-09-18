@@ -1,4 +1,4 @@
-// client/src/components/Testimonials.tsx
+
 
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
@@ -6,13 +6,13 @@ import { useLocation } from "wouter";
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, getDocs, Timestamp } from 'firebase/firestore';
 import { Testimonial as TestimonialType } from '@shared/schema';
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"; 
 
 type TestimonialCardProps = {
   name: string;
   title: string;
   quote: string;
   amountSecured: string;
-  
 };
 
 const TestimonialCard: React.FC<TestimonialCardProps> = ({ name, title, quote, amountSecured }) => {
@@ -24,14 +24,18 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ name, title, quote, a
           <p className="text-sm text-gray-500">{title}</p>
         </div>
         <div className="flex-shrink-0 ml-4">
-          
+          <Avatar>
+            <AvatarFallback className="bg-violet text-white font-bold">
+              {name.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
         </div>
+       
       </div>
       <blockquote className="text-gray-600 mb-4">
         <p>"{quote}"</p>
       </blockquote>
       <a href="#" className="text-purple-600 font-bold "><span className='font-bold'>Secured ₹ {amountSecured} Lakhs </span> 
-       
       </a>
     </div>
   );
@@ -103,7 +107,6 @@ export default function Testimonials() {
                   title={testimonial.title}
                   quote={testimonial.quote}
                   amountSecured={testimonial.amountSecured}
-                 
                 />
               ))
             ) : (
