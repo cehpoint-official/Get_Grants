@@ -28,7 +28,7 @@ export function Hero() {
   return (
     <section 
       id="home" 
-      className="min-h-screen bg-[#F9FAFB] lg:bg-white p-4 md:p-6 lg:p-8" 
+      className="bg-[#F9FAFB] lg:bg-white p-4 md:p-6 lg:p-8" 
     >
       <div 
         className="w-full h-full rounded-2xl flex items-center relative" 
@@ -102,7 +102,6 @@ export function Hero() {
                   </div>
                 </div>
 
-                {/* --- Mobile Image Moved Here --- */}
                 <div className=" my-8 lg:hidden">
                   <img
                     src={heroImage}

@@ -1,5 +1,3 @@
-
-
 import { useEffect, useState, useMemo, useRef } from "react";
 import "react-calendar/dist/Calendar.css";
 import {
@@ -19,6 +17,8 @@ import {
 import {
     Grant, InsertGrant, Post, InsertPost, Application, User, CalendarEvent, InsertEvent, InquiryMessage, PremiumInquiry, Testimonial
 } from "@shared/schema";
+// --- NEW IMPORT FOR GRANT LEAD ---
+import { GrantLead } from "@/services/grantSubmissions"; 
 import { CreatePostModal } from "@/components/create-post-modal";
 import { CreateGrantModal } from "@/components/create-grant-modal";
 import { EventModal } from "@/components/ui/EventModal";
@@ -26,7 +26,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import {
-   
+    
     X, LayoutDashboard, Inbox, Home, BookOpen, Menu as MenuIcon, Users, FileCheck, Award, LoaderCircle, Calendar as CalendarIcon, Briefcase, Share2, MessageSquare, Mail, LogOut, Check, Trash2, Edit, PlusCircle, MoreHorizontal, Download, Send, ChevronLeft, ChevronRight, MessageCircle
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -44,7 +44,7 @@ import {
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { exportToExcel } from "@/lib/excelUtils";
+import { exportToExcel, exportPlainToExcel } from "@/lib/excelUtils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -57,10 +57,11 @@ import { collection, query, orderBy, getDocs, Timestamp, deleteDoc as deleteFire
 const sidebarItems = [
     { name: "Dashboard", icon: LayoutDashboard },
     { name: "Grants", icon: Award },
+    { name: "Grant Leads", icon: FileCheck }, // <-- NEW SIDEBAR ITEM
     { name: "Applications", icon: Inbox },
     { name: "Users", icon: Users },
     { name: "Blogs", icon: BookOpen },
-   
+    
     { name: "Testimonials", icon: MessageCircle },
     { name: "Users Queries", icon: MessageSquare },
     { name: "Contact Messages", icon: Mail },
@@ -223,6 +224,7 @@ export default function AdminDashboard() {
     const [users, setUsers] = useState<User[]>([]);
     const [premiumInquiries, setPremiumInquiries] = useState<PremiumInquiry[]>([]);
     const [contactMessages, setContactMessages] = useState<ContactMessage[]>([]);
+    const [grantLeads, setGrantLeads] = useState<GrantLead[]>([]); // <-- NEW STATE FOR LEADS
     const [editingPost, setEditingPost] = useState<Post | null>(null);
     const [editingGrant, setEditingGrant] = useState<Grant | null>(null);
     const [showModal, setShowModal] = useState(false);
@@ -251,10 +253,11 @@ export default function AdminDashboard() {
         const tabActions: { [key: string]: () => void } = {
             "Blogs": () => { loadPosts(); loadPending(); },
             "Grants": loadGrants,
+            "Grant Leads": loadGrantLeads, // <-- NEW ACTION
             "Calendar": loadEvents,
             "Applications": loadApplications,
             "Users": loadUsers,
-           
+            
             "Testimonials": loadTestimonials,
             "Users Queries": loadPremiumInquiries,
             "Contact Messages": loadContactMessages,
@@ -278,7 +281,19 @@ export default function AdminDashboard() {
     };
     const loadContactMessages = async () => setContactMessages(await fetchContactMessages());
 
-   
+    // --- NEW FUNCTION TO LOAD GRANT LEADS ---
+    const loadGrantLeads = async () => {
+        const q = query(collection(db, "grantLeads"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        const leads = snapshot.docs.map(d => ({
+            id: d.id,
+            ...d.data(),
+            createdAt: (d.data().createdAt as Timestamp).toDate()
+        } as GrantLead));
+        setGrantLeads(leads);
+    };
+
+    
     const loadTestimonials = async () => {
         const q = query(collection(db, "testimonials"), orderBy("createdAt", "desc"));
         const snapshot = await getDocs(q);
@@ -311,7 +326,7 @@ export default function AdminDashboard() {
     const handleUpdateEvent = async (data: InsertEvent & { id: string }) => { await updateCalendarEvent(data.id, data); await loadEvents(); setEditingEvent(null); setShowEventModal(false); };
     const handleDeleteEvent = async (id: string) => { if (window.confirm("Delete this event?")) { await deleteCalendarEvent(id); await loadEvents(); } };
     
-  
+ 
     const handleDeleteTestimonial = async (id: string) => {
         if (window.confirm("Are you sure you want to delete this testimonial?")) {
             await deleteFirestoreDoc(doc(db, "testimonials", id));
@@ -346,45 +361,91 @@ export default function AdminDashboard() {
     const totalPages = Math.ceil(grants.length / grantsPerPage);
 
     const paginate = (pageNumber: number) => {
-      if (pageNumber > 0 && pageNumber <= totalPages) {
-        setCurrentPage(pageNumber);
-      }
+        if (pageNumber > 0 && pageNumber <= totalPages) {
+            setCurrentPage(pageNumber);
+        }
     };
 
     const renderContent = () => {
         switch (activeTab) {
             case "Dashboard": return <DashboardAnalytics setActiveTab={setActiveTab} />;
             
-           
-            case "Testimonials":
-              return (
-                <div>
-                  <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold text-gray-800">Testimonials</h1>
-                    <Button onClick={() => { setEditingTestimonial(null); setShowTestimonialModal(true); }} className="bg-violet hover:bg-violet/90"><PlusCircle className="mr-2 h-4 w-4" /> Add Testimonial</Button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {testimonials.map(t => (
-                      <Card key={t.id}>
-                        <CardHeader>
-                          <CardTitle>{t.author}</CardTitle>
-                          <CardDescription>{t.title}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="italic">"{t.quote}"</p>
-                          <p className="mt-2 font-semibold">{t.amountSecured}</p>
-                        </CardContent>
-                        <div className="p-4 border-t flex gap-2">
-                            <Button size="sm" variant="outline" className="w-full" onClick={() => {setEditingTestimonial(t); setShowTestimonialModal(true);}}><Edit className="mr-2 h-4 w-4"/> Edit</Button>
-                            <Button size="sm" variant="destructive" className="w-full" onClick={() => handleDeleteTestimonial(t.id)}><Trash2 className="mr-2 h-4 w-4"/> Delete</Button>
+            // --- NEW CASE TO RENDER GRANT LEADS TABLE ---
+            case "Grant Leads":
+                return (
+                    <div>
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-3xl font-bold text-gray-800">Grant Leads</h1>
+                            <Button
+                                onClick={() => exportPlainToExcel(grantLeads.map(l => ({
+                                    Name: l.name,
+                                    Email: l.email,
+                                    Mobile: l.mobile,
+                                    Grant: l.grantName,
+                                    CreatedAt: l.createdAt.toLocaleString(),
+                                })), "GrantLeads", "GrantLeads")}
+                                className="bg-green-600 hover:bg-green-700 text-white font-semibold shadow-md"
+                                disabled={grantLeads.length === 0}
+                            >
+                                <Download className="mr-2 h-5 w-5" /> Export
+                            </Button>
                         </div>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              );
+                        <Card className="overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left text-gray-500">
+                                    <thead className="text-xs text-gray-700 uppercase bg-gray-100">
+                                        <tr>
+                                            <th scope="col" className="px-6 py-4">Name</th>
+                                            <th scope="col" className="px-6 py-4">Contact</th>
+                                            <th scope="col" className="px-6 py-4">Grant Name</th>
+                                            <th scope="col" className="px-6 py-4">Submitted On</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {grantLeads.map((lead) => (
+                                            <tr key={lead.id} className="bg-white border-b hover:bg-gray-50">
+                                                <td className="px-6 py-4 font-medium text-gray-900">{lead.name}</td>
+                                                <td className="px-6 py-4">{lead.email}<br/><span className="text-xs text-gray-400">{lead.mobile}</span></td>
+                                                <td className="px-6 py-4 font-semibold text-violet">{lead.grantName}</td>
+                                                <td className="px-6 py-4">{lead.createdAt.toLocaleString()}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </Card>
+                    </div>
+                );
+            
+            case "Testimonials":
+                return (
+                    <div>
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-3xl font-bold text-gray-800">Testimonials</h1>
+                            <Button onClick={() => { setEditingTestimonial(null); setShowTestimonialModal(true); }} className="bg-violet hover:bg-violet/90"><PlusCircle className="mr-2 h-4 w-4" /> Add Testimonial</Button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {testimonials.map(t => (
+                                <Card key={t.id}>
+                                    <CardHeader>
+                                        <CardTitle>{t.author}</CardTitle>
+                                        <CardDescription>{t.title}</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="italic">"{t.quote}"</p>
+                                        <p className="mt-2 font-semibold">{t.amountSecured}</p>
+                                    </CardContent>
+                                    <div className="p-4 border-t flex gap-2">
+                                        <Button size="sm" variant="outline" className="w-full" onClick={() => {setEditingTestimonial(t); setShowTestimonialModal(true);}}><Edit className="mr-2 h-4 w-4"/> Edit</Button>
+                                        <Button size="sm" variant="destructive" className="w-full" onClick={() => handleDeleteTestimonial(t.id)}><Trash2 className="mr-2 h-4 w-4"/> Delete</Button>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+                    </div>
+                );
 
-           
+            
             case "Users Queries": return (
                 <Card className="overflow-hidden h-full">
                     <div className="flex flex-col md:flex-row h-full w-full">
@@ -410,7 +471,7 @@ export default function AdminDashboard() {
                                 ))}
                                 {premiumInquiries.length === 0 && (
                                      <div className="p-4 text-center text-sm text-gray-500 h-full flex items-center justify-center">
-                                          <p>No user queries yet.</p>
+                                         <p>No user queries yet.</p>
                                      </div>
                                 )}
                             </div>
@@ -424,47 +485,47 @@ export default function AdminDashboard() {
             
             case "Grants": return (
                 <div>
-                  <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold text-gray-800">Grants Management</h1>
-                    <Button onClick={() => { setEditingGrant(null); setShowGrantModal(true); }} className="bg-violet hover:bg-violet/90 text-white font-semibold shadow-md"><PlusCircle className="mr-2 h-5 w-5" /> Create Grant</Button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {currentGrants.map((grant) => (
-                      <Card key={grant.id} className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow flex flex-col overflow-hidden">
-                        <CardHeader>
-                          <div className="flex justify-between items-start">
-                              <CardTitle className="text-lg font-bold text-gray-800 line-clamp-2 leading-tight">{grant.title}</CardTitle>
-                              <Badge variant={grant.status === "Active" ? "default" : "destructive"} className={`${grant.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{grant.status}</Badge>
-                          </div>
-                          <CardDescription className="text-sm text-gray-500 pt-1">{grant.organization}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex-grow">
-                          <p className="text-sm text-gray-600 mb-4 line-clamp-3">{grant.description}</p>
-                            <div className="text-xs text-gray-500 space-y-2">
-                                <p><strong>Funding:</strong> <span className="font-semibold text-violet">{grant.fundingAmount}</span></p>
-                                <p><strong>Deadline:</strong> {new Date(grant.deadline).toLocaleDateString()}</p>
-                            </div>
-                        </CardContent>
-                        <div className="p-4 border-t bg-gray-50 flex gap-2">
-                          <Button size="sm" variant="outline" className="w-full" onClick={() => { setEditingGrant(grant); setShowGrantModal(true); }}><Edit className="mr-2 h-4 w-4"/>Edit</Button>
-                          <Button size="sm" variant="destructive" className="w-full" onClick={() => handleDeleteGrant(grant.id)}><Trash2 className="mr-2 h-4 w-4"/>Delete</Button>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                  {totalPages > 1 && (
-                    <div className="flex justify-end items-center mt-6 gap-2">
-                      <Button variant="outline" size="icon" onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
-                          <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
-                      <Button variant="outline" size="icon" onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>
-                          <ChevronRight className="h-4 w-4" />
-                      </Button>
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-3xl font-bold text-gray-800">Grants Management</h1>
+                        <Button onClick={() => { setEditingGrant(null); setShowGrantModal(true); }} className="bg-violet hover:bg-violet/90 text-white font-semibold shadow-md"><PlusCircle className="mr-2 h-5 w-5" /> Create Grant</Button>
                     </div>
-                  )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {currentGrants.map((grant) => (
+                            <Card key={grant.id} className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow flex flex-col overflow-hidden">
+                                <CardHeader>
+                                    <div className="flex justify-between items-start">
+                                        <CardTitle className="text-lg font-bold text-gray-800 line-clamp-2 leading-tight">{grant.title}</CardTitle>
+                                        <Badge variant={grant.status === "Active" ? "default" : "destructive"} className={`${grant.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{grant.status}</Badge>
+                                    </div>
+                                    <CardDescription className="text-sm text-gray-500 pt-1">{grant.organization}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-grow">
+                                    <p className="text-sm text-gray-600 mb-4 line-clamp-3">{grant.description}</p>
+                                    <div className="text-xs text-gray-500 space-y-2">
+                                        <p><strong>Funding:</strong> <span className="font-semibold text-violet">{grant.fundingAmount}</span></p>
+                                        <p><strong>Deadline:</strong> {new Date(grant.deadline).toLocaleDateString()}</p>
+                                    </div>
+                                </CardContent>
+                                <div className="p-4 border-t bg-gray-50 flex gap-2">
+                                    <Button size="sm" variant="outline" className="w-full" onClick={() => { setEditingGrant(grant); setShowGrantModal(true); }}><Edit className="mr-2 h-4 w-4"/>Edit</Button>
+                                    <Button size="sm" variant="destructive" className="w-full" onClick={() => handleDeleteGrant(grant.id)}><Trash2 className="mr-2 h-4 w-4"/>Delete</Button>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                    {totalPages > 1 && (
+                        <div className="flex justify-end items-center mt-6 gap-2">
+                            <Button variant="outline" size="icon" onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
+                            <Button variant="outline" size="icon" onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    )}
                 </div>
-              );
+            );
             case "Applications": return (
                 <div>
                     <div className="flex justify-between items-center mb-6">
@@ -499,215 +560,215 @@ export default function AdminDashboard() {
             );
             case "Users": return (
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-800 mb-6">User Management</h1>
-                  <Card className="overflow-hidden">
-                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-gray-100 text-xs text-gray-700 uppercase">
-                            <tr>
-                                <th className="px-6 py-4">User</th>
-                                <th className="px-6 py-4">Phone</th>
-                                <th className="px-6 py-4">Joined On</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {users.map((user) => (
-                                <tr key={user.id} className="border-b hover:bg-gray-50">
-                                    <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-3">
-                                        <Avatar>
-                                            <AvatarImage src={(user as any).avatarUrl} alt={user.fullName}/>
-                                            <AvatarFallback>{user.fullName?.[0]}</AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                          {user.fullName}
-                                          <p className="text-xs text-gray-500">{user.email}</p>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">{user.phoneNumber || "N/A"}</td>
-                                    <td className="px-6 py-4">{new Date(user.createdAt).toLocaleDateString()}</td>
+                    <h1 className="text-3xl font-bold text-gray-800 mb-6">User Management</h1>
+                    <Card className="overflow-hidden">
+                       <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-gray-100 text-xs text-gray-700 uppercase">
+                                <tr>
+                                    <th className="px-6 py-4">User</th>
+                                    <th className="px-6 py-4">Phone</th>
+                                    <th className="px-6 py-4">Joined On</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                   </div>
-                  </Card>
+                            </thead>
+                            <tbody>
+                                {users.map((user) => (
+                                    <tr key={user.id} className="border-b hover:bg-gray-50">
+                                        <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-3">
+                                            <Avatar>
+                                                <AvatarImage src={(user as any).avatarUrl} alt={user.fullName}/>
+                                                <AvatarFallback>{user.fullName?.[0]}</AvatarFallback>
+                                            </Avatar>
+                                            <div>
+                                              {user.fullName}
+                                              <p className="text-xs text-gray-500">{user.email}</p>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">{user.phoneNumber || "N/A"}</td>
+                                        <td className="px-6 py-4">{new Date(user.createdAt).toLocaleDateString()}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                       </div>
+                    </Card>
                 </div>
             );
             case "Contact Messages": return (
                 <div>
-                  <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold text-gray-800">Contact Messages</h1>
-                    <Button onClick={() => exportToExcel(contactMessages as any, "ContactMessages")} className="bg-green-600 hover:bg-green-700 text-white font-semibold shadow-md" disabled={contactMessages.length === 0}><Download className="mr-2 h-5 w-5"/>Export</Button>
-                  </div>
-                  <Card className="overflow-hidden">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead className="bg-gray-100 text-xs text-gray-700 uppercase">
-                          <tr>
-                            <th className="px-6 py-4">Received</th>
-                            <th className="px-6 py-4">From</th>
-                            <th className="px-6 py-4">Subject</th>
-                            <th className="px-6 py-4">Message</th>
-                          </tr>
-                        </thead>
-                          <tbody>
-                            {contactMessages.map((msg) => (
-                                <tr key={msg.id} className="border-b hover:bg-gray-50">
-                                    <td className="px-6 py-4 text-gray-500">{msg.createdAt.toLocaleString()}</td>
-                                    <td className="px-6 py-4 font-medium">{msg.name}<br/><span className="text-xs text-gray-400">{msg.email}</span></td>
-                                    <td className="px-6 py-4 font-semibold">{msg.subject}</td>
-                                    <td className="px-6 py-4 max-w-sm truncate text-gray-600">{msg.message}</td>
-                                </tr>
-                            ))}
-                          </tbody>
-                      </table>
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-3xl font-bold text-gray-800">Contact Messages</h1>
+                        <Button onClick={() => exportToExcel(contactMessages as any, "ContactMessages")} className="bg-green-600 hover:bg-green-700 text-white font-semibold shadow-md" disabled={contactMessages.length === 0}><Download className="mr-2 h-5 w-5"/>Export</Button>
                     </div>
-                  </Card>
+                    <Card className="overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead className="bg-gray-100 text-xs text-gray-700 uppercase">
+                                    <tr>
+                                        <th className="px-6 py-4">Received</th>
+                                        <th className="px-6 py-4">From</th>
+                                        <th className="px-6 py-4">Subject</th>
+                                        <th className="px-6 py-4">Message</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {contactMessages.map((msg) => (
+                                        <tr key={msg.id} className="border-b hover:bg-gray-50">
+                                            <td className="px-6 py-4 text-gray-500">{msg.createdAt.toLocaleString()}</td>
+                                            <td className="px-6 py-4 font-medium">{msg.name}<br/><span className="text-xs text-gray-400">{msg.email}</span></td>
+                                            <td className="px-6 py-4 font-semibold">{msg.subject}</td>
+                                            <td className="px-6 py-4 max-w-sm truncate text-gray-600">{msg.message}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Card>
                 </div>
-              );
+            );
             case "Blogs": return (
                 <>
-                  <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold text-gray-800">Blog Management</h1>
-                    <Button onClick={() => { setEditingPost(null); setShowModal(true); }} className="bg-violet hover:bg-violet/90 text-white font-semibold shadow-md"><PlusCircle className="mr-2 h-5 w-5"/> Create Blog</Button>
-                  </div>
-                  <Card className="mb-8">
-                     <CardHeader>
-                       <CardTitle className="text-pink">Pending Approval ({pendingPosts.length})</CardTitle>
-                       <CardDescription>Review and publish user-submitted blog posts.</CardDescription>
-                     </CardHeader>
-                     <CardContent>
-                       {pendingPosts.length > 0 ? (
-                           <div className="space-y-3">
-                             {pendingPosts.map((p) => (
-                                 <div key={p.id} className="border rounded-lg p-3 flex justify-between items-center">
-                                   <div>
-                                     <p className="font-semibold text-gray-800">{p.title}</p>
-                                     <p className="text-xs text-gray-500">By {p.authorName || p.author}</p>
-                                   </div>
-                                   <div className="flex gap-2">
-                                     <Button size="sm" variant="outline" onClick={() => { setActivePendingPost(p); setShowPendingModal(true); }}>View</Button>
-                                     <Button size="sm" className="bg-green-100 text-green-800 hover:bg-green-200" onClick={async () => { await approvePost(p.id); await loadPending(); await loadPosts(); }}><Check className="h-4 w-4"/></Button>
-                                     <Button size="sm" variant="destructive" onClick={async () => { await rejectPost(p.id); await loadPending(); }}><X className="h-4 w-4"/></Button>
-                                   </div>
-                                 </div>
-                             ))}
-                           </div>
-                         ) : (<div className="text-center py-6 text-gray-500">No pending posts for approval.</div>)}
-                     </CardContent>
-                  </Card>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {posts.map((post) => (
-                          <Card key={post.id} className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow flex flex-col overflow-hidden">
-                              <img src={post.imageUrl || "https://placehold.co/600x400"} alt={post.title} className="w-full h-40 object-cover" />
-                              <CardHeader>
-                                  <CardTitle className="text-lg font-bold line-clamp-2">{post.title}</CardTitle>
-                                  <CardDescription>{post.category}</CardDescription>
-                              </CardHeader>
-                              <div className="p-4 border-t mt-auto bg-gray-50">
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild><Button variant="outline" size="sm" className="w-full"><MoreHorizontal className="h-4 w-4"/> Options</Button></DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                      <DropdownMenuItem onClick={() => { setEditingPost(post); setShowModal(true); }}><Edit className="mr-2 h-4 w-4"/> Edit</DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleDeletePost(post.id)} className="text-red-600"><Trash2 className="mr-2 h-4 w-4"/> Delete</DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                              </div>
-                          </Card>
-                      ))}
-                  </div>
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-3xl font-bold text-gray-800">Blog Management</h1>
+                        <Button onClick={() => { setEditingPost(null); setShowModal(true); }} className="bg-violet hover:bg-violet/90 text-white font-semibold shadow-md"><PlusCircle className="mr-2 h-5 w-5"/> Create Blog</Button>
+                    </div>
+                    <Card className="mb-8">
+                       <CardHeader>
+                        <CardTitle className="text-pink">Pending Approval ({pendingPosts.length})</CardTitle>
+                        <CardDescription>Review and publish user-submitted blog posts.</CardDescription>
+                       </CardHeader>
+                       <CardContent>
+                           {pendingPosts.length > 0 ? (
+                               <div className="space-y-3">
+                                   {pendingPosts.map((p) => (
+                                       <div key={p.id} className="border rounded-lg p-3 flex justify-between items-center">
+                                           <div>
+                                            <p className="font-semibold text-gray-800">{p.title}</p>
+                                            <p className="text-xs text-gray-500">By {p.authorName || p.author}</p>
+                                           </div>
+                                           <div className="flex gap-2">
+                                            <Button size="sm" variant="outline" onClick={() => { setActivePendingPost(p); setShowPendingModal(true); }}>View</Button>
+                                            <Button size="sm" className="bg-green-100 text-green-800 hover:bg-green-200" onClick={async () => { await approvePost(p.id); await loadPending(); await loadPosts(); }}><Check className="h-4 w-4"/></Button>
+                                            <Button size="sm" variant="destructive" onClick={async () => { await rejectPost(p.id); await loadPending(); }}><X className="h-4 w-4"/></Button>
+                                           </div>
+                                       </div>
+                                   ))}
+                               </div>
+                           ) : (<div className="text-center py-6 text-gray-500">No pending posts for approval.</div>)}
+                       </CardContent>
+                    </Card>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {posts.map((post) => (
+                            <Card key={post.id} className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow flex flex-col overflow-hidden">
+                                <img src={post.imageUrl || "https://placehold.co/600x400"} alt={post.title} className="w-full h-40 object-cover" />
+                                <CardHeader>
+                                    <CardTitle className="text-lg font-bold line-clamp-2">{post.title}</CardTitle>
+                                    <CardDescription>{post.category}</CardDescription>
+                                </CardHeader>
+                                <div className="p-4 border-t mt-auto bg-gray-50">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild><Button variant="outline" size="sm" className="w-full"><MoreHorizontal className="h-4 w-4"/> Options</Button></DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => { setEditingPost(post); setShowModal(true); }}><Edit className="mr-2 h-4 w-4"/> Edit</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleDeletePost(post.id)} className="text-red-600"><Trash2 className="mr-2 h-4 w-4"/> Delete</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
                 </>
-              );
+            );
             case "Incubators": return <PlaceholderContent title="Incubators" />;
             case "Calendar": return (
                 <div>
-                  <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold text-gray-800">Event Calendar</h1>
-                    <Button onClick={() => { setEditingEvent(null); setShowEventModal(true); }} className="bg-violet hover:bg-violet/90 text-white font-semibold shadow-md"><PlusCircle className="mr-2 h-5 w-5"/> Add Event</Button>
-                  </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                    <Card className="lg:col-span-1"><Calendar mode="single" selected={selectedDate} onSelect={(d: any) => setSelectedDate(d || new Date())} className="p-0" modifiers={{ hasEvent: eventDates }} modifiersClassNames={{ hasEvent: "bg-violet/20 text-violet rounded-full" }}/></Card>
-                    <Card className="lg:col-span-2">
-                       <CardHeader><CardTitle>Events on {selectedDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardTitle></CardHeader>
-                       <CardContent>
-                         <div className="space-y-4">
-                           {eventsForSelectedDate.length > 0 ? (eventsForSelectedDate.map((ev) => (
-                               <div key={ev.id} className="border-l-4 border-violet pl-4 py-2">
-                                 <div className="flex justify-between items-start">
-                                   <div>
-                                     <p className="font-semibold text-gray-800">{ev.title}</p>
-                                     <p className="text-xs text-gray-500">{formatEventTime(ev)} {ev.location && `• ${ev.location}`}</p>
-                                   </div>
-                                   <DropdownMenu>
-                                     <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal/></Button></DropdownMenuTrigger>
-                                     <DropdownMenuContent>
-                                       <DropdownMenuItem onClick={() => { setEditingEvent(ev); setShowEventModal(true); }}>Edit</DropdownMenuItem>
-                                       <DropdownMenuItem onClick={() => handleDeleteEvent(ev.id)} className="text-red-600">Delete</DropdownMenuItem>
-                                     </DropdownMenuContent>
-                                   </DropdownMenu>
-                                 </div>
-                                 {ev.description && (<p className="text-sm text-gray-600 mt-1">{ev.description}</p>)}
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-3xl font-bold text-gray-800">Event Calendar</h1>
+                        <Button onClick={() => { setEditingEvent(null); setShowEventModal(true); }} className="bg-violet hover:bg-violet/90 text-white font-semibold shadow-md"><PlusCircle className="mr-2 h-5 w-5"/> Add Event</Button>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                        <Card className="lg:col-span-1"><Calendar mode="single" selected={selectedDate} onSelect={(d: any) => setSelectedDate(d || new Date())} className="p-0" modifiers={{ hasEvent: eventDates }} modifiersClassNames={{ hasEvent: "bg-violet/20 text-violet rounded-full" }}/></Card>
+                        <Card className="lg:col-span-2">
+                           <CardHeader><CardTitle>Events on {selectedDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardTitle></CardHeader>
+                           <CardContent>
+                               <div className="space-y-4">
+                                  {eventsForSelectedDate.length > 0 ? (eventsForSelectedDate.map((ev) => (
+                                      <div key={ev.id} className="border-l-4 border-violet pl-4 py-2">
+                                          <div className="flex justify-between items-start">
+                                              <div>
+                                               <p className="font-semibold text-gray-800">{ev.title}</p>
+                                               <p className="text-xs text-gray-500">{formatEventTime(ev)} {ev.location && `• ${ev.location}`}</p>
+                                              </div>
+                                              <DropdownMenu>
+                                               <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal/></Button></DropdownMenuTrigger>
+                                               <DropdownMenuContent>
+                                                <DropdownMenuItem onClick={() => { setEditingEvent(ev); setShowEventModal(true); }}>Edit</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleDeleteEvent(ev.id)} className="text-red-600">Delete</DropdownMenuItem>
+                                               </DropdownMenuContent>
+                                              </DropdownMenu>
+                                          </div>
+                                          {ev.description && (<p className="text-sm text-gray-600 mt-1">{ev.description}</p>)}
+                                      </div>
+                                  ))) : (<p className="text-sm text-center text-gray-500 py-8">No events for this day.</p>)}
                                </div>
-                             ))) : (<p className="text-sm text-center text-gray-500 py-8">No events for this day.</p>)}
-                         </div>
-                       </CardContent>
+                           </CardContent>
+                        </Card>
+                    </div>
+                    <Card className="mt-6">
+                        <CardHeader><CardTitle>All Upcoming Events</CardTitle></CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                {events.length > 0 ? (events.map((ev) => (
+                                    <div key={ev.id} className="border-l-4 border-gray-300 pl-4 py-2">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="font-semibold text-gray-800">{ev.title}</p>
+                                                <p className="text-xs text-gray-500">{new Date(ev.start).toLocaleDateString()} • {formatEventTime(ev)} {ev.location && `• ${ev.location}`}</p>
+                                            </div>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal/></Button></DropdownMenuTrigger>
+                                                <DropdownMenuContent>
+                                                    <DropdownMenuItem onClick={() => { setEditingEvent(ev); setShowEventModal(true); }}>Edit</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleDeleteEvent(ev.id)} className="text-red-600">Delete</DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </div>
+                                ))) : (<p className="text-sm text-center text-gray-500 py-8">No events scheduled.</p>)}
+                            </div>
+                        </CardContent>
                     </Card>
-                  </div>
-                  <Card className="mt-6">
-                      <CardHeader><CardTitle>All Upcoming Events</CardTitle></CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {events.length > 0 ? (events.map((ev) => (
-                              <div key={ev.id} className="border-l-4 border-gray-300 pl-4 py-2">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <p className="font-semibold text-gray-800">{ev.title}</p>
-                                     <p className="text-xs text-gray-500">{new Date(ev.start).toLocaleDateString()} • {formatEventTime(ev)} {ev.location && `• ${ev.location}`}</p>
-                                  </div>
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal/></Button></DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                      <DropdownMenuItem onClick={() => { setEditingEvent(ev); setShowEventModal(true); }}>Edit</DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleDeleteEvent(ev.id)} className="text-red-600">Delete</DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                </div>
-                              </div>
-                            ))) : (<p className="text-sm text-center text-gray-500 py-8">No events scheduled.</p>)}
-                        </div>
-                      </CardContent>
-                  </Card>
                 </div>
-              );
+            );
             case "Social Apps": return <PlaceholderContent title="Social Apps" />;
             default: return <DashboardAnalytics setActiveTab={setActiveTab} />;
         }
     };
 
     const SidebarContent = () => (
-      <>
-        <div className="flex-1 flex flex-col min-h-0">
-            <div className="px-6 py-6 font-bold text-xl border-b text-violet flex items-center justify-between"><span>ADMIN</span></div>
-             <nav className="flex-1 overflow-y-auto flex flex-col gap-1 mt-4 px-4 text-sm text-gray-700">
-                {sidebarItems.map(({ name, icon: Icon }) => (
-                    <button key={name} className={`px-4 py-3 rounded-lg cursor-pointer transition-all flex items-center text-left ${activeTab === name ? "bg-violet/10 text-violet font-semibold" : "hover:bg-violet/5"}`} onClick={() => handleSidebarItemClick(name)}>
-                        <Icon className="w-5 h-5 mr-3" /> {name}
-                    </button>
-                ))}
-            </nav>
-        </div>
-        <div className="p-4 border-t flex items-center gap-3">
-             <Avatar>
-               <AvatarImage src={adminUser?.avatarUrl} />
-               <AvatarFallback>{adminUser?.fullName?.[0]}</AvatarFallback>
-             </Avatar>
-             <div className="flex-1">
-               <p className="text-sm font-semibold truncate">{adminUser?.fullName}</p>
-               <p className="text-xs text-gray-500 truncate">{adminUser?.email}</p>
-             </div>
-             <Button variant="ghost" size="icon" onClick={logout} className="text-gray-500 hover:text-red-500 hover:bg-red-50"><LogOut className="h-5 w-5"/></Button>
-        </div>
-      </>
+        <>
+            <div className="flex-1 flex flex-col min-h-0">
+                <div className="px-6 py-6 font-bold text-xl border-b text-violet flex items-center justify-between"><span>ADMIN</span></div>
+                 <nav className="flex-1 overflow-y-auto flex flex-col gap-1 mt-4 px-4 text-sm text-gray-700">
+                    {sidebarItems.map(({ name, icon: Icon }) => (
+                        <button key={name} className={`px-4 py-3 rounded-lg cursor-pointer transition-all flex items-center text-left ${activeTab === name ? "bg-violet/10 text-violet font-semibold" : "hover:bg-violet/5"}`} onClick={() => handleSidebarItemClick(name)}>
+                            <Icon className="w-5 h-5 mr-3" /> {name}
+                        </button>
+                    ))}
+                </nav>
+            </div>
+            <div className="p-4 border-t flex items-center gap-3">
+                 <Avatar>
+                    <AvatarImage src={adminUser?.avatarUrl} />
+                    <AvatarFallback>{adminUser?.fullName?.[0]}</AvatarFallback>
+                 </Avatar>
+                 <div className="flex-1">
+                    <p className="text-sm font-semibold truncate">{adminUser?.fullName}</p>
+                    <p className="text-xs text-gray-500 truncate">{adminUser?.email}</p>
+                 </div>
+                 <Button variant="ghost" size="icon" onClick={logout} className="text-gray-500 hover:text-red-500 hover:bg-red-50"><LogOut className="h-5 w-5"/></Button>
+            </div>
+        </>
     );
 
     return (
@@ -744,7 +805,7 @@ export default function AdminDashboard() {
                 onSubmit={(data: any) => editingEvent ? handleUpdateEvent({ ...data, id: editingEvent.id }) : handleCreateEvent(data)}
             />
             
-          
+        
             <CreateTestimonialModal 
                 isOpen={showTestimonialModal}
                 onClose={() => { setEditingTestimonial(null); setShowTestimonialModal(false); }}

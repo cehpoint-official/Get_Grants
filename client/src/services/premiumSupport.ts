@@ -2,54 +2,80 @@ import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, getDocs, doc, updateDoc, where, onSnapshot, Unsubscribe, DocumentData, limit } from 'firebase/firestore';
 import { InquiryMessage, PremiumInquiry } from '@shared/schema';
 
+// --- NEW FUNCTION TO SAVE INQUIRY FROM PRICING PAGE ---
+// This function is specifically for the new modal flow on the PremiumSupportPage.
+export async function savePremiumInquiry(data: {
+    name: string;
+    email: string;
+    phone: string;
+    needs?: string;
+    planName: string;
+    planPrice: number;
+    userId: string;
+    status: 'new' | 'in_progress' | 'responded' | 'closed';
+}): Promise<string> {
+    const docRef = await addDoc(collection(db, 'premiumInquiries'), {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        specificNeeds: data.needs ?? '',
+        currentPlan: data.planName,
+        budget: data.planPrice.toString(),
+        userId: data.userId,
+        status: data.status,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+    });
+    return docRef.id;
+}
+
+
 // This is your original function for creating an inquiry via the old form.
 export async function createPremiumInquiry(data: any): Promise<string> {
-  const docRef = await addDoc(collection(db, 'premiumInquiries'), {
-    ...data,
-    status: 'new',
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-  // You might want to remove the notifyAdminNewInquiry call if it's handled by cloud functions
-  // await notifyAdminNewInquiry(docRef.id, data); 
-  return docRef.id;
+    const docRef = await addDoc(collection(db, 'premiumInquiries'), {
+        ...data,
+        status: 'new',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+    });
+    return docRef.id;
 }
 
 // This function is used by the new direct chat feature from the FAQ page
 export async function startChatSession(params: {
-  userId: string;
-  name: string;
-  email: string;
-  firstMessage: string;
+    userId: string;
+    name: string;
+    email: string;
+    firstMessage: string;
 }): Promise<string> {
-  try {
-    const inquiryData = {
-      name: params.name,
-      email: params.email,
-      userId: params.userId,
-      specificNeeds: params.firstMessage, // The first message acts as the title/topic
-      status: 'new' as const,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      phone: '',
-      companyName: '',
-      currentPlan: 'Chat Inquiry',
-      budget: 'N/A',
-      timeline: 'N/A',
-    };
-    const docRef = await addDoc(collection(db, 'premiumInquiries'), inquiryData);
-    const messagesRef = collection(db, 'premiumInquiries', docRef.id, 'messages');
-    await addDoc(messagesRef, {
-        text: params.firstMessage,
-        sender: 'user',
-        senderId: params.userId,
-        createdAt: serverTimestamp(),
-    });
-    return docRef.id;
-  } catch (error) {
-    console.error('Error starting chat session:', error);
-    throw new Error('Failed to start a new chat session');
-  }
+    try {
+        const inquiryData = {
+            name: params.name,
+            email: params.email,
+            userId: params.userId,
+            specificNeeds: params.firstMessage, // The first message acts as the title/topic
+            status: 'new' as const,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            phone: '',
+            companyName: '',
+            currentPlan: 'Chat Inquiry',
+            budget: 'N/A',
+            timeline: 'N/A',
+        };
+        const docRef = await addDoc(collection(db, 'premiumInquiries'), inquiryData);
+        const messagesRef = collection(db, 'premiumInquiries', docRef.id, 'messages');
+        await addDoc(messagesRef, {
+            text: params.firstMessage,
+            sender: 'user',
+            senderId: params.userId,
+            createdAt: serverTimestamp(),
+        });
+        return docRef.id;
+    } catch (error) {
+        console.error('Error starting chat session:', error);
+        throw new Error('Failed to start a new chat session');
+    }
 }
 
 // Updated to sort by recent activity for the admin panel

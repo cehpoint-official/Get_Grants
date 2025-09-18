@@ -1,11 +1,8 @@
-
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Blog posts: Public can read only published; users can create pending; only admin can publish/reject/delete
     match /posts/{postId} {
       allow get: if resource.data.status == 'published';
       allow list: if true;
@@ -13,37 +10,37 @@ service cloud.firestore {
       allow update, delete: if request.auth != null && request.auth.token.admin == true;
     }
 
-    // Grants collection 
     match /grants/{grantId} {
       allow read: if true;
       allow create, update, delete: if request.auth != null && request.auth.token.admin == true;
     }
     
-    // Testimonials collection
     match /testimonials/{testimonialId} {
       allow read: if true;
       allow create, update, delete: if request.auth != null && request.auth.token.admin == true;
     }
 
-    // Contact Messages
     match /contactMessages/{messageId} {
       allow create: if request.auth != null;
       allow read, write: if request.auth != null && request.auth.token.admin == true;
     }
 
-    // Authenticated users can create incubator requests
     match /incubator_requests/{docId} {
       allow create: if request.auth != null;
       allow read, update, delete: if request.auth != null && request.auth.token.admin == true;
     }
 
-    // Users collection
+    // --- NEW RULE ADDED HERE ---
+    match /grantLeads/{leadId} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null && request.auth.token.admin == true;
+    }
+
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
       allow read, update, delete: if request.auth != null && request.auth.token.admin == true;
     }
 
-    // Premium Support Inquiries collection
     match /premiumInquiries/{inquiryId} {
       allow create: if true;
       allow read, update: if request.auth != null && request.auth.token.admin == true;
@@ -59,7 +56,6 @@ service cloud.firestore {
       }
     }
 
-    // Fallback deny
     match /{document=**} {
       allow read, write: if false;
     }
