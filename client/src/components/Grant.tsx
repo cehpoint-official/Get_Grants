@@ -35,7 +35,7 @@ const GrantCallToAction = () => {
         {/* Buttons */}
         <div className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
           <button 
-            onClick={() => navigate('/grants')}
+            onClick={() => { navigate('/grants'); setTimeout(() => window.scrollTo({ top: 0, behavior: 'auto' }), 0); }}
             className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-7 py-3 font-semibold text-base rounded-lg shadow-lg transition-opacity"
            
           >

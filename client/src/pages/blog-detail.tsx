@@ -30,6 +30,9 @@ export default function BlogDetail() {
   }, [post, posts]);
 
   useEffect(() => {
+    // ensure top on mount
+    window.scrollTo({ top: 0, behavior: 'auto' });
+
     const urlParams = new URLSearchParams(window.location.search);
     const postId = urlParams.get("id");
     
@@ -60,7 +63,7 @@ export default function BlogDetail() {
   
   const handleBackToBlog = () => {
     localStorage.setItem("scrollTo", "blog");
-    navigate("/");
+    navigate("/#blog");
   };
 
   const handleRelatedPostClick = (relatedPost: any) => {

@@ -1,4 +1,5 @@
 import { Switch, Route, Redirect, useLocation } from "wouter";
+import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -65,6 +66,15 @@ function Router() {
 function App() {
   const [location] = useLocation();
   const isMobile = useIsMobile();
+  
+  // Global scroll-to-top on route changes unless a specific section scroll is pending
+  useEffect(() => {
+    const hasHash = typeof window !== 'undefined' && window.location.hash && window.location.hash.length > 1;
+    const pendingSection = typeof window !== 'undefined' ? localStorage.getItem('scrollTo') : null;
+    if (!hasHash && !pendingSection) {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }, [location]);
   
   const isAdminRoute = location.startsWith("/admin");
   const isMobileDashboard = location.startsWith("/dashboard") && isMobile;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
 import { useLocation } from "wouter";
@@ -51,7 +51,7 @@ const PremiumInquiryModal = ({
             setEmail(user.email || "");
             setPhone(user.phone || "");
         }
-    }, [user, isOpen]); // Added isOpen to re-populate form when opened
+    }, [user, isOpen]);
 
     if (!plan) return null;
 
@@ -110,36 +110,27 @@ export default function PremiumSupportPage() {
     const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
     const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
     const [hasActiveSubscription, setHasActiveSubscription] = useState<Plan | null>(null);
-    const [hasMeetingPlan, setHasMeetingPlan] = useState(false); // Yeh state yaad rakhegi ki meeting plan khareeda ja chuka hai.
+    const [hasMeetingPlan, setHasMeetingPlan] = useState(false);
 
     const { user } = useAuth();
     const { toast } = useToast();
     const [, navigate] = useLocation();
 
+    const pricingSectionRef = useRef<HTMLElement>(null);
+
     useEffect(() => {
-        // IMPORTANT: Real app mein, user login hone par uske purane purchases ko database se fetch karke
-        // `setHasMeetingPlan(true)` ya `setHasActiveSubscription(...)` set karna chahiye.
-        // For example:
-        // if (user && user.purchases.includes('meeting_plan')) {
-        //     setHasMeetingPlan(true);
-        // }
     }, [user]);
 
     const handlePlanClick = (plan: Plan) => {
         if (user) {
-            // Meeting plan ke liye special check
             if (plan.price === 3999) {
                 if (hasMeetingPlan) {
-                    // Agar plan pehle se hai, to seedha link kholo, form nahi.
                     toast({ title: "Opening Scheduler", description: "Redirecting you to schedule your meeting." });
                     const zcalLink = import.meta.env.VITE_ZCAL_LINK;
                     window.open(zcalLink, '_blank');
-                    return; // Important: function ko yahin rok do
+                    return;
                 }
             }
-
-            // Kisi bhi doosre plan ke liye ya meeting plan pehli baar lene ke liye, form dikhao.
-            // Ab user koi bhi plan kabhi bhi le sakta hai.
             setSelectedPlan(plan);
             setIsEnquiryModalOpen(true);
         } else {
@@ -168,12 +159,10 @@ export default function PremiumSupportPage() {
             setIsEnquiryModalOpen(false);
             
             if (selectedPlan.price === 3999) {
-                // Meeting plan khareedne par, state set karo taaki agli baar form na dikhe.
                 setHasMeetingPlan(true); 
                 const zcalLink = import.meta.env.VITE_ZCAL_LINK;
                 window.open(zcalLink, '_blank');
             } else {
-                // Doosre plans ke liye, active subscription set karo.
                 setHasActiveSubscription(selectedPlan);
                 navigate("/dashboard");
             }
@@ -185,8 +174,13 @@ export default function PremiumSupportPage() {
 
     const handleConnectClick = () => {
         navigate("/contact");
+        setTimeout(() => window.scrollTo({ top: 0, behavior: 'auto' }), 0);
     };
     
+    const handleJoinUsClick = () => {
+        pricingSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
     const plans: Plan[] = [
         { name: "1-Month Access", price: 390, duration: "1-Month" },
         { name: "3-Month Access", price: 999, duration: "3-Month" },
@@ -209,10 +203,10 @@ export default function PremiumSupportPage() {
                 </div>
             </section>
 
-            <section id="pricing" >
+            <section id="pricing" ref={pricingSectionRef}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10">
                     <div className="flex flex-col lg:flex-row justify-center items-stretch gap-8">
-                        {/* 1-Month Plan */}
+                        
                         <div className="group bg-white rounded-2xl p-6 text-center shadow-lg border w-full max-w-sm transition-all duration-300 ease-in-out hover:scale-105">
                             <div className="mb-6">
                                 <div className="inline-flex items-center justify-center bg-[#F3F4F6] text-[#4B5563] px-4 py-1.5 rounded-full text-sm font-medium mb-4">1-Month</div>
@@ -234,7 +228,6 @@ export default function PremiumSupportPage() {
                             <Button onClick={() => handlePlanClick(plans[0])} className="w-full text-[#8541EF] group-hover:bg-[#8541EF] group-hover:text-dark-violet rounded-xl font-semibold h-10 border border-[#8541EF]" style={{backgroundColor: '#8541EF17'}}>Get started</Button>
                         </div>
 
-                        {/* 3-Month Plan */}
                         <div className="bg-white rounded-2xl p-6 text-center shadow-lg w-full max-w-sm relative transition-all duration-300 ease-in-out hover:scale-110">
                             <div className="absolute top-4 right-4">
                                 <span className="text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg" style={{ background: 'linear-gradient(91.15deg, #FA9025 30.26%, #FFEBE3 81.29%, #FF9B10 94.61%)' }}>Popular</span>
@@ -259,7 +252,6 @@ export default function PremiumSupportPage() {
                             <Button onClick={() => handlePlanClick(plans[1])} className="w-full bg-[#8541EF] hover:bg-[#7a38d9] text-white rounded-xl font-semibold h-10">Get started</Button>
                         </div>
 
-                        {/* Custom Plan */}
                         <div className="group bg-white rounded-2xl p-6 text-center shadow-lg border w-full max-w-sm transition-all duration-300 ease-in-out hover:scale-105">
                             <div className="mb-6">
                                 <div className="inline-flex items-center justify-center bg-[#FEF3C7] text-[#92400E] px-4 py-1.5 rounded-full text-sm font-medium mb-4">Custom Plan</div>
@@ -320,7 +312,12 @@ export default function PremiumSupportPage() {
                         </div>
                     </div>
                     <div className="text-center mt-12 translate-y-1/2">
-                        <Button className="bg-[#8A51CE] hover:bg-[#7c48b8] text-white px-8 py-3 rounded-[20px] font-semibold text-lg">Join Us</Button>
+                        <Button 
+                            onClick={handleJoinUsClick}
+                            className="bg-[#8A51CE] hover:bg-[#7c48b8] text-white px-8 py-3 rounded-[20px] font-semibold text-lg"
+                        >
+                            Join Us
+                        </Button>
                     </div>
                 </div>
             </section>

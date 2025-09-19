@@ -19,10 +19,13 @@ export default function Home() {
 
   useEffect(() => {
     const hash = window.location.hash;
-
+    const pendingSection = localStorage.getItem('scrollTo');
     if (hash) {
       const sectionId = hash.substring(1);
       scrollToSectionWithOffset(sectionId, 'auto');
+    } else if (pendingSection) {
+      scrollToSectionWithOffset(pendingSection, 'auto');
+      localStorage.removeItem('scrollTo');
     }
   }, [location]); 
 

@@ -138,7 +138,10 @@ export function BlogSection() {
                       <Button
                         variant="link"
                         className="bg-violet text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-[#8A41CE] hover:no-underline"
-                        onClick={() => setLocation(`/blog-detail?id=${post.id}`)}
+                        onClick={() => {
+                          setLocation(`/blog-detail?id=${post.id}`);
+                          setTimeout(() => window.scrollTo({ top: 0, behavior: 'auto' }), 0);
+                        }}
                       >
                         Read More →
                       </Button>

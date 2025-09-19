@@ -88,7 +88,7 @@ export default function Testimonials() {
             </p>
             <div className="flex justify-center lg:justify-start">
               <Button
-                onClick={() => navigate('/grants')}
+                onClick={() => { navigate('/grants'); setTimeout(() => window.scrollTo({ top: 0, behavior: 'auto' }), 0); }}
                 className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-8 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity"
               >
                 Find Grants
