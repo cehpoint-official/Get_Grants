@@ -268,7 +268,7 @@ export default function AdminDashboard() {
         const tabActions: { [key: string]: () => void } = {
             "Blogs": () => { loadPosts(); loadPending(); },
             "Grants": loadGrants,
-            "Grant Leads": loadGrantLeads, // <-- NEW ACTION
+            "Grant Leads": loadGrantLeads, 
             "Calendar": loadEvents,
             "Applications": loadApplications,
             "Users": loadUsers,
@@ -824,17 +824,14 @@ export default function AdminDashboard() {
                     ))}
                 </nav>
             </div>
-            <div className="p-4 border-t flex items-center gap-3">
-                 <Avatar>
-                    <AvatarImage src={adminUser?.avatarUrl} />
-                    <AvatarFallback>{adminUser?.fullName?.[0]}</AvatarFallback>
-                 </Avatar>
-                 <div className="flex-1">
-                    <p className="text-sm font-semibold truncate">{adminUser?.fullName}</p>
-                    <p className="text-xs text-gray-500 truncate">{adminUser?.email}</p>
-                 </div>
-                 <Button variant="ghost" size="icon" onClick={logout} className="text-gray-500 hover:text-red-500 hover:bg-red-50"><LogOut className="h-5 w-5"/></Button>
+            {/* === CODE CHANGED HERE === */}
+            <div className="p-4 border-t">
+                <Button variant="ghost" onClick={logout} className="w-full justify-start text-gray-600 hover:text-red-500 hover:bg-red-50">
+                    <LogOut className="mr-3 h-5 w-5"/>
+                    Logout
+                </Button>
             </div>
+            {/* === END OF CHANGE === */}
         </>
     );
 

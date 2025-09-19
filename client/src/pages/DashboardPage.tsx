@@ -422,8 +422,22 @@ const ProfileSettings = () => {
         const file = e.target.files?.[0];
         if (!file) return;
         try {
+            // Center-square crop on client before upload
+            const imageBitmap = await createImageBitmap(file);
+            const size = Math.min(imageBitmap.width, imageBitmap.height);
+            const sx = (imageBitmap.width - size) / 2;
+            const sy = (imageBitmap.height - size) / 2;
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) throw new Error('Canvas not supported');
+            ctx.drawImage(imageBitmap, sx, sy, size, size, 0, 0, size, size);
+            const blob: Blob = await new Promise((resolve) => canvas.toBlob(b => resolve(b as Blob), 'image/jpeg', 0.92));
+            const croppedFile = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+
             const { uploadToCloudinary } = await import('@/services/cloudinary');
-            const url = await uploadToCloudinary(file);
+            const url = await uploadToCloudinary(croppedFile);
             await updateUserProfileDetails({ avatarUrl: url });
             toast({ title: 'Avatar Updated', description: 'Your new avatar has been saved.' });
         } catch (err: any) {

@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NotificationConsentModal } from "@/components/ui/NotificationConsentModal";
 import { scrollToSectionWithOffset } from "@/lib/scrollUtils";
 
@@ -113,7 +113,8 @@ export function Navbar() {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                        <Avatar className="h-10 w-10 border-2 border-violet/50">
+                        <Avatar className="h-10 w-10 border-2 border-violet/50 overflow-hidden">
+                            <AvatarImage src={user.avatarUrl} alt={user.fullName} />
                             <AvatarFallback className="bg-violet/20 text-violet font-bold">
                                 {user.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || <UserIcon />}
                             </AvatarFallback>

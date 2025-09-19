@@ -18,6 +18,7 @@ export async function createUserProfile(
     createdAt: new Date(),
     subscriptionStatus: 'free',
     savedGrants: [],
+    avatarUrl: '',
     notifyEmail: additionalData.notifyEmail ?? true,
     notifyWhatsapp: additionalData.notifyWhatsapp ?? true,
     notificationConsentGiven: false, // New users haven't given consent yet
@@ -51,6 +52,7 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
         notifyEmail: data.notifyEmail ?? true,
         notifyWhatsapp: data.notifyWhatsapp ?? true,
         notificationConsentGiven: data.notificationConsentGiven ?? false,
+        avatarUrl: data.avatarUrl || '',
       };
       return profile;
     }

@@ -21,6 +21,7 @@ export function ChatInterface({ initialInquiryId, onChatStarted }: ChatInterface
   const [sending, setSending] = useState(false);
   const [currentInquiryId, setCurrentInquiryId] = useState<string | null>(initialInquiryId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -43,7 +44,12 @@ export function ChatInterface({ initialInquiryId, onChatStarted }: ChatInterface
   }, [currentInquiryId]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+    }
   }, [messages]);
 
   const handleSend = async (e: React.FormEvent) => {
@@ -82,7 +88,7 @@ export function ChatInterface({ initialInquiryId, onChatStarted }: ChatInterface
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Messages Area with correct flex and overflow properties */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {loading ? (
           <div className="flex justify-center items-center h-full"><LoaderCircle className="w-6 h-6 animate-spin text-violet" /></div>
         ) : messages.length === 0 ? (
