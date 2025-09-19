@@ -164,6 +164,7 @@ export default function PremiumSupportPage() {
                 window.open(zcalLink, '_blank');
             } else {
                 setHasActiveSubscription(selectedPlan);
+                try { localStorage.setItem('askNotify', '1'); } catch {}
                 navigate("/dashboard");
             }
 

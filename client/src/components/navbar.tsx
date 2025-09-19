@@ -27,10 +27,12 @@ export function Navbar() {
   const [activeLink, setActiveLink] = useState('Home');
 
   useEffect(() => {
-    if (user && !user.notificationConsentGiven && !isAdmin) {
-      setShowNotifyModal(true);
-    } else {
-      setShowNotifyModal(false);
+    const shouldAskNow = !!user && !user.notificationConsentGiven && !isAdmin && (
+      user.subscriptionStatus === 'premium' || localStorage.getItem('askNotify') === '1'
+    );
+    setShowNotifyModal(shouldAskNow);
+    if (!shouldAskNow && localStorage.getItem('askNotify') === '1') {
+      localStorage.removeItem('askNotify');
     }
   }, [user, isAdmin]);
 
@@ -249,7 +251,13 @@ export function Navbar() {
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} initialMode={authInitialMode} />
       <AdminModal isOpen={false} onClose={() => {}} />
-      <NotificationConsentModal isOpen={showNotifyModal && !!user && !user.notificationConsentGiven && !isAdmin} onClose={() => setShowNotifyModal(false)} />
+      <NotificationConsentModal 
+        isOpen={showNotifyModal && !!user && !user.notificationConsentGiven && !isAdmin}
+        onClose={() => {
+          setShowNotifyModal(false);
+          localStorage.removeItem('askNotify');
+        }} 
+      />
     </>
   );
 }
