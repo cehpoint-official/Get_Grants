@@ -34,7 +34,7 @@ export function Features() {
           </p>
         </div>
         
-        {/*  for mobile responsiveness */}
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-y-16 md:gap-x-8 max-w-sm md:max-w-5xl mx-auto">
           {painPoints.map((point, index) => (
             <div

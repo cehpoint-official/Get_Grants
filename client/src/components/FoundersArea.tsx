@@ -3,7 +3,7 @@ import { CheckCircle, Zap, Bell, CalendarClock } from "lucide-react";
 import { Link } from "wouter";
 
 export default function FoundersArea() {
-  // Features directly from the document
+ 
   const features = [
     {
       text: "Bookmark grants to review later",
@@ -46,7 +46,7 @@ export default function FoundersArea() {
         </div>
 
         <div className="mt-12">
-          {/* CTA Button from the document */}
+         
           <Button asChild size="lg" className="bg-violet hover:bg-pink text-white text-base px-8 py-6 rounded-xl shadow-lg font-semibold">
             <Link href="/login">Create Your Free Founder Profile</Link>
           </Button>

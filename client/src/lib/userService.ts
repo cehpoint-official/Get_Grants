@@ -21,7 +21,7 @@ export async function createUserProfile(
     avatarUrl: '',
     notifyEmail: additionalData.notifyEmail ?? true,
     notifyWhatsapp: additionalData.notifyWhatsapp ?? true,
-    notificationConsentGiven: false, // New users haven't given consent yet
+    notificationConsentGiven: false, 
   };
 
   await setDoc(userRef, {

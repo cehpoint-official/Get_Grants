@@ -2,8 +2,8 @@ import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast"; // ERROR FIXED
-import { db } from "@/lib/firebase"; // ERROR FIXED
+import { useToast } from "@/hooks/use-toast"; 
+import { db } from "@/lib/firebase"; 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addDoc, collection } from "firebase/firestore";
 import { Facebook, Instagram, Linkedin, LoaderCircle, MessageSquare, Twitter } from "lucide-react";

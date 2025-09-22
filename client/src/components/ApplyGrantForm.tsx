@@ -19,7 +19,7 @@ import { submitApplication } from "@/services/applications";
 import { useAuth } from "@/hooks/use-auth";
 import { InsertApplication } from "@shared/schema";
 import { CheckCircle2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { useToast } from "@/hooks/use-toast"; 
 
 const formSchema = z.object({
   name: z.string()
@@ -59,7 +59,7 @@ export const GrantApplicationForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const [_, navigate] = useLocation();
   const { user } = useAuth();
-  const { toast } = useToast(); // Initialize useToast
+  const { toast } = useToast(); 
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

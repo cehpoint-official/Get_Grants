@@ -2,8 +2,7 @@ import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, getDocs, doc, updateDoc, where, onSnapshot, Unsubscribe, DocumentData, limit } from 'firebase/firestore';
 import { InquiryMessage, PremiumInquiry } from '@shared/schema';
 
-// --- NEW FUNCTION TO SAVE INQUIRY FROM PRICING PAGE ---
-// This function is specifically for the new modal flow on the PremiumSupportPage.
+
 export async function savePremiumInquiry(data: {
     name: string;
     email: string;
@@ -30,7 +29,7 @@ export async function savePremiumInquiry(data: {
 }
 
 
-// This is your original function for creating an inquiry via the old form.
+
 export async function createPremiumInquiry(data: any): Promise<string> {
     const docRef = await addDoc(collection(db, 'premiumInquiries'), {
         ...data,
@@ -41,7 +40,7 @@ export async function createPremiumInquiry(data: any): Promise<string> {
     return docRef.id;
 }
 
-// This function is used by the new direct chat feature from the FAQ page
+
 export async function startChatSession(params: {
     userId: string;
     name: string;
@@ -53,7 +52,7 @@ export async function startChatSession(params: {
             name: params.name,
             email: params.email,
             userId: params.userId,
-            specificNeeds: params.firstMessage, // The first message acts as the title/topic
+            specificNeeds: params.firstMessage,
             status: 'new' as const,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
@@ -78,7 +77,7 @@ export async function startChatSession(params: {
     }
 }
 
-// Updated to sort by recent activity for the admin panel
+
 export async function fetchPremiumInquiries(): Promise<PremiumInquiry[]> {
     try {
         const q = query(
@@ -98,7 +97,7 @@ export async function fetchPremiumInquiries(): Promise<PremiumInquiry[]> {
     }
 }
 
-// This function is for the user's dashboard
+
 export async function fetchUserPremiumInquiriesByUserIdOrEmail(params: { userId?: string; email?: string }): Promise<PremiumInquiry[]> {
     const results: PremiumInquiry[] = [];
     if (params.userId) {
@@ -148,10 +147,7 @@ export function subscribeToInquiryMessages(inquiryId: string, onChange: (message
     });
 }
 
-/**
- * NEW FUNCTION
- * Subscribes to the most recent message in a conversation.
- */
+
 export function subscribeToLastMessage(inquiryId: string, callback: (message: InquiryMessage | null) => void): () => void {
     const messagesRef = collection(db, 'premiumInquiries', inquiryId, 'messages');
     const q = query(messagesRef, orderBy('createdAt', 'desc'), limit(1));

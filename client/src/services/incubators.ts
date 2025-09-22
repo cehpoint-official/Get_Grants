@@ -1,4 +1,4 @@
-// client/src/services/incubators.ts
+
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 

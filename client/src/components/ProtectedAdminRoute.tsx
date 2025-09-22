@@ -1,4 +1,4 @@
-// src/components/ProtectedAdminRoute.tsx
+
 import { ReactNode } from 'react';
 import { Redirect } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';

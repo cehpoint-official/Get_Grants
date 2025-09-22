@@ -8,7 +8,7 @@ export const uploadToCloudinary = async (file: File): Promise<string> => {
 
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("upload_preset", CLOUDINARY_PRESET); // from .env
+  formData.append("upload_preset", CLOUDINARY_PRESET); 
 
   const response = await fetch(CLOUDINARY_URL, {
     method: "POST",

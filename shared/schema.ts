@@ -1,5 +1,3 @@
-
-
 import { z } from "zod";
 
 // --- User & Payment Schemas ---
@@ -15,6 +13,8 @@ export const userSchema = z.object({
   subscriptionStatus: z.string().optional().default('Inactive'),
   subscriptionExpiresOn: z.date().optional().nullable(),
 });
+
+export const insertUserSchema = userSchema.omit({ id: true, createdAt: true });
 
 export const paymentSchema = z.object({
   id: z.string(),
@@ -109,7 +109,6 @@ export const applicationSchema = z.object({
   dpiit: z.string().optional(),
 });
 
-// New schema for inserting application data
 export const insertApplicationSchema = applicationSchema.omit({ id: true, submittedAt: true });
 
 
@@ -178,11 +177,12 @@ export const insertTestimonialSchema = testimonialSchema.omit({ id: true, create
 
 // --- All Types ---
 export type User = z.infer<typeof userSchema>;
+export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Payment = z.infer<typeof paymentSchema>;
 export type Post = z.infer<typeof postSchema>;
 export type InsertPost = z.infer<typeof insertPostSchema>;
 export type Application = z.infer<typeof applicationSchema>;
-export type InsertApplication = z.infer<typeof insertApplicationSchema>; // New type
+export type InsertApplication = z.infer<typeof insertApplicationSchema>;
 export type Grant = z.infer<typeof grantSchema>;
 export type InsertGrant = z.infer<typeof insertGrantSchema>;
 export type CalendarEvent = z.infer<typeof eventSchema>;

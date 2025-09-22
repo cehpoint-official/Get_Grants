@@ -27,7 +27,7 @@ export const fetchApplications = async (): Promise<Application[]> => {
     return {
       id: doc.id,
       ...data,
-      // Firestore timestamp ko JavaScript Date object mein convert karein
+      // Firestore timestamp ko JavaScript Date object mein convert 
       submittedAt: data.submittedAt instanceof Timestamp ? data.submittedAt.toDate() : new Date(),
     } as Application;
   });

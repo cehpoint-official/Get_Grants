@@ -1,4 +1,4 @@
-// client/src/services/payments.ts
+
 import { db } from "@/lib/firebase";
 import { Payment } from "@shared/schema";
 import {

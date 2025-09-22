@@ -121,9 +121,9 @@ export default function About() {
       {/* Our Mission */}
       <section className="flex items-center justify-center py-16 md:py-24 bg-gray-50">
         <div className="container mx-auto px-4">
-          {/* Updated flex order for mobile view */}
+         
           <div className="flex flex-col md:flex-row items-center justify-center gap-12 md:gap-16">
-            {/* Text div is now first for mobile */}
+           
             <div className="w-full md:w-1/2 text-center md:text-left md:order-2">
               <span className="inline-block bg-purple-200 text-sm text-purple-800 font-semibold px-4 py-2 rounded-full mb-4">
                 Our Mission
@@ -143,7 +143,7 @@ export default function About() {
                 ))}
               </ul>
             </div>
-            {/* Image div is second for mobile, but first on desktop due to 'order' class */}
+           
             <div className="w-full md:w-1/2 flex justify-center md:order-1">
               <div className="relative p-4 bg-purple-100 rounded-lg shadow-lg">
                 <img

@@ -67,7 +67,7 @@ function App() {
   const [location] = useLocation();
   const isMobile = useIsMobile();
   
-  // Global scroll-to-top on route changes unless a specific section scroll is pending
+ 
   useEffect(() => {
     const hasHash = typeof window !== 'undefined' && window.location.hash && window.location.hash.length > 1;
     const pendingSection = typeof window !== 'undefined' ? localStorage.getItem('scrollTo') : null;

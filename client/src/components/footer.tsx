@@ -65,7 +65,7 @@ export function Footer() {
                 </ul>
               </div>
 
-              <div className="col-span-1 text-left">
+              {/* <div className="col-span-1 text-left">
                 <h4 className="text-base font-semibold mb-6 text-white uppercase tracking-wide text-left sm:text-left">LEGAL</h4>
                 <ul className="space-y-3 flex flex-col items-start sm:items-start">
                 <li><a href="#" className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>SUPPORT</a></li>
@@ -74,7 +74,7 @@ export function Footer() {
                   <li><a href="#" className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>PRIVACY POLICY</a></li>
                   <li><a href="#" className="text-white hover:text-[#EB5E77] transition-colors text-sm flex items-center group"><span className="w-1 h-1 bg-white rounded-full mr-2 group-hover:bg-[#EB5E77]"></span>TERMS</a></li>
                 </ul>
-              </div>
+              </div> */}
 
               <div className="col-span-2 lg:col-span-1">
                 <h4 className="text-lg font-semibold mb-6 text-white uppercase tracking-wide">CONTACT US</h4>

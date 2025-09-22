@@ -17,7 +17,7 @@ import {
 import {
     Grant, InsertGrant, Post, InsertPost, Application, User, CalendarEvent, InsertEvent, InquiryMessage, PremiumInquiry, Testimonial
 } from "@shared/schema";
-// --- NEW IMPORT FOR GRANT LEAD ---
+
 import { GrantLead } from "@/services/grantSubmissions"; 
 import { CreatePostModal } from "@/components/create-post-modal";
 import { CreateGrantModal } from "@/components/create-grant-modal";
@@ -54,13 +54,13 @@ import { CreateTestimonialModal } from "@/components/create-testimonial-modal";
 import { db } from "@/lib/firebase";
 import { collection, query, orderBy, getDocs, Timestamp, deleteDoc as deleteFirestoreDoc, doc } from "firebase/firestore";
 
-// NEW: Mobile detection hook import
+
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const sidebarItems = [
     { name: "Dashboard", icon: LayoutDashboard },
     { name: "Grants", icon: Award },
-    { name: "Grant Leads", icon: FileCheck }, // <-- NEW SIDEBAR ITEM
+    { name: "Grant Leads", icon: FileCheck }, 
     { name: "Applications", icon: Inbox },
     { name: "Users", icon: Users },
     { name: "Blogs", icon: BookOpen },
@@ -125,7 +125,7 @@ const PlaceholderContent = ({ title }: { title: string }) => (
     </div>
 );
 
-// NEW: AdminChatInterface component now accepts isMobile and onBack props
+
 const AdminChatInterface = ({ activeInquiry, isMobile, onBack }: { activeInquiry: PremiumInquiry | null; isMobile?: boolean; onBack?: () => void; }) => {
     const [messages, setMessages] = useState<InquiryMessage[]>([]);
     const [newMessage, setNewMessage] = useState("");
@@ -175,7 +175,7 @@ const AdminChatInterface = ({ activeInquiry, isMobile, onBack }: { activeInquiry
     return (
        <div className="flex flex-col h-full bg-white">
             <div className="p-4 border-b flex items-center">
-                {/* NEW: Back button for mobile view */}
+               
                 {isMobile && onBack && (
                     <Button variant="ghost" size="icon" className="mr-2" onClick={onBack}>
                         <ChevronLeft className="h-5 w-5" />
@@ -236,7 +236,7 @@ export default function AdminDashboard() {
     const [users, setUsers] = useState<User[]>([]);
     const [premiumInquiries, setPremiumInquiries] = useState<PremiumInquiry[]>([]);
     const [contactMessages, setContactMessages] = useState<ContactMessage[]>([]);
-    const [grantLeads, setGrantLeads] = useState<GrantLead[]>([]); // <-- NEW STATE FOR LEADS
+    const [grantLeads, setGrantLeads] = useState<GrantLead[]>([]); 
     const [editingPost, setEditingPost] = useState<Post | null>(null);
     const [editingGrant, setEditingGrant] = useState<Grant | null>(null);
     const [showModal, setShowModal] = useState(false);
@@ -260,7 +260,7 @@ export default function AdminDashboard() {
     const [showTestimonialModal, setShowTestimonialModal] = useState(false);
     const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
     
-    // NEW: state for mobile chat view
+    
     const isMobile = useIsMobile();
     const [mobileChatVisible, setMobileChatVisible] = useState(false);
 
@@ -297,7 +297,7 @@ export default function AdminDashboard() {
     };
     const loadContactMessages = async () => setContactMessages(await fetchContactMessages());
 
-    // --- NEW FUNCTION TO LOAD GRANT LEADS ---
+    
     const loadGrantLeads = async () => {
         const q = query(collection(db, "grantLeads"), orderBy("createdAt", "desc"));
         const snapshot = await getDocs(q);
@@ -824,14 +824,14 @@ export default function AdminDashboard() {
                     ))}
                 </nav>
             </div>
-            {/* === CODE CHANGED HERE === */}
+           
             <div className="p-4 border-t">
                 <Button variant="ghost" onClick={logout} className="w-full justify-start text-gray-600 hover:text-red-500 hover:bg-red-50">
                     <LogOut className="mr-3 h-5 w-5"/>
                     Logout
                 </Button>
             </div>
-            {/* === END OF CHANGE === */}
+         
         </>
     );
 

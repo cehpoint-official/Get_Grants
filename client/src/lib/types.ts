@@ -2,12 +2,12 @@
 
 // Firestore user profile data
 export interface UserProfile {
-  id: string; // This will be the Firebase UID
+  id: string; 
   fullName: string;
   email: string;
   role: 'founder' | 'incubator';
-  subscriptionStatus: 'free' | 'premium' | 'active' | 'inactive' | 'expired'; // Updated
-  subscriptionPlan?: 'monthly' | 'quarterly' | 'free'; // Added
+  subscriptionStatus: 'free' | 'premium' | 'active' | 'inactive' | 'expired'; 
+  subscriptionPlan?: 'monthly' | 'quarterly' | 'free';
   subscriptionEndDate?: Date | null;
   savedGrants?: string[];
   createdAt: Date;

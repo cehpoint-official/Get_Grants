@@ -87,7 +87,7 @@ export function ChatInterface({ initialInquiryId, onChatStarted }: ChatInterface
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* Messages Area with correct flex and overflow properties */}
+     
       <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {loading ? (
           <div className="flex justify-center items-center h-full"><LoaderCircle className="w-6 h-6 animate-spin text-violet" /></div>
@@ -115,7 +115,7 @@ export function ChatInterface({ initialInquiryId, onChatStarted }: ChatInterface
         <div ref={messagesEndRef} />
       </div>
       
-      {/* Input Form Area */}
+     
       <form onSubmit={handleSend} className="flex gap-2 w-full border-t p-4 bg-white">
         <Textarea
           value={newMessage}

@@ -20,7 +20,7 @@ export default function Faq() {
       if (user && isChatModalOpen) {
         const inquiries = await fetchUserPremiumInquiriesByUserIdOrEmail({ userId: user.uid, email: user.email });
         if (inquiries.length > 0) {
-          setLatestInquiry(inquiries[0]); // The list is sorted by date
+          setLatestInquiry(inquiries[0]); 
         } else {
           setLatestInquiry(null);
         }

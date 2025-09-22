@@ -1,8 +1,5 @@
 import type { User, InsertUser } from "@shared/schema";
 
-// modify the interface with any CRUD methods
-// you might need
-
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
@@ -33,8 +30,14 @@ export class MemStorage implements IStorage {
     const user: User = { 
       id,
       email: insertUser.email,
-      displayName: insertUser.displayName,
-      createdAt: new Date()
+      fullName: insertUser.fullName,
+      createdAt: new Date(),
+      
+      phoneNumber: insertUser.phoneNumber,
+      savedGrants: [],
+      subscriptionPlan: 'Free',
+      subscriptionStatus: 'Inactive',
+      subscriptionExpiresOn: null,
     };
     this.users.set(id, user);
     return user;

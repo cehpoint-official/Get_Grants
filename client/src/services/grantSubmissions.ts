@@ -22,6 +22,18 @@ export const saveGrantLead = async (leadData: Omit<GrantLead, 'id' | 'createdAt'
     return docRef.id;
   } catch (error) {
     console.error("Error saving grant lead to Firestore: ", error);
-    throw new Error("Could not save lead. Please try again.");
+    
+ 
+    if (error instanceof Error && error.message.includes('network')) {
+      throw new Error("Unable to save your details. Please check your internet connection and try again.");
+    }
+    
+   
+    if (error instanceof Error && error.message.includes('permission')) {
+      throw new Error("You don't have permission to perform this action. Please contact support.");
+    }
+    
+   
+    throw new Error("Unable to save your details at the moment. Please try again in a few minutes.");
   }
 };

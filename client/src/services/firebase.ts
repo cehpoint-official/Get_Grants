@@ -1,4 +1,4 @@
-// src/services/firebase.ts
+
 import { db } from "@/lib/firebase";
 import {
   collection,
@@ -41,7 +41,7 @@ export const fetchPendingPosts = async () => {
   const q = query(postsRef, where("status", "==", "pending"));
   const snapshot = await getDocs(q);
   const pendingPosts = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-  console.log("Fetched pending posts from Firebase:", pendingPosts); // Debug log
+  console.log("Fetched pending posts from Firebase:", pendingPosts); 
   return pendingPosts;
 };
 

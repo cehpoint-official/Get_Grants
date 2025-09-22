@@ -1,4 +1,4 @@
-// client/src/services/users.ts
+
 import { db } from "@/lib/firebase";
 import { collection, getDocs, Timestamp } from "firebase/firestore";
 import { User } from "@shared/schema";

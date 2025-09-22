@@ -1,4 +1,4 @@
-// src/lib/adminUtils.ts
+
 import { User } from "firebase/auth";
 
 // List of admin emails - only these can access admin dashboard

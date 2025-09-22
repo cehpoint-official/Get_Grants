@@ -12,7 +12,7 @@ export default function BlogDetail() {
   const [post, setPost] = useState<Post | null>(null);
   const { posts, loading } = usePosts();
 
-  // Optimized related posts using useMemo
+  
   const relatedPosts = useMemo(() => {
     if (!post || !posts || posts.length === 0) return [];
     
@@ -30,7 +30,7 @@ export default function BlogDetail() {
   }, [post, posts]);
 
   useEffect(() => {
-    // ensure top on mount
+   
     window.scrollTo({ top: 0, behavior: 'auto' });
 
     const urlParams = new URLSearchParams(window.location.search);

@@ -30,6 +30,12 @@ export function usePosts() {
       setPosts(postsData);
     } catch (error) {
       console.error("Error fetching posts:", error);
+      
+      
+      setPosts([]);
+      
+     
+      // toast({ title: "Error", description: "Failed to load posts. Please try again.", variant: "destructive" });
     } finally {
       setLoading(false);
     }

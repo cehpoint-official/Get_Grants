@@ -18,7 +18,7 @@ export const exportToExcel = (data: Application[], fileName: string) => {
   XLSX.writeFile(wb, `${fileName}.xlsx`);
 };
 
-// Generic/plain export for arbitrary row shapes
+
 export const exportPlainToExcel = <T extends Record<string, any>>(rows: T[], fileName: string, sheetName = 'Data') => {
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
