@@ -84,7 +84,7 @@ export default function Faq() {
           </div>
         </div>
         <div className="text-center mt-16">
-          <Button onClick={handleChatClick} className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity h-auto">
+          <Button onClick={handleChatClick} className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-4 py-2 font-semibold text-base rounded-lg shadow-lg transition-opacity h-auto">
             {user ? "Chat With Our Experts" : "Chat Now"}
           </Button>
         </div>

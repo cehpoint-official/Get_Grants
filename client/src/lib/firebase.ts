@@ -5,24 +5,6 @@ import { getAnalytics, Analytics } from "firebase/analytics";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 import { getMessaging, Messaging } from "firebase/messaging";
 
-const requiredEnvVars = {
-  VITE_FIREBASE_API_KEY: import.meta.env.VITE_FIREBASE_API_KEY,
-  VITE_FIREBASE_AUTH_DOMAIN: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  VITE_FIREBASE_PROJECT_ID: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  VITE_FIREBASE_STORAGE_BUCKET: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  VITE_FIREBASE_MESSAGING_SENDER_ID: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  VITE_FIREBASE_APP_ID: import.meta.env.VITE_FIREBASE_APP_ID,
-};
-
-const missingVars = Object.entries(requiredEnvVars)
-  .filter(([_, value]) => !value)
-  .map(([key]) => key);
-
-if (missingVars.length > 0) {
-  console.error("❌ Missing Firebase environment variables:", missingVars);
-  throw new Error(`Firebase configuration is incomplete. Missing: ${missingVars.join(", ")}`);
-}
-
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -50,11 +32,8 @@ try {
   if (import.meta.env.VITE_MEASUREMENT_ID) {
     analytics = getAnalytics(app);
   }
-
-  console.log("✅ Firebase initialized successfully");
 } catch (error) {
-  console.error("❌ Firebase initialization failed:", error);
-  throw new Error("Failed to initialize Firebase. Please check your configuration.");
+  console.error("Firebase initialization failed:", error);
 }
 
 export { auth, db, storage, analytics, messaging };

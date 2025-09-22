@@ -166,33 +166,29 @@ const DashboardOverview = () => {
             <div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">What's Next?</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Link href="/grants">
-                        <a className="group block p-6 bg-white rounded-xl border hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-violet/10 p-3 rounded-full">
-                                    <Search className="h-6 w-6 text-violet" />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-lg text-gray-900">Explore Grants</h3>
-                                    <p className="text-sm text-gray-500">Find the perfect grants</p>
-                                </div>
-                                <ArrowRight className="h-5 w-5 text-gray-400 ml-auto group-hover:text-violet transition-colors"/>
+                    <Link href="/grants" className="group block p-6 bg-white rounded-xl border hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-violet/10 p-3 rounded-full">
+                                <Search className="h-6 w-6 text-violet" />
                             </div>
-                        </a>
+                            <div>
+                                <h3 className="font-bold text-lg text-gray-900">Explore Grants</h3>
+                                <p className="text-sm text-gray-500">Find the perfect grants</p>
+                            </div>
+                            <ArrowRight className="h-5 w-5 text-gray-400 ml-auto group-hover:text-violet transition-colors"/>
+                        </div>
                     </Link>
-                    <Link href="/premium-support">
-                        <a className="group block p-6 bg-white rounded-xl border hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-pink/10 p-3 rounded-full">
-                                    <Star className="h-6 w-6 text-pink" />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-lg text-gray-900">Get Expert Help</h3>
-                                    <p className="text-sm text-gray-500">Upgrade to premium</p>
-                                </div>
-                                <ArrowRight className="h-5 w-5 text-gray-400 ml-auto group-hover:text-pink transition-colors"/>
+                    <Link href="/premium-support" className="group block p-6 bg-white rounded-xl border hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-pink/10 p-3 rounded-full">
+                                <Star className="h-6 w-6 text-pink" />
                             </div>
-                        </a>
+                            <div>
+                                <h3 className="font-bold text-lg text-gray-900">Get Expert Help</h3>
+                                <p className="text-sm text-gray-500">Upgrade to premium</p>
+                            </div>
+                            <ArrowRight className="h-5 w-5 text-gray-400 ml-auto group-hover:text-pink transition-colors"/>
+                        </div>
                     </Link>
                 </div>
             </div>
@@ -231,12 +227,10 @@ const SavedGrantsSection = () => {
                 {savedGrants.length > 0 ? (
                     <div className="space-y-4">
                         {savedGrants.map((grant) => (
-                            <Link key={grant.id} href={`/grant/${grant.id}`}>
-                                <a className="block p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                                    <h3 className="font-semibold text-violet">{grant.title}</h3>
-                                    <p className="text-sm text-gray-600">{grant.organization}</p>
-                                    <p className="text-sm text-gray-500 mt-1">Funding: {grant.fundingAmount}</p>
-                                </a>
+                            <Link key={grant.id} href={`/grant/${grant.id}`} className="block p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                                <h3 className="font-semibold text-violet">{grant.title}</h3>
+                                <p className="text-sm text-gray-600">{grant.organization}</p>
+                                <p className="text-sm text-gray-500 mt-1">Funding: {grant.fundingAmount}</p>
                             </Link>
                         ))}
                     </div>
@@ -422,7 +416,6 @@ const ProfileSettings = () => {
         const file = e.target.files?.[0];
         if (!file) return;
         try {
-            // Center-square crop on client before upload
             const imageBitmap = await createImageBitmap(file);
             const size = Math.min(imageBitmap.width, imageBitmap.height);
             const sx = (imageBitmap.width - size) / 2;

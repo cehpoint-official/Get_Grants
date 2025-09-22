@@ -1,5 +1,3 @@
-// client/src/App.tsx
-
 import { Switch, Route, Redirect, useLocation } from "wouter";
 import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
@@ -90,7 +88,6 @@ function App() {
     if (user && messaging) {
       Notification.requestPermission().then((permission) => {
         if (permission === "granted") {
-         
           getToken(messaging, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY }).then(async (currentToken) => {
             if (currentToken) {
               const userRef = doc(db, "users", user.uid);
@@ -99,7 +96,7 @@ function App() {
               });
             }
           }).catch((err) => {
-            console.log("An error occurred while retrieving token. ", err);
+            console.error("Firebase getToken error:", err);
           });
         }
       });

@@ -8,7 +8,6 @@ const db = admin.firestore();
 
 const ADMIN_EMAILS: string[] = (process.env.ADMIN_EMAILS || "admin@getgrants.in,kamini9926@gmail.com,aroranir12@gmail.com").split(",").map(e => e.trim());
 
-// Inquiry hone par ADMINS ko FCM notification bhejega
 export const notifyAdminNewPremiumInquiry = onDocumentCreated(
   "premiumInquiries/{inquiryId}",
   async (event) => {
@@ -49,7 +48,6 @@ export const notifyAdminNewPremiumInquiry = onDocumentCreated(
   }
 );
 
-// Admin ke jawab dene par USER ko FCM notification bhejega
 export const notifyUserAdminResponse = onDocumentCreated(
   "premiumInquiries/{inquiryId}/messages/{messageId}",
   async (event) => {
@@ -89,7 +87,6 @@ export const notifyUserAdminResponse = onDocumentCreated(
   }
 );
 
-// Naya Grant add hone par premium USERS ko FCM notification bhejega
 export const notifyPremiumUsersOnNewGrant = onDocumentCreated("grants/{grantId}", async (event) => {
   const grant = event.data?.data();
   if (!grant) {
@@ -125,7 +122,6 @@ export const notifyPremiumUsersOnNewGrant = onDocumentCreated("grants/{grantId}"
   }
 });
 
-// Naya Blog Post publish hone par premium USERS ko FCM notification bhejega
 export const notifyPremiumUsersOnNewPost = onDocumentCreated("posts/{postId}", async (event) => {
     const post = event.data?.data();
     if (!post || post.status !== 'published') {
@@ -160,7 +156,6 @@ export const notifyPremiumUsersOnNewPost = onDocumentCreated("posts/{postId}", a
     }
 });
 
-// Grant deadline ke reminder ke liye USERS ko FCM notification bhejega
 export const remindPremiumUsersBeforeExpiry = onSchedule({ schedule: 'every day 09:00' }, async () => {
   const now = admin.firestore.Timestamp.now();
   const inThreeDays = admin.firestore.Timestamp.fromMillis(now.toMillis() + 3 * 24 * 60 * 60 * 1000);
