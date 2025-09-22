@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-// --- User & Payment Schemas ---
-
 export const userSchema = z.object({
   id: z.string(),
   email: z.string().email(),
@@ -12,6 +10,7 @@ export const userSchema = z.object({
   subscriptionPlan: z.string().optional().default('Free'),
   subscriptionStatus: z.string().optional().default('Inactive'),
   subscriptionExpiresOn: z.date().optional().nullable(),
+  fcmToken: z.string().optional(),
 });
 
 export const insertUserSchema = userSchema.omit({ id: true, createdAt: true });
@@ -24,8 +23,6 @@ export const paymentSchema = z.object({
   status: z.string(),
   plan: z.string(),
 });
-
-// --- Blog Post Schemas ---
 
 export const postSchema = z.object({
   id: z.string(),
@@ -51,9 +48,6 @@ export const insertPostSchema = z.object({
   authorName: z.string().optional(),
   authorEmail: z.string().email().optional(),
 });
-
-
-// --- Grant & Application Schemas ---
 
 export const grantSchema = z.object({
   id: z.string(),
@@ -111,9 +105,6 @@ export const applicationSchema = z.object({
 
 export const insertApplicationSchema = applicationSchema.omit({ id: true, submittedAt: true });
 
-
-// --- Calendar Event Schemas ---
-
 export const eventSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -134,7 +125,6 @@ export const insertEventSchema = z.object({
   location: z.string().optional(),
 });
 
-// --- Inquiry Schemas ---
 export const premiumInquirySchema = z.object({
     id: z.string(),
     name: z.string(),
@@ -162,7 +152,6 @@ export const inquiryMessageSchema = z.object({
     createdAt: z.date(),
 });
 
-// --- Testimonial Schemas ---
 export const testimonialSchema = z.object({
     id: z.string(),
     author: z.string(),
@@ -174,8 +163,6 @@ export const testimonialSchema = z.object({
 
 export const insertTestimonialSchema = testimonialSchema.omit({ id: true, createdAt: true });
 
-
-// --- All Types ---
 export type User = z.infer<typeof userSchema>;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Payment = z.infer<typeof paymentSchema>;
