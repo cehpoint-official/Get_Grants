@@ -1,4 +1,4 @@
-import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { onDocumentCreated, onDocumentWritten } from "firebase-functions/v2/firestore";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
@@ -95,14 +95,25 @@ export const notifyPremiumUsersOnNewGrant = onDocumentCreated("grants/{grantId}"
   }
 
   try {
-    const premiumUsersSnap = await db.collection('users').where('subscriptionStatus', '==', 'premium').get();
-
+    const now = admin.firestore.Timestamp.now();
     const tokens: string[] = [];
-    premiumUsersSnap.forEach(doc => {
+
+    // Users with premium-like status
+    const statusSnap = await db.collection('users')
+      .where('subscriptionStatus', 'in', ['premium', 'active'])
+      .get();
+    statusSnap.forEach(doc => {
       const user = doc.data();
-      if (user.fcmToken) {
-        tokens.push(user.fcmToken);
-      }
+      if (user.fcmToken && user.notificationConsentGiven === true) tokens.push(user.fcmToken);
+    });
+
+    // Users with active subscriptionEndDate
+    const endDateSnap = await db.collection('users')
+      .where('subscriptionEndDate', '>', now)
+      .get();
+    endDateSnap.forEach(doc => {
+      const user = doc.data();
+      if (user.fcmToken && user.notificationConsentGiven === true) tokens.push(user.fcmToken);
     });
 
     if (tokens.length > 0) {
@@ -123,37 +134,50 @@ export const notifyPremiumUsersOnNewGrant = onDocumentCreated("grants/{grantId}"
 });
 
 export const notifyPremiumUsersOnNewPost = onDocumentCreated("posts/{postId}", async (event) => {
-    const post = event.data?.data();
-    if (!post || post.status !== 'published') {
-        return;
+  // Replaced by onDocumentWritten below to also handle publish updates
+  const post = event.data?.data();
+  if (!post || post.status !== 'published') return;
+  try {
+    const now = admin.firestore.Timestamp.now();
+    const tokens: string[] = [];
+    const statusSnap = await db.collection('users').where('subscriptionStatus', 'in', ['premium', 'active']).get();
+    statusSnap.forEach(doc => { const u = doc.data(); if (u.fcmToken && u.notificationConsentGiven === true) tokens.push(u.fcmToken); });
+    const endDateSnap = await db.collection('users').where('subscriptionEndDate', '>', now).get();
+    endDateSnap.forEach(doc => { const u = doc.data(); if (u.fcmToken && u.notificationConsentGiven === true) tokens.push(u.fcmToken); });
+    if (tokens.length > 0) {
+      const message = { notification: { title: `✍️ New Blog Post: ${post.title}`, body: `A new article has been published. Read it now on Get Grants!` }, tokens };
+      const response = await admin.messaging().sendEachForMulticast(message);
+      logger.info(`Successfully sent ${response.successCount} notifications for new post ${event.params.postId}`);
     }
+  } catch (e) {
+    logger.error('notifyPremiumUsersOnNewPost error', e);
+  }
+});
 
-    try {
-        const premiumUsersSnap = await db.collection('users').where('subscriptionStatus', '==', 'premium').get();
+// Also trigger when an existing post is published (status changes to 'published')
+export const notifyPremiumUsersOnPostPublish = onDocumentWritten("posts/{postId}", async (event) => {
+  const before = event.data?.before?.data() as any | undefined;
+  const after = event.data?.after?.data() as any | undefined;
+  if (!after) return;
+  const becamePublished = after.status === 'published' && (!before || before.status !== 'published');
+  if (!becamePublished) return;
 
-        const tokens: string[] = [];
-        premiumUsersSnap.forEach(doc => {
-            const user = doc.data();
-            if (user.fcmToken) {
-                tokens.push(user.fcmToken);
-            }
-        });
+  try {
+    const now = admin.firestore.Timestamp.now();
+    const tokens: string[] = [];
+    const statusSnap = await db.collection('users').where('subscriptionStatus', 'in', ['premium', 'active']).get();
+    statusSnap.forEach(doc => { const u = doc.data(); if (u.fcmToken && u.notificationConsentGiven === true) tokens.push(u.fcmToken); });
+    const endDateSnap = await db.collection('users').where('subscriptionEndDate', '>', now).get();
+    endDateSnap.forEach(doc => { const u = doc.data(); if (u.fcmToken && u.notificationConsentGiven === true) tokens.push(u.fcmToken); });
 
-        if (tokens.length > 0) {
-            const message = {
-                notification: {
-                    title: `✍️ New Blog Post: ${post.title}`,
-                    body: `A new article has been published. Read it now on Get Grants!`,
-                },
-                tokens: tokens,
-            };
-
-            const response = await admin.messaging().sendEachForMulticast(message);
-            logger.info(`Successfully sent ${response.successCount} notifications for new post ${event.params.postId}`);
-        }
-    } catch (e) {
-        logger.error('notifyPremiumUsersOnNewPost error', e);
+    if (tokens.length > 0) {
+      const message = { notification: { title: `✍️ New Blog Post: ${after.title}`, body: `A new article has been published. Read it now on Get Grants!` }, tokens };
+      const response = await admin.messaging().sendEachForMulticast(message);
+      logger.info(`Sent ${response.successCount} publish notifications for post ${event.params.postId}`);
     }
+  } catch (e) {
+    logger.error('notifyPremiumUsersOnPostPublish error', e);
+  }
 });
 
 export const remindPremiumUsersBeforeExpiry = onSchedule({ schedule: 'every day 09:00' }, async () => {
@@ -170,14 +194,12 @@ export const remindPremiumUsersBeforeExpiry = onSchedule({ schedule: 'every day 
         return;
     }
     
-    const premiumUsersSnap = await db.collection('users').where('subscriptionStatus', '==', 'premium').get();
+    const now2 = admin.firestore.Timestamp.now();
     const tokens: string[] = [];
-    premiumUsersSnap.forEach(doc => {
-      const user = doc.data();
-      if (user.fcmToken) {
-        tokens.push(user.fcmToken);
-      }
-    });
+    const statusSnap2 = await db.collection('users').where('subscriptionStatus', 'in', ['premium', 'active']).get();
+    statusSnap2.forEach(doc => { const u = doc.data(); if (u.fcmToken && u.notificationConsentGiven === true) tokens.push(u.fcmToken); });
+    const endDateSnap2 = await db.collection('users').where('subscriptionEndDate', '>', now2).get();
+    endDateSnap2.forEach(doc => { const u = doc.data(); if (u.fcmToken && u.notificationConsentGiven === true) tokens.push(u.fcmToken); });
 
     if (tokens.length === 0) {
         logger.info("No premium users with FCM tokens to notify.");

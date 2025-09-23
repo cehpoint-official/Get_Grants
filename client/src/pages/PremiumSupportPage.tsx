@@ -206,20 +206,20 @@ export default function PremiumSupportPage() {
 
             <section id="pricing" ref={pricingSectionRef}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10">
-                    <div className="flex flex-col lg:flex-row justify-center items-stretch gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
                         
-                        <div className="group bg-white rounded-2xl p-6 text-center shadow-lg border w-full max-w-sm transition-all duration-300 ease-in-out hover:scale-105">
+                        <div className="group bg-white rounded-2xl p-5 text-center shadow-lg border w-full transition-all duration-300 ease-in-out hover:scale-105">
                             <div className="mb-6">
                                 <div className="inline-flex items-center justify-center bg-[#F3F4F6] text-[#4B5563] px-4 py-1.5 rounded-full text-sm font-medium mb-4">1-Month</div>
-                                <div className="mb-4 flex items-baseline justify-center">
-                                    <span className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Inter', fontWeight: 700 }}>₹390</span>
+                                <div className="mb-3 flex items-baseline justify-center">
+                                    <span className="text-xl lg:text-2xl font-bold text-gray-900" style={{ fontFamily: 'Inter', fontWeight: 700 }}>₹390</span>
                                 </div>
-                                <p className="text-[#565F6C] h-16 text-sm leading-5">Explore all our features for one month and find the right funding for your startup</p>
+                                <p className="text-[#565F6C] h-16 text-xs sm:text-sm leading-5">Explore all our features for one month and find the right funding for your startup</p>
                             </div>
                             <ul className="text-left space-y-3 mb-6">
-                                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" /> <span className="text-gray-700">Unlimited grant access</span> </li>
+                                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" /> <span className="text-gray-700 text-sm">Unlimited grant access</span> </li>
                                  <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" /> <span className="text-gray-700">Basic search functionality</span> </li>
-                                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" /> <span className="text-gray-700">Email notifications for new grants</span> </li>
+                                 <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" /> <span className="text-gray-700 text-sm">Email notifications for new grants</span> </li>
                                  <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" /> <span className="text-gray-700">Access to grant details</span> </li>
                                  <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" /> <span className="text-gray-700">Application deadline reminders</span> </li>
                                  <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" /> <span className="text-gray-700">Priority support</span> </li>
@@ -229,16 +229,16 @@ export default function PremiumSupportPage() {
                             <Button onClick={() => handlePlanClick(plans[0])} className="w-full text-[#8541EF] group-hover:bg-[#8541EF] group-hover:text-dark-violet rounded-xl font-semibold h-10 border border-[#8541EF]" style={{backgroundColor: '#8541EF17'}}>Get started</Button>
                         </div>
 
-                        <div className="bg-white rounded-2xl p-6 text-center shadow-lg w-full max-w-sm relative transition-all duration-300 ease-in-out hover:scale-110">
+                        <div className="bg-white rounded-2xl p-5 text-center shadow-lg w-full relative transition-all duration-300 ease-in-out hover:scale-110">
                             <div className="absolute top-4 right-4">
                                 <span className="text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg" style={{ background: 'linear-gradient(91.15deg, #FA9025 30.26%, #FFEBE3 81.29%, #FF9B10 94.61%)' }}>Popular</span>
                             </div>
                             <div className="mb-6">
                                 <div className="inline-flex items-center justify-center bg-[#E0E7FF] text-[#3730A3] px-4 py-1.5 rounded-full text-sm font-medium mb-4">3-Month</div>
-                                <div className="mb-4 flex items-baseline justify-center">
-                                    <span className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Inter', fontWeight: 700 }}>₹999</span>
+                                <div className="mb-3 flex items-baseline justify-center">
+                                    <span className="text-xl lg:text-2xl font-bold text-gray-900" style={{ fontFamily: 'Inter', fontWeight: 700 }}>₹999</span>
                                 </div>
-                                <p className="text-[#565F6C] h-16 text-sm leading-5">Our most popular plan. Track grants over a three-month period and increase your chances</p>
+                                <p className="text-[#565F6C] h-16 text-xs sm:text-sm leading-5">Our most popular plan. Track grants over a three-month period and increase your chances</p>
                             </div>
                             <ul className="text-left space-y-3 mb-6">
                                  <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" /> <span className="text-gray-700">Unlimited grant access</span> </li>
@@ -253,13 +253,13 @@ export default function PremiumSupportPage() {
                             <Button onClick={() => handlePlanClick(plans[1])} className="w-full bg-[#8541EF] hover:bg-[#7a38d9] text-white rounded-xl font-semibold h-10">Get started</Button>
                         </div>
 
-                        <div className="group bg-white rounded-2xl p-6 text-center shadow-lg border w-full max-w-sm transition-all duration-300 ease-in-out hover:scale-105">
+                        <div className="group bg-white rounded-2xl p-5 text-center shadow-lg border w-full transition-all duration-300 ease-in-out hover:scale-105">
                             <div className="mb-6">
                                 <div className="inline-flex items-center justify-center bg-[#FEF3C7] text-[#92400E] px-4 py-1.5 rounded-full text-sm font-medium mb-4">Custom Plan</div>
-                                <div className="mb-4 flex items-baseline justify-center">
-                                    <span className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Inter', fontWeight: 700 }}>₹3999</span>
+                                <div className="mb-3 flex items-baseline justify-center">
+                                    <span className="text-xl lg:text-2xl font-bold text-gray-900" style={{ fontFamily: 'Inter', fontWeight: 700 }}>₹3999</span>
                                 </div>
-                                <p className="text-[#565F6C] h-16 text-sm leading-5">A premium, personalized service where you can schedule a meeting with our experts.</p>
+                                <p className="text-[#565F6C] h-16 text-xs sm:text-sm leading-5">A premium, personalized service where you can schedule a meeting with our experts.</p>
                             </div>
                             <ul className="text-left space-y-3 mb-6">
                                  <li className="flex items-center"><CheckCircle2 className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" /> <span className="text-gray-700">Grant applications by our experts</span> </li>

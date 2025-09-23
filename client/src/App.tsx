@@ -85,14 +85,16 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (user && messaging) {
+    const msg = messaging;
+    if (user && msg) {
       Notification.requestPermission().then((permission) => {
         if (permission === "granted") {
-          getToken(messaging, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY }).then(async (currentToken) => {
+          getToken(msg, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY }).then(async (currentToken) => {
             if (currentToken) {
               const userRef = doc(db, "users", user.uid);
               await updateDoc(userRef, {
                 fcmToken: currentToken,
+                notificationConsentGiven: true,
               });
             }
           }).catch((err) => {
