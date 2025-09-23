@@ -20,7 +20,7 @@ import { ProtectedAdminRoute } from "./components/ProtectedAdminRoute";
 import ContactUs from "@/pages/ContactUs";
 import About from "@/pages/About";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getToken } from "firebase/messaging";
+import { getToken, onMessage } from "firebase/messaging";
 import { messaging, db } from "./lib/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 
@@ -89,21 +89,69 @@ function App() {
     if (user && msg) {
       Notification.requestPermission().then((permission) => {
         if (permission === "granted") {
-          getToken(msg, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY }).then(async (currentToken) => {
+          const ensureReg = async (): Promise<ServiceWorkerRegistration | undefined> => {
+            try {
+              return (await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js')) || (await navigator.serviceWorker.ready);
+            } catch {
+              return undefined;
+            }
+          };
+          const initial = async () => {
+            try {
+              const reg = (await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js')) || (await navigator.serviceWorker.ready);
+              return await getToken(msg, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY, serviceWorkerRegistration: reg });
+            } catch (e) {
+              return await getToken(msg, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY });
+            }
+          };
+          initial().then(async (currentToken) => {
             if (currentToken) {
               const userRef = doc(db, "users", user.uid);
               await updateDoc(userRef, {
                 fcmToken: currentToken,
                 notificationConsentGiven: true,
               });
+              try { localStorage.removeItem('pendingFcmToken'); } catch {}
             }
           }).catch((err) => {
-            console.error("Firebase getToken error:", err);
+            // Retry with explicit service worker registration
+            ensureReg().then((reg) => {
+              if (!reg) throw err;
+              return getToken(msg, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY, serviceWorkerRegistration: reg });
+            }).then(async (retryToken) => {
+              if (retryToken) {
+                const userRef = doc(db, "users", user.uid);
+                await updateDoc(userRef, { fcmToken: retryToken, notificationConsentGiven: true });
+                try { localStorage.removeItem('pendingFcmToken'); } catch {}
+              }
+            }).catch((e2) => {
+              console.error("Firebase getToken error:", e2);
+            });
           });
         }
       });
     }
   }, [user]);
+
+  // Foreground message handler to show notifications while app is open
+  useEffect(() => {
+    const msg = messaging;
+    if (!msg) return;
+    const unsubscribe = onMessage(msg, (payload) => {
+      try {
+        const title = payload.notification?.title || "Get Grants";
+        const body = payload.notification?.body || "You have a new update";
+        // Show a simple in-app notification using the browser Notification API
+        if (Notification.permission === 'granted') {
+          new Notification(title, { body });
+        }
+        console.log('FCM foreground message:', payload);
+      } catch (e) {
+        console.error('onMessage handler error', e);
+      }
+    });
+    return () => { try { (unsubscribe as any)?.(); } catch {} };
+  }, []);
 
 
   useEffect(() => {
