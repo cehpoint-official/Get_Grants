@@ -223,3 +223,75 @@ export const remindPremiumUsersBeforeExpiry = onSchedule({ schedule: 'every day 
     logger.error('remindPremiumUsersBeforeExpiry error', e);
   }
 });
+
+// Notify premium users when a grant is updated (e.g., deadline/title changes)
+export const notifyPremiumUsersOnGrantUpdate = onDocumentWritten("grants/{grantId}", async (event) => {
+  const before = event.data?.before?.data() as any | undefined;
+  const after = event.data?.after?.data() as any | undefined;
+  if (!after) return;
+
+  // Ignore creations (handled by notifyPremiumUsersOnNewGrant)
+  if (!before) return;
+
+  // Detect meaningful changes
+  const changedFields: string[] = [];
+  try {
+    if (before.title !== after.title) changedFields.push('title');
+    // Convert Firestore Timestamps to millis for comparison if present
+    const beforeDeadline = before.deadline?.toMillis ? before.deadline.toMillis() : (before.deadline ? new Date(before.deadline).getTime() : undefined);
+    const afterDeadline = after.deadline?.toMillis ? after.deadline.toMillis() : (after.deadline ? new Date(after.deadline).getTime() : undefined);
+    if (beforeDeadline !== afterDeadline) changedFields.push('deadline');
+
+    const beforeStart = before.startDate?.toMillis ? before.startDate.toMillis() : (before.startDate ? new Date(before.startDate).getTime() : undefined);
+    const afterStart = after.startDate?.toMillis ? after.startDate.toMillis() : (after.startDate ? new Date(after.startDate).getTime() : undefined);
+    if (beforeStart !== afterStart) changedFields.push('startDate');
+
+    if (before.fundingAmount !== after.fundingAmount) changedFields.push('fundingAmount');
+  } catch (e) {
+    logger.error('Error comparing grant update fields', e);
+  }
+
+  if (changedFields.length === 0) return;
+
+  try {
+    const now = admin.firestore.Timestamp.now();
+    const tokens: string[] = [];
+
+    const statusSnap = await db.collection('users')
+      .where('subscriptionStatus', 'in', ['premium', 'active'])
+      .get();
+    statusSnap.forEach(doc => {
+      const u = doc.data();
+      if (u.fcmToken && u.notificationConsentGiven === true) tokens.push(u.fcmToken);
+    });
+
+    const endDateSnap = await db.collection('users')
+      .where('subscriptionEndDate', '>', now)
+      .get();
+    endDateSnap.forEach(doc => {
+      const u = doc.data();
+      if (u.fcmToken && u.notificationConsentGiven === true) tokens.push(u.fcmToken);
+    });
+
+    if (tokens.length === 0) return;
+
+    const changedText = changedFields.includes('deadline')
+      ? 'deadline updated'
+      : changedFields.includes('title')
+        ? 'title updated'
+        : 'details updated';
+
+    const message = {
+      notification: {
+        title: `✏️ Grant Updated: ${after.title}`,
+        body: `This grant has ${changedText}. Check the latest details.`,
+      },
+      tokens,
+    } as const;
+
+    const response = await admin.messaging().sendEachForMulticast(message);
+    logger.info(`Sent ${response.successCount} grant update notifications for ${event.params.grantId}`);
+  } catch (e) {
+    logger.error('notifyPremiumUsersOnGrantUpdate error', e);
+  }
+});

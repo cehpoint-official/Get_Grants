@@ -21,6 +21,7 @@ import ContactUs from "@/pages/ContactUs";
 import About from "@/pages/About";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getToken, onMessage } from "firebase/messaging";
+import { useToast } from "@/hooks/use-toast";
 import { messaging, db } from "./lib/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 
@@ -70,6 +71,7 @@ function App() {
   const [location] = useLocation();
   const isMobile = useIsMobile();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -138,14 +140,11 @@ function App() {
     const msg = messaging;
     if (!msg) return;
     const unsubscribe = onMessage(msg, (payload) => {
+      console.log('FCM foreground message:', payload);
       try {
         const title = payload.notification?.title || "Get Grants";
         const body = payload.notification?.body || "You have a new update";
-        // Show a simple in-app notification using the browser Notification API
-        if (Notification.permission === 'granted') {
-          new Notification(title, { body });
-        }
-        console.log('FCM foreground message:', payload);
+        toast({ title, description: body });
       } catch (e) {
         console.error('onMessage handler error', e);
       }

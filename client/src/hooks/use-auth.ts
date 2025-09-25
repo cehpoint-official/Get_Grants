@@ -40,6 +40,18 @@ export function useAuth() {
               ...profile,
               uid: firebaseUser.uid,
             });
+
+            // Persist any pending FCM token captured before auth
+            try {
+              const pendingToken = typeof window !== 'undefined' ? localStorage.getItem('pendingFcmToken') : null;
+              if (pendingToken) {
+                const userRef = doc(db, "users", firebaseUser.uid);
+                await updateDoc(userRef, { fcmToken: pendingToken, notificationConsentGiven: true });
+                try { localStorage.removeItem('pendingFcmToken'); } catch {}
+              }
+            } catch (e) {
+              console.warn('Failed to persist pending FCM token', e);
+            }
           } else if (!adminStatus) {
               setUser(null);
           }
