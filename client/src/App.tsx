@@ -1,5 +1,5 @@
 import { Switch, Route, Redirect, useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -22,7 +22,7 @@ import About from "@/pages/About";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getToken, onMessage } from "firebase/messaging";
 import { useToast } from "@/hooks/use-toast";
-import { messaging, db } from "./lib/firebase";
+import { db, initializeMessaging } from "./lib/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
@@ -72,8 +72,11 @@ function App() {
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const { toast } = useToast();
+  const [messagingInstance, setMessagingInstance] = useState<import("firebase/messaging").Messaging | null>(null);
 
+  // <<< START: NOTIFICATION LOGIC >>>
   useEffect(() => {
+    // 1. Register Service Worker
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("/firebase-messaging-sw.js")
@@ -84,75 +87,61 @@ function App() {
           console.log("Service Worker registration failed:", err);
         });
     }
-  }, []);
+    // 2. Initialize Messaging and handle foreground messages
+    let unsubscribe: (() => void) | undefined;
+    initializeMessaging().then((instance) => {
+      setMessagingInstance(instance);
+      if (instance) {
+        unsubscribe = onMessage(instance, (payload) => {
+          console.log('FCM foreground message:', payload);
+          toast({ 
+              title: payload.notification?.title || "New Update", 
+              description: payload.notification?.body || "You have a new message." 
+          });
+        });
+      }
+    });
 
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [toast]);
+
+  // 3. Request Permission and Save Token (when user logs in)
   useEffect(() => {
-    const msg = messaging;
-    if (user && msg) {
-      Notification.requestPermission().then((permission) => {
-        if (permission === "granted") {
-          const ensureReg = async (): Promise<ServiceWorkerRegistration | undefined> => {
-            try {
-              return (await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js')) || (await navigator.serviceWorker.ready);
-            } catch {
-              return undefined;
-            }
-          };
-          const initial = async () => {
-            try {
-              const reg = (await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js')) || (await navigator.serviceWorker.ready);
-              return await getToken(msg, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY, serviceWorkerRegistration: reg });
-            } catch (e) {
-              return await getToken(msg, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY });
-            }
-          };
-          initial().then(async (currentToken) => {
+    if (user && messagingInstance) {
+      const requestAndSaveToken = async () => {
+        try {
+          const permission = await Notification.requestPermission();
+          if (permission === "granted") {
+            console.log("Notification permission granted.");
+            const currentToken = await getToken(messagingInstance, { 
+              vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY 
+            });
+
             if (currentToken) {
+              console.log("FCM Token found:", currentToken);
               const userRef = doc(db, "users", user.uid);
               await updateDoc(userRef, {
                 fcmToken: currentToken,
                 notificationConsentGiven: true,
               });
-              try { localStorage.removeItem('pendingFcmToken'); } catch {}
+            } else {
+              console.log("Could not get FCM token. Please check configuration.");
             }
-          }).catch((err) => {
-            // Retry with explicit service worker registration
-            ensureReg().then((reg) => {
-              if (!reg) throw err;
-              return getToken(msg, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY, serviceWorkerRegistration: reg });
-            }).then(async (retryToken) => {
-              if (retryToken) {
-                const userRef = doc(db, "users", user.uid);
-                await updateDoc(userRef, { fcmToken: retryToken, notificationConsentGiven: true });
-                try { localStorage.removeItem('pendingFcmToken'); } catch {}
-              }
-            }).catch((e2) => {
-              console.error("Firebase getToken error:", e2);
-            });
-          });
+          } else {
+            console.log("User denied notification permission.");
+          }
+        } catch (error) {
+          console.error("An error occurred while getting FCM token:", error);
         }
-      });
+      };
+
+      requestAndSaveToken();
     }
-  }, [user]);
-
-  // Foreground message handler to show notifications while app is open
-  useEffect(() => {
-    const msg = messaging;
-    if (!msg) return;
-    const unsubscribe = onMessage(msg, (payload) => {
-      console.log('FCM foreground message:', payload);
-      try {
-        const title = payload.notification?.title || "Get Grants";
-        const body = payload.notification?.body || "You have a new update";
-        toast({ title, description: body });
-      } catch (e) {
-        console.error('onMessage handler error', e);
-      }
-    });
-    return () => { try { (unsubscribe as any)?.(); } catch {} };
-  }, []);
-
-
+  }, [user, messagingInstance]);
+  // <<< END: NOTIFICATION LOGIC >>>
+  
   useEffect(() => {
     const hasHash = typeof window !== 'undefined' && window.location.hash && window.location.hash.length > 1;
     const pendingSection = typeof window !== 'undefined' ? localStorage.getItem('scrollTo') : null;
@@ -163,7 +152,6 @@ function App() {
 
   const isAdminRoute = location.startsWith("/admin");
   const isMobileDashboard = location.startsWith("/dashboard") && isMobile;
-
   const showNavbar = !isAdminRoute && !isMobileDashboard;
 
   return (
