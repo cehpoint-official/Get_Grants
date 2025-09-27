@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, LoaderCircle } from "lucide-react"; // LoaderCircle import karein
+import { CheckCircle2, LoaderCircle } from "lucide-react"; 
 import { useLocation } from "wouter";
 import { AuthModal } from "../components/AuthModal";
 import { useAuth } from "@/hooks/use-auth";
