@@ -2,6 +2,9 @@ import { onDocumentCreated, onDocumentWritten } from "firebase-functions/v2/fire
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
+
+import Razorpay from "razorpay";
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -270,5 +273,95 @@ export const notifyPremiumUsersOnGrantUpdateV2 = onDocumentWritten("grants/{gran
         logger.info(`Sent ${response.successCount} grant update notifications for ${event.params.grantId}`);
     } catch (e) {
         logger.error('notifyPremiumUsersOnGrantUpdate error', e);
+    }
+});
+
+
+
+// client/grant-functions/src/index.ts
+
+
+
+// ... (aapka existing code)
+
+const razorpay = new Razorpay({
+    key_id: functions.config().razorpay.key_id,
+    key_secret: functions.config().razorpay.key_secret,
+});
+
+// Function to create a Razorpay order
+export const createOrder = functions.https.onCall(async (data, context) => {
+    const amount = data.amount;
+    const currency = "INR";
+
+    const options = {
+        amount: amount * 100, // amount in the smallest currency unit
+        currency,
+        receipt: `receipt_order_${new Date().getTime()}`,
+    };
+
+    try {
+        const order = await razorpay.orders.create(options);
+        return { orderId: order.id };
+    } catch (error) {
+        console.error("Error creating Razorpay order:", error);
+        throw new functions.https.HttpsError("internal", "Could not create order.");
+    }
+});
+
+// Function to verify the payment
+export const verifyPayment = functions.https.onCall(async (data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError("unauthenticated", "You must be logged in.");
+    }
+
+    const {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+        plan, // { name, price, duration }
+    } = data;
+
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+    const crypto = require("crypto");
+    const expectedSignature = crypto
+        .createHmac("sha256", functions.config().razorpay.key_secret)
+        .update(body.toString())
+        .digest("hex");
+
+    if (expectedSignature === razorpay_signature) {
+        // Payment is successful
+        const userId = context.auth.uid;
+        const userRef = admin.firestore().collection("users").doc(userId);
+
+        // 1. Save payment details
+        await admin.firestore().collection("payments").add({
+            userId,
+            orderId: razorpay_order_id,
+            paymentId: razorpay_payment_id,
+            planName: plan.name,
+            amount: plan.price,
+            status: "success",
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        // 2. Update user's subscription
+        const subscriptionEndDate = new Date();
+        if (plan.duration === "1-Month") {
+            subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+        } else if (plan.duration === "3-Month") {
+            subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 3);
+        }
+
+        await userRef.update({
+            subscriptionStatus: "premium",
+            subscriptionPlan: plan.name,
+            subscriptionEndDate: admin.firestore.Timestamp.fromDate(subscriptionEndDate),
+        });
+
+        return { status: "success" };
+    } else {
+        throw new functions.https.HttpsError("invalid-argument", "Payment verification failed.");
     }
 });

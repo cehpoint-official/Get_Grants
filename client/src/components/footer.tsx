@@ -36,18 +36,18 @@ export function Footer() {
               Unlock your startup's potential with Get Grants. We provide the tools and insights you need to navigate India's grant ecosystem and secure funding without diluting equity.
             </p>
             <div className="flex space-x-3">
-              <a href="#" className="w-10 h-10 bg-gradient-to-r from-[#EB5E77] to-[#8A51CE] rounded-full flex items-center justify-center hover:opacity-80 transition-all duration-300">
+              {/* <a href="#" className="w-10 h-10 bg-gradient-to-r from-[#EB5E77] to-[#8A51CE] rounded-full flex items-center justify-center hover:opacity-80 transition-all duration-300">
                 <Facebook className="h-5 w-5 text-white" />
-              </a>
-              <a href="#" className="w-10 h-10 bg-gradient-to-r from-[#EB5E77] to-[#8A51CE] rounded-full flex items-center justify-center hover:opacity-80 transition-all duration-300">
+              </a> */}
+              <a href="https://www.linkedin.com/company/black-leo-ventures/" className="w-10 h-10 bg-gradient-to-r from-[#EB5E77] to-[#8A51CE] rounded-full flex items-center justify-center hover:opacity-80 transition-all duration-300">
                 <Linkedin className="h-5 w-5 text-white" />
               </a>
-              <a href="#" className="w-10 h-10 bg-gradient-to-r from-[#EB5E77] to-[#8A51CE] rounded-full flex items-center justify-center hover:opacity-80 transition-all duration-300">
+              {/* <a href="#" className="w-10 h-10 bg-gradient-to-r from-[#EB5E77] to-[#8A51CE] rounded-full flex items-center justify-center hover:opacity-80 transition-all duration-300">
                 <Twitter className="h-5 w-5 text-white" />
               </a>
               <a href="#" className="w-10 h-10 bg-gradient-to-r from-[#EB5E77] to-[#8A51CE] rounded-full flex items-center justify-center hover:opacity-80 transition-all duration-300">
                 <Instagram className="h-5 w-5 text-white" />
-              </a>
+              </a> */}
             </div>
           </div>
 

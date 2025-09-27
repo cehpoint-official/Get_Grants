@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, LoaderCircle } from "lucide-react"; // LoaderCircle import karein
 import { useLocation } from "wouter";
 import { AuthModal } from "../components/AuthModal";
 import { useAuth } from "@/hooks/use-auth";
@@ -20,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { savePremiumInquiry } from "@/services/premiumSupport";
+import { getFunctions, httpsCallable } from "firebase/functions"; 
 
 interface Plan {
     name: string;
@@ -33,11 +33,13 @@ const PremiumInquiryModal = ({
     onClose,
     plan,
     onSubmit,
+    isProcessing,
 }: {
     isOpen: boolean;
     onClose: () => void;
     plan: Plan | null;
     onSubmit: (details: { name: string; email: string; phone: string }) => void;
+    isProcessing: boolean; 
 }) => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -94,8 +96,15 @@ const PremiumInquiryModal = ({
                     </div>
                     {error && <p className="text-red-500 text-sm text-center mb-2">{error}</p>}
                     <DialogFooter>
-                        <Button type="submit" className="w-full bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white font-semibold py-3">
-                            Proceed
+                        <Button type="submit" className="w-full bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white font-semibold py-3" disabled={isProcessing}>
+                            {isProcessing ? (
+                                <>
+                                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                                    Please wait...
+                                </>
+                            ) : (
+                                "Proceed to Pay"
+                            )}
                         </Button>
                     </DialogFooter>
                 </form>
@@ -109,7 +118,7 @@ export default function PremiumSupportPage() {
     const [authInitialMode, setAuthInitialMode] = useState<'login' | 'signup'>('login');
     const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
     const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
-    const [hasActiveSubscription, setHasActiveSubscription] = useState<Plan | null>(null);
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
     const [hasMeetingPlan, setHasMeetingPlan] = useState(false);
 
     const { user } = useAuth();
@@ -118,18 +127,13 @@ export default function PremiumSupportPage() {
 
     const pricingSectionRef = useRef<HTMLElement>(null);
 
-    useEffect(() => {
-    }, [user]);
-
     const handlePlanClick = (plan: Plan) => {
         if (user) {
-            if (plan.price === 3999) {
-                if (hasMeetingPlan) {
-                    toast({ title: "Opening Scheduler", description: "Redirecting you to schedule your meeting." });
-                    const zcalLink = import.meta.env.VITE_ZCAL_LINK;
-                    window.open(zcalLink, '_blank');
-                    return;
-                }
+            if (plan.price === 3999 && hasMeetingPlan) {
+                toast({ title: "Opening Scheduler", description: "Redirecting you to schedule your meeting." });
+                const zcalLink = import.meta.env.VITE_ZCAL_LINK;
+                window.open(zcalLink, '_blank');
+                return;
             }
             setSelectedPlan(plan);
             setIsEnquiryModalOpen(true);
@@ -140,36 +144,86 @@ export default function PremiumSupportPage() {
     };
 
     const handleInquirySubmit = async (details: { name: string; email: string; phone: string}) => {
-        if (!selectedPlan) return;
+        if (!selectedPlan || !user) return;
+
+        setIsProcessingPayment(true);
 
         try {
-            await savePremiumInquiry({
-                ...details,
-                planName: selectedPlan.name,
-                planPrice: selectedPlan.price,
-                userId: user!.id,
-                status: 'new'
-            });
+            const functions = getFunctions();
+            const createOrder = httpsCallable(functions, 'createOrder');
+            const result = await createOrder({ amount: selectedPlan.price });
+            const { orderId } = result.data as { orderId: string };
 
-            toast({
-                title: "Inquiry Sent!",
-                description: "Next step is payment. Redirecting you...",
-            });
-            
-            setIsEnquiryModalOpen(false);
-            
-            if (selectedPlan.price === 3999) {
-                setHasMeetingPlan(true); 
-                const zcalLink = import.meta.env.VITE_ZCAL_LINK;
-                window.open(zcalLink, '_blank');
-            } else {
-                setHasActiveSubscription(selectedPlan);
-                try { localStorage.setItem('askNotify', '1'); } catch {}
-                navigate("/dashboard");
-            }
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                amount: selectedPlan.price * 100,
+                currency: "INR",
+                name: "Get Grants",
+                description: `Subscription: ${selectedPlan.name}`,
+                order_id: orderId,
+                handler: async (response: any) => {
+                    setIsProcessingPayment(true);
+                    try {
+                        const verifyPayment = httpsCallable(functions, 'verifyPayment');
+                        await verifyPayment({
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature,
+                            plan: selectedPlan,
+                        });
 
-        } catch (error) {
-             toast({ title: "Error", description: "Could not submit your inquiry. Please try again.", variant: "destructive" });
+                        toast({
+                            title: "✅ Payment Successful!",
+                            description: "Your premium subscription is now active.",
+                            className: "bg-green-500 text-white",
+                        });
+
+                        setIsEnquiryModalOpen(false);
+                        if (selectedPlan.price === 3999) {
+                            setHasMeetingPlan(true);
+                            const zcalLink = import.meta.env.VITE_ZCAL_LINK;
+                            window.open(zcalLink, '_blank');
+                        } else {
+                            try { localStorage.setItem('askNotify', '1'); } catch {}
+                            navigate("/dashboard");
+                        }
+
+                    } catch (error: any) {
+                        toast({
+                            title: "❌ Verification Failed",
+                            description: "Payment was successful but verification failed. Please contact support.",
+                            variant: "destructive",
+                        });
+                    } finally {
+                        setIsProcessingPayment(false);
+                    }
+                },
+                prefill: {
+                    name: details.name,
+                    email: details.email,
+                    contact: details.phone,
+                },
+                theme: {
+                    color: "#8A51CE",
+                },
+                modal: {
+                    ondismiss: function() {
+                        setIsProcessingPayment(false);
+                    }
+                }
+            };
+
+            const rzp = new (window as any).Razorpay(options);
+            rzp.open();
+
+        } catch (error: any) {
+             console.error("Payment process failed:", error);
+             toast({
+                 title: "Payment Failed",
+                 description: error.message || "An error occurred during payment.",
+                 variant: "destructive",
+             });
+             setIsProcessingPayment(false);
         }
     };
 
@@ -334,7 +388,13 @@ export default function PremiumSupportPage() {
             </section>
 
             <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} initialMode={authInitialMode} />
-            <PremiumInquiryModal isOpen={isEnquiryModalOpen} onClose={() => setIsEnquiryModalOpen(false)} plan={selectedPlan} onSubmit={handleInquirySubmit} />
+            <PremiumInquiryModal 
+                isOpen={isEnquiryModalOpen} 
+                onClose={() => setIsEnquiryModalOpen(false)} 
+                plan={selectedPlan} 
+                onSubmit={handleInquirySubmit}
+                isProcessing={isProcessingPayment} 
+            />
             
             <Footer />
         </div>
