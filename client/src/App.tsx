@@ -20,6 +20,7 @@ import { ProtectedAdminRoute } from "./components/ProtectedAdminRoute";
 import ContactUs from "@/pages/ContactUs";
 import About from "@/pages/About";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { AdvancedLoader } from "@/components/ui/AdvancedLoader";
 import { getToken, onMessage } from "firebase/messaging";
 import { useToast } from "@/hooks/use-toast";
 import { db, initializeMessaging } from "./lib/firebase";
@@ -28,7 +29,7 @@ import { doc, updateDoc } from "firebase/firestore";
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
   if (loading) {
-    return <div className="p-4">Loading...</div>;
+    return <div className="p-4"><AdvancedLoader message="Loading your session..." /></div>;
   }
   if (!user) {
     return <Redirect to="/" />;
@@ -107,39 +108,8 @@ function App() {
     };
   }, [toast]);
 
-  // 3. Request Permission and Save Token (when user logs in)
-  useEffect(() => {
-    if (user && messagingInstance) {
-      const requestAndSaveToken = async () => {
-        try {
-          const permission = await Notification.requestPermission();
-          if (permission === "granted") {
-            console.log("Notification permission granted.");
-            const currentToken = await getToken(messagingInstance, { 
-              vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY 
-            });
-
-            if (currentToken) {
-              console.log("FCM Token found:", currentToken);
-              const userRef = doc(db, "users", user.uid);
-              await updateDoc(userRef, {
-                fcmToken: currentToken,
-                notificationConsentGiven: true,
-              });
-            } else {
-              console.log("Could not get FCM token. Please check configuration.");
-            }
-          } else {
-            console.log("User denied notification permission.");
-          }
-        } catch (error) {
-          console.error("An error occurred while getting FCM token:", error);
-        }
-      };
-
-      requestAndSaveToken();
-    }
-  }, [user, messagingInstance]);
+  // 3. Permission and token are handled explicitly via UI (NotificationConsentModal)
+  //    Avoid auto-requesting permission here to respect user choice.
   // <<< END: NOTIFICATION LOGIC >>>
   
   useEffect(() => {

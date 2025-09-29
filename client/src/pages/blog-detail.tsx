@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { Footer } from "../components/footer";
 import { Button } from "../components/ui/button";
 import { ArrowLeft, Calendar, User, ArrowRight, LoaderCircle, Facebook, Linkedin, Twitter, Instagram } from "lucide-react";
+import { AdvancedLoader } from "@/components/ui/AdvancedLoader";
 import { usePosts } from "../hooks/use-posts";
 import type { Post } from "shared/schema";
 import { fetchPublishedPosts } from "@/services/firebase";
@@ -72,12 +73,7 @@ export default function BlogDetail() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-white">
-        <div className="text-center">
-          <LoaderCircle className="w-10 h-10 animate-spin text-[#EB5E77] mx-auto mb-4" />
-          <p className="text-[#565F6C]">Loading post...</p>
-        </div>
-      </div>
+      <AdvancedLoader fullScreen message="Loading post..." />
     );
   }
 

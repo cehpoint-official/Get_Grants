@@ -4,6 +4,7 @@ import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, LogOut, LoaderCircle, Bookmark, Home, CreditCard, MessageSquare, Menu as MenuIcon, Crown, Send, Search, Star, ArrowRight, PlusCircle } from 'lucide-react';
+import { AdvancedLoader } from '@/components/ui/AdvancedLoader';
 import { Redirect, Link, useLocation } from 'wouter';
 import { Grant, Payment, PremiumInquiry } from '@shared/schema';
 import { fetchGrantById } from "@/services/grants";
@@ -54,7 +55,7 @@ const DashboardPage = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     if (loading) {
-        return <div className="flex justify-center items-center h-screen"><LoaderCircle className="w-10 h-10 animate-spin text-violet" /></div>;
+        return <AdvancedLoader fullScreen message="Loading your dashboard..." />;
     }
 
     if (!user) {
@@ -214,7 +215,7 @@ const SavedGrantsSection = () => {
     }, [user]);
 
     if (loading) {
-        return <div className="flex justify-center items-center p-8"><LoaderCircle className="w-8 h-8 animate-spin text-violet" /></div>;
+        return <div className="p-8"><AdvancedLoader compact message="Loading saved grants..." /></div>;
     }
 
     return (
@@ -285,7 +286,7 @@ const MyQueriesSection = () => {
             <CardContent className="flex-grow p-0 overflow-y-auto custom-scrollbar">
                 {loading ? (
                     <div className="flex h-full items-center justify-center">
-                        <LoaderCircle className="h-8 w-8 animate-spin text-violet"/>
+                        <AdvancedLoader compact message="Loading your conversations..." />
                     </div>
                 ) : (
                     <ChatInterface 
@@ -339,7 +340,7 @@ const SubscriptionSection = () => {
             <Card>
                 <CardHeader><CardTitle>Payment History</CardTitle></CardHeader>
                 <CardContent>
-                    {loading ? <LoaderCircle className="animate-spin" /> : (
+                    {loading ? <AdvancedLoader compact message="Loading payments..." /> : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead><tr className="text-left text-gray-500"><th className="py-2 px-2">Date</th><th className="py-2 px-2">Plan</th><th className="py-2 px-2">Amount</th><th className="py-2 px-2">Status</th></tr></thead>

@@ -3,6 +3,7 @@ import { ReactNode } from 'react';
 import { Redirect } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { AlertCircle } from 'lucide-react';
+import { AdvancedLoader } from '@/components/ui/AdvancedLoader';
 
 interface ProtectedAdminRouteProps {
   children: ReactNode;
@@ -12,14 +13,7 @@ export function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
   const { user, loading, isAdmin } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return <AdvancedLoader fullScreen message="Checking admin access..." />;
   }
 
   if (!user) {

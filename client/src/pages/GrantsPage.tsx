@@ -4,6 +4,7 @@ import { Grant } from '@shared/schema';
 import { Button } from '@/components/ui/button';
 import { useLocation } from 'wouter';
 import { LoaderCircle, Lock, Search, CalendarDays, Wallet, Clock4, SlidersHorizontal } from 'lucide-react';
+import { AdvancedLoader } from '@/components/ui/AdvancedLoader';
 import { useAuth, AppUser } from '@/hooks/use-auth';
 import { AuthModal } from '@/components/AuthModal';
 import { Input } from '@/components/ui/input';
@@ -300,11 +301,7 @@ export default function GrantsPage() {
     const categories = ['All', 'Technology', 'Healthcare', 'Education', 'Environment', 'Sustainability', 'Fintech', 'Agriculture', 'Retail', 'Diversity', 'Social'];
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center h-screen">
-                <LoaderCircle className="w-10 h-10 animate-spin text-violet" />
-            </div>
-        );
+        return <AdvancedLoader fullScreen message="Loading grants..." />;
     }
 
     return (

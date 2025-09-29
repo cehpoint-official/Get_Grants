@@ -103,16 +103,16 @@ const FIREBASE_ERROR_MESSAGES: Record<string, UserFriendlyError> = {
     action: 'Try Again Later'
   },
   'auth/app-deleted': {
-    title: 'App Configuration Error',
-    message: 'There\'s a configuration issue. Please contact support.',
-    type: 'error',
-    action: 'Contact Support'
+    title: 'We\'re fixing something',
+    message: 'There\'s a small issue on our side. Please try again in a bit.',
+    type: 'warning',
+    action: 'Try Again Later'
   },
   'auth/invalid-api-key': {
-    title: 'Configuration Error',
-    message: 'There\'s a configuration issue. Please contact support.',
-    type: 'error',
-    action: 'Contact Support'
+    title: 'We\'re fixing something',
+    message: 'There\'s a small issue on our side. Please try again in a bit.',
+    type: 'warning',
+    action: 'Try Again Later'
   },
   'auth/invalid-user-token': {
     title: 'Session Expired',
@@ -240,9 +240,9 @@ const FIRESTORE_ERROR_MESSAGES: Record<string, UserFriendlyError> = {
 
 const NETWORK_ERROR_PATTERNS = [
   { pattern: /network/i, message: 'Please check your internet connection and try again.' },
-  { pattern: /timeout/i, message: 'The request timed out. Please try again.' },
-  { pattern: /offline/i, message: 'You appear to be offline. Please check your connection.' },
-  { pattern: /connection/i, message: 'Connection failed. Please try again.' }
+  { pattern: /timeout/i, message: 'This is taking longer than usual. Please try again.' },
+  { pattern: /offline/i, message: 'You seem to be offline. Please check your connection.' },
+  { pattern: /connection/i, message: 'Couldn\'t connect. Please try again.' }
 ];
 
 export function getFirebaseErrorMessage(error: any): UserFriendlyError {
@@ -268,24 +268,26 @@ export function getFirebaseErrorMessage(error: any): UserFriendlyError {
 
   if (error instanceof FirebaseError) {
     return {
-      title: 'Firebase Error',
-      message: 'A Firebase service error occurred. Please try again.',
+      title: 'Something went wrong',
+      message: 'Please try again. If the issue continues, we\'re on it.',
       type: 'error',
       action: 'Try Again'
     };
   }
 
   if (error?.message) {
+    // Do not surface raw technical messages to users
     return {
-      title: 'Error',
-      message: error.message,
-      type: 'error'
+      title: 'Something went wrong',
+      message: 'Please try again. If the issue continues, try again later.',
+      type: 'error',
+      action: 'Try Again'
     };
   }
 
   return {
-    title: 'Something Went Wrong',
-    message: 'An unexpected error occurred. Please try again.',
+    title: 'Something went wrong',
+    message: 'Please try again. If the issue continues, try again later.',
     type: 'error',
     action: 'Try Again'
   };

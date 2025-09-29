@@ -30,6 +30,7 @@ import {
     X, LayoutDashboard, Inbox, Home, BookOpen, Menu as MenuIcon, Users, FileCheck, Award, LoaderCircle, Calendar as CalendarIcon, Briefcase, Share2, MessageSquare, Mail, LogOut, Check, Trash2, Edit, PlusCircle, MoreHorizontal, Download, Send, ChevronLeft, ChevronRight, MessageCircle
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { AdvancedLoader } from "@/components/ui/AdvancedLoader";
 import { fetchDashboardStats, DashboardStats, fetchContactMessages, ContactMessage } from "@/services/admin";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -99,7 +100,7 @@ const DashboardAnalytics = ({ setActiveTab }: { setActiveTab: (tab: string) => v
     }, []);
 
     if (loading) {
-        return <div className="flex justify-center p-8"><LoaderCircle className="w-8 h-8 animate-spin text-violet" /></div>;
+        return <div className="p-8"><AdvancedLoader compact message="Loading dashboard stats..." /></div>;
     }
 
     return (
