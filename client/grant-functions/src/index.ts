@@ -3,6 +3,7 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
+import axios from "axios";
 
 import Razorpay from "razorpay";
 
@@ -277,6 +278,264 @@ export const notifyPremiumUsersOnGrantUpdateV2 = onDocumentWritten("grants/{gran
 });
 
 
+
+// =================================================================
+// ================== SMART GRANT FINDER ===========================
+// =================================================================
+
+/**
+ * Interface for source website documents
+ */
+interface SourceWebsite {
+  id: string;
+  name: string;
+  url: string;
+}
+
+
+/**
+ * Interface for AI-extracted grant data
+ */
+interface ExtractedGrantData {
+  title: string;
+  organization: string;
+  description: string;
+  overview: string;
+  deadline: string;
+  fundingAmount: string;
+  eligibility: string;
+  applyLink: string;
+  category: string;
+}
+
+/**
+ * Call Google Gemini API to extract grant links from a website
+ */
+async function extractGrantLinks(html: string, baseUrl: string): Promise<string[]> {
+  try {
+    const { GoogleGenerativeAI } = require("@google/generative-ai");
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `
+    Analyze the following HTML content and extract all grant-related links. 
+    Look for links that lead to specific grant detail pages, application pages, or grant announcements.
+    
+    Base URL: ${baseUrl}
+    
+    Return ONLY a JSON array of absolute URLs. Each URL should be a complete, valid URL.
+    If no grant links are found, return an empty array.
+    
+    HTML Content:
+    ${html.substring(0, 10000)} // Limit to first 10k chars to avoid token limits
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    // Try to parse the JSON response
+    const cleanText = text.replace(/```json|```/g, '').trim();
+    const links = JSON.parse(cleanText);
+    
+    if (Array.isArray(links)) {
+      return links.filter(link => typeof link === 'string' && link.startsWith('http'));
+    }
+    
+    return [];
+  } catch (error) {
+    logger.error("Error extracting grant links:", error);
+    return [];
+  }
+}
+
+/**
+ * Call Google Gemini API to extract grant details from a grant page
+ */
+async function extractGrantDetails(html: string, url: string): Promise<ExtractedGrantData | null> {
+  try {
+    const { GoogleGenerativeAI } = require("@google/generative-ai");
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `
+    Extract grant information from the following HTML content and return it as a JSON object.
+    
+    URL: ${url}
+    
+    Extract the following fields:
+    - title: Grant title/name
+    - organization: Organization offering the grant
+    - description: Short description (2-3 sentences)
+    - overview: Detailed overview of the grant
+    - deadline: Application deadline (format as YYYY-MM-DD if possible)
+    - fundingAmount: Funding amount (include currency if mentioned)
+    - eligibility: Eligibility criteria
+    - applyLink: Application link (use the provided URL if not found)
+    - category: Grant category (choose from: Technology, Healthcare, Education, Environment, Sustainability, Fintech, Agriculture, Retail, Diversity, Social)
+    
+    Return ONLY a valid JSON object with these exact field names. If any field cannot be determined, use "Not specified".
+    
+    HTML Content:
+    ${html.substring(0, 15000)} // Limit to first 15k chars
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    // Try to parse the JSON response
+    const cleanText = text.replace(/```json|```/g, '').trim();
+    const grantData = JSON.parse(cleanText);
+    
+    // Validate required fields
+    if (grantData.title && grantData.organization) {
+      return grantData as ExtractedGrantData;
+    }
+    
+    return null;
+  } catch (error) {
+    logger.error("Error extracting grant details:", error);
+    return null;
+  }
+}
+
+/**
+ * Check if a grant with the given sourceUrl already exists in pendingGrants
+ */
+async function isDuplicateGrant(sourceUrl: string): Promise<boolean> {
+  try {
+    const snapshot = await db.collection('pendingGrants')
+      .where('sourceUrl', '==', sourceUrl)
+      .limit(1)
+      .get();
+    
+    return !snapshot.empty;
+  } catch (error) {
+    logger.error("Error checking for duplicate grant:", error);
+    return false;
+  }
+}
+
+/**
+ * Save extracted grant data to pendingGrants collection
+ */
+async function savePendingGrant(grantData: ExtractedGrantData, sourceUrl: string): Promise<void> {
+  try {
+    await db.collection('pendingGrants').add({
+      ...grantData,
+      sourceUrl,
+      status: "pending_review",
+      createdAt: admin.firestore.Timestamp.now(),
+    });
+    
+    logger.info(`Saved pending grant: ${grantData.title}`);
+  } catch (error) {
+    logger.error("Error saving pending grant:", error);
+  }
+}
+
+/**
+ * Smart Grant Finder - Scheduled Cloud Function
+ * Runs every 24 hours to discover new grants from source websites
+ */
+export const smartGrantFinder = onSchedule(
+  { schedule: "every 24 hours" },
+  async () => {
+    logger.info("Starting smart grant discovery process...");
+    
+    try {
+      // Step 1: Fetch all source websites
+      const sourceWebsitesSnapshot = await db.collection('sourceWebsites').get();
+      
+      if (sourceWebsitesSnapshot.empty) {
+        logger.info("No source websites configured. Skipping grant discovery.");
+        return;
+      }
+      
+      const sourceWebsites: SourceWebsite[] = sourceWebsitesSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as SourceWebsite));
+      
+      logger.info(`Found ${sourceWebsites.length} source websites to process`);
+      
+      // Step 2: Process each source website
+      for (const website of sourceWebsites) {
+        try {
+          logger.info(`Processing website: ${website.name} (${website.url})`);
+          
+          // Fetch the main page HTML
+          const response = await axios.get(website.url, {
+            timeout: 30000,
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+          });
+          
+          const html = response.data;
+          
+          // Step 3: Extract grant links using AI
+          const grantLinks = await extractGrantLinks(html, website.url);
+          logger.info(`Found ${grantLinks.length} potential grant links from ${website.name}`);
+          
+          // Step 4: Process each grant link
+          for (const grantUrl of grantLinks) {
+            try {
+              // Check if this grant already exists
+              const isDuplicate = await isDuplicateGrant(grantUrl);
+              if (isDuplicate) {
+                logger.info(`Skipping duplicate grant: ${grantUrl}`);
+                continue;
+              }
+              
+              // Fetch the grant detail page
+              const grantResponse = await axios.get(grantUrl, {
+                timeout: 30000,
+                headers: {
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+              });
+              
+              const grantHtml = grantResponse.data;
+              
+              // Step 5: Extract grant details using AI
+              const grantData = await extractGrantDetails(grantHtml, grantUrl);
+              
+              if (grantData) {
+                // Step 6: Save as pending grant
+                await savePendingGrant(grantData, grantUrl);
+                logger.info(`Successfully processed grant: ${grantData.title}`);
+              } else {
+                logger.warn(`Failed to extract grant data from: ${grantUrl}`);
+              }
+              
+              // Add a small delay to avoid overwhelming the target websites
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              
+            } catch (error) {
+              logger.error(`Error processing grant URL ${grantUrl}:`, error);
+              continue;
+            }
+          }
+          
+        } catch (error) {
+          logger.error(`Error processing website ${website.name}:`, error);
+          continue;
+        }
+      }
+      
+      logger.info("Smart grant discovery process completed successfully");
+      
+    } catch (error) {
+      logger.error("Error in smart grant discovery process:", error);
+    }
+  }
+);
+
+// =================================================================
+// ================== EXISTING FUNCTIONS ===========================
+// =================================================================
 
 // client/grant-functions/src/index.ts
 

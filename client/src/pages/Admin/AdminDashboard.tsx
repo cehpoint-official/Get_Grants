@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { exportToExcel, exportPlainToExcel } from "@/lib/excelUtils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -53,7 +54,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CreateTestimonialModal } from "@/components/create-testimonial-modal";
 
 import { db } from "@/lib/firebase";
-import { collection, query, orderBy, getDocs, Timestamp, deleteDoc as deleteFirestoreDoc, doc } from "firebase/firestore";
+import { collection, query, orderBy, getDocs, Timestamp, deleteDoc as deleteFirestoreDoc, doc, addDoc } from "firebase/firestore";
 
 
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -61,11 +62,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const sidebarItems = [
     { name: "Dashboard", icon: LayoutDashboard },
     { name: "Grants", icon: Award },
+    { name: "Grant Drafts", icon: Edit },
+    { name: "Manage Sources", icon: PlusCircle },
     { name: "Grant Leads", icon: FileCheck }, 
     { name: "Applications", icon: Inbox },
     { name: "Users", icon: Users },
     { name: "Blogs", icon: BookOpen },
-    
     { name: "Testimonials", icon: MessageCircle },
     { name: "Users Queries", icon: MessageSquare },
     { name: "Contact Messages", icon: Mail },
@@ -261,6 +263,26 @@ export default function AdminDashboard() {
     const [showTestimonialModal, setShowTestimonialModal] = useState(false);
     const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
     
+    // New state for source websites and pending grants
+    const [sourceWebsites, setSourceWebsites] = useState<Array<{id: string, name: string, url: string}>>([]);
+    const [pendingGrants, setPendingGrants] = useState<Array<{
+        id: string;
+        title: string;
+        organization: string;
+        description: string;
+        overview: string;
+        deadline: string;
+        fundingAmount: string;
+        eligibility: string;
+        applyLink: string;
+        category: string;
+        sourceUrl: string;
+        status: string;
+        createdAt: Date;
+    }>>([]);
+    const [newWebsiteName, setNewWebsiteName] = useState("");
+    const [newWebsiteUrl, setNewWebsiteUrl] = useState("");
+    const [loading, setLoading] = useState(false);
     
     const isMobile = useIsMobile();
     const [mobileChatVisible, setMobileChatVisible] = useState(false);
@@ -273,7 +295,8 @@ export default function AdminDashboard() {
             "Calendar": loadEvents,
             "Applications": loadApplications,
             "Users": loadUsers,
-            
+            "Manage Sources": loadSourceWebsites,
+            "Grant Drafts": loadPendingGrants,
             "Testimonials": loadTestimonials,
             "Users Queries": loadPremiumInquiries,
             "Contact Messages": loadContactMessages,
@@ -322,6 +345,41 @@ export default function AdminDashboard() {
         setTestimonials(data);
     };
 
+    const loadSourceWebsites = async () => {
+        const q = query(collection(db, "sourceWebsites"), orderBy("name"));
+        const snapshot = await getDocs(q);
+        const data = snapshot.docs.map(d => ({ 
+            id: d.id, 
+            ...d.data() 
+        } as { id: string; name: string; url: string }));
+        setSourceWebsites(data);
+    };
+
+    const loadPendingGrants = async () => {
+        const q = query(collection(db, "pendingGrants"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        const data = snapshot.docs.map(d => ({ 
+            id: d.id, 
+            ...d.data(), 
+            createdAt: (d.data().createdAt as Timestamp).toDate() 
+        } as {
+            id: string;
+            title: string;
+            organization: string;
+            description: string;
+            overview: string;
+            deadline: string;
+            fundingAmount: string;
+            eligibility: string;
+            applyLink: string;
+            category: string;
+            sourceUrl: string;
+            status: string;
+            createdAt: Date;
+        }));
+        setPendingGrants(data);
+    };
+
     useEffect(() => {
         if (activeTab === "Users Queries" && premiumInquiries.length > 0) {
             const unsubscribes = premiumInquiries.map(inquiry =>
@@ -336,7 +394,6 @@ export default function AdminDashboard() {
     const handleDeletePost = async (id: string) => { await deletePost(id); loadPosts(); };
     const handleCreatePost = async (formData: InsertPost) => { await createPost(formData); loadPosts(); setShowModal(false); };
     const handleUpdatePost = async (updated: InsertPost & { id: string }) => { if (editingPost) { await updatePost(editingPost.id, updated); loadPosts(); setEditingPost(null); setShowModal(false); } };
-    const handleCreateGrant = async (formData: InsertGrant) => { await createGrant(formData); loadGrants(); setShowGrantModal(false); };
     const handleUpdateGrant = async (updatedData: InsertGrant) => { if (editingGrant) { await updateGrant(editingGrant.id, updatedData); loadGrants(); setEditingGrant(null); setShowGrantModal(false); } };
     const handleDeleteGrant = async (id: string) => { if (window.confirm("Sure you want to delete?")) { await deleteGrant(id); loadGrants(); } };
     const handleCreateEvent = async (data: InsertEvent) => { await createCalendarEvent(data); await loadEvents(); setShowEventModal(false); };
@@ -348,6 +405,72 @@ export default function AdminDashboard() {
         if (window.confirm("Are you sure you want to delete this testimonial?")) {
             await deleteFirestoreDoc(doc(db, "testimonials", id));
             loadTestimonials();
+        }
+    };
+
+    // Source website management functions
+    const handleAddWebsite = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newWebsiteName.trim() || !newWebsiteUrl.trim()) return;
+        
+        setLoading(true);
+        try {
+            await addDoc(collection(db, "sourceWebsites"), {
+                name: newWebsiteName.trim(),
+                url: newWebsiteUrl.trim()
+            });
+            setNewWebsiteName("");
+            setNewWebsiteUrl("");
+            loadSourceWebsites();
+        } catch (error) {
+            console.error("Error adding website:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeleteWebsite = async (id: string) => {
+        if (window.confirm("Are you sure you want to delete this source website?")) {
+            await deleteFirestoreDoc(doc(db, "sourceWebsites", id));
+            loadSourceWebsites();
+        }
+    };
+
+    // Pending grant management functions
+    const handleReviewGrant = (pendingGrant: any) => {
+        // Convert pending grant to grant format for the modal
+        const grantData = {
+            title: pendingGrant.title,
+            organization: pendingGrant.organization,
+            description: pendingGrant.description,
+            overview: pendingGrant.overview,
+            deadline: pendingGrant.deadline,
+            fundingAmount: pendingGrant.fundingAmount,
+            eligibility: pendingGrant.eligibility,
+            applyLink: pendingGrant.applyLink,
+            category: pendingGrant.category,
+            documents: [{ title: "Business Plan", description: "Detailed business plan", required: true }],
+            faqs: [],
+            contactEmail: "contact@example.com",
+            isPremium: false
+        };
+        
+        setEditingGrant(grantData as any);
+        setShowGrantModal(true);
+    };
+
+    const handleCreateGrant = async (formData: InsertGrant) => {
+        await createGrant(formData);
+        loadGrants();
+        setShowGrantModal(false);
+        
+        // If this was from a pending grant review, delete the pending grant
+        if (editingGrant && (editingGrant as any).sourceUrl) {
+            const pendingGrant = pendingGrants.find(pg => pg.sourceUrl === (editingGrant as any).sourceUrl);
+            if (pendingGrant) {
+                await deleteFirestoreDoc(doc(db, "pendingGrants", pendingGrant.id));
+                loadPendingGrants();
+            }
         }
     };
 
@@ -434,6 +557,140 @@ export default function AdminDashboard() {
                     </div>
                 );
             
+            case "Manage Sources":
+                return (
+                    <div>
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-3xl font-bold text-gray-800">Manage Source Websites</h1>
+                        </div>
+                        
+                        {/* Add Website Form */}
+                        <Card className="mb-6">
+                            <CardHeader>
+                                <CardTitle>Add New Source Website</CardTitle>
+                                <CardDescription>Add websites that contain grant listings for automated discovery</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <form onSubmit={handleAddWebsite} className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <Label htmlFor="websiteName">Website Name</Label>
+                                            <Input
+                                                id="websiteName"
+                                                value={newWebsiteName}
+                                                onChange={(e) => setNewWebsiteName(e.target.value)}
+                                                placeholder="e.g., Startup India"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="websiteUrl">Website URL</Label>
+                                            <Input
+                                                id="websiteUrl"
+                                                type="url"
+                                                value={newWebsiteUrl}
+                                                onChange={(e) => setNewWebsiteUrl(e.target.value)}
+                                                placeholder="https://www.startupindia.gov.in"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <Button type="submit" disabled={loading} className="bg-violet hover:bg-violet/90">
+                                        {loading ? "Adding..." : "Add Website"}
+                                    </Button>
+                                </form>
+                            </CardContent>
+                        </Card>
+
+                        {/* List of Source Websites */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Source Websites ({sourceWebsites.length})</CardTitle>
+                                <CardDescription>Websites currently being monitored for grant discovery</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {sourceWebsites.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {sourceWebsites.map(website => (
+                                            <div key={website.id} className="flex items-center justify-between p-4 border rounded-lg">
+                                                <div>
+                                                    <h3 className="font-semibold text-gray-800">{website.name}</h3>
+                                                    <p className="text-sm text-gray-500">{website.url}</p>
+                                                </div>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() => handleDeleteWebsite(website.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 text-gray-500">
+                                        <p>No source websites configured yet.</p>
+                                        <p className="text-sm">Add websites above to start automated grant discovery.</p>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+                );
+
+            case "Grant Drafts":
+                return (
+                    <div>
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-3xl font-bold text-gray-800">Grant Drafts</h1>
+                            <Badge variant="outline" className="text-sm">
+                                {pendingGrants.length} pending review
+                            </Badge>
+                        </div>
+                        
+                        {pendingGrants.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {pendingGrants.map(grant => (
+                                    <Card key={grant.id} className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow flex flex-col overflow-hidden">
+                                        <CardHeader>
+                                            <div className="flex justify-between items-start">
+                                                <CardTitle className="text-lg font-bold text-gray-800 line-clamp-2 leading-tight">{grant.title}</CardTitle>
+                                                <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Draft</Badge>
+                                            </div>
+                                            <CardDescription className="text-sm text-gray-500 pt-1">{grant.organization}</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="flex-grow">
+                                            <p className="text-sm text-gray-600 mb-4 line-clamp-3">{grant.description}</p>
+                                            <div className="text-xs text-gray-500 space-y-2">
+                                                <p><strong>Funding:</strong> <span className="font-semibold text-violet">{grant.fundingAmount}</span></p>
+                                                <p><strong>Category:</strong> {grant.category}</p>
+                                                <p><strong>Source:</strong> <a href={grant.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">View Source</a></p>
+                                            </div>
+                                        </CardContent>
+                                        <div className="p-4 border-t bg-gray-50 flex gap-2">
+                                            <Button 
+                                                size="sm" 
+                                                className="w-full bg-violet hover:bg-violet/90" 
+                                                onClick={() => handleReviewGrant(grant)}
+                                            >
+                                                <Edit className="mr-2 h-4 w-4"/> Review & Edit
+                                            </Button>
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        ) : (
+                            <Card>
+                                <CardContent className="text-center py-12">
+                                    <Award className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                                    <h3 className="text-lg font-semibold text-gray-700 mb-2">No Grant Drafts</h3>
+                                    <p className="text-gray-500">No grants are currently pending review. New grants will appear here after the automated discovery process runs.</p>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
+                );
+
             case "Testimonials":
                 return (
                     <div>
@@ -862,7 +1119,7 @@ export default function AdminDashboard() {
             </main>
 
             <CreatePostModal isOpen={showModal} onClose={() => { setEditingPost(null); setShowModal(false); }} initialData={editingPost} onSubmit={editingPost ? handleUpdatePost : handleCreatePost} />
-            <CreateGrantModal isOpen={showGrantModal} onClose={() => { setEditingGrant(null); setShowGrantModal(false); }} initialData={editingGrant} onSubmit={editingGrant ? handleUpdateGrant : handleCreateGrant} />
+            <CreateGrantModal isOpen={showGrantModal} onClose={() => { setEditingGrant(null); setShowGrantModal(false); }} initialData={editingGrant} onSubmit={editingGrant && !(editingGrant as any).sourceUrl ? handleUpdateGrant : handleCreateGrant} />
              <EventModal
                 isOpen={showEventModal}
                 onClose={() => { setEditingEvent(null); setShowEventModal(false); }}
