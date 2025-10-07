@@ -3,6 +3,7 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
+import { https } from "firebase-functions/v1";
 import axios from "axios";
 
 import Razorpay from "razorpay";
@@ -543,14 +544,23 @@ export const smartGrantFinder = onSchedule(
 
 // ... (aapka existing code)
 
-const razorpay = new Razorpay({
-    key_id: functions.config().razorpay.key_id,
-    key_secret: functions.config().razorpay.key_secret,
-});
+function getRazorpayInstance(): Razorpay {
+  const keyId = process.env.RAZORPAY_KEY_ID || (functions.config()?.razorpay?.key_id as string | undefined);
+  const keySecret = process.env.RAZORPAY_KEY_SECRET || (functions.config()?.razorpay?.key_secret as string | undefined);
+
+  if (!keyId || !keySecret) {
+    throw new functions.https.HttpsError(
+      "failed-precondition",
+      "Razorpay credentials are not configured."
+    );
+  }
+
+  return new Razorpay({ key_id: keyId, key_secret: keySecret });
+}
 
 // Function to create a Razorpay order
-export const createOrder = functions.https.onCall(async (data, context) => {
-    const amount = data.amount;
+export const createOrder = https.onCall(async (request) => {
+    const amount = request.data.amount;
     const currency = "INR";
 
     const options = {
@@ -560,6 +570,7 @@ export const createOrder = functions.https.onCall(async (data, context) => {
     };
 
     try {
+        const razorpay = getRazorpayInstance();
         const order = await razorpay.orders.create(options);
         return { orderId: order.id };
     } catch (error) {
@@ -569,29 +580,40 @@ export const createOrder = functions.https.onCall(async (data, context) => {
 });
 
 // Function to verify the payment
-export const verifyPayment = functions.https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError("unauthenticated", "You must be logged in.");
-    }
-
-    const {
-        razorpay_order_id,
-        razorpay_payment_id,
-        razorpay_signature,
-        plan, // { name, price, duration }
-    } = data;
+export const verifyPayment = https.onCall(async (request) => {
+  if (!request.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "The function must be called while authenticated."
+    );
+  }
+  
+  const {
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
+    plan,
+  } = request.data;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
     const crypto = require("crypto");
+    const keySecret = process.env.RAZORPAY_KEY_SECRET || (functions.config()?.razorpay?.key_secret as string | undefined);
+    if (!keySecret) {
+      throw new functions.https.HttpsError(
+        "failed-precondition",
+        "Razorpay credentials are not configured."
+      );
+    }
+
     const expectedSignature = crypto
-        .createHmac("sha256", functions.config().razorpay.key_secret)
+        .createHmac("sha256", keySecret)
         .update(body.toString())
         .digest("hex");
 
     if (expectedSignature === razorpay_signature) {
         // Payment is successful
-        const userId = context.auth.uid;
+        const userId = request.auth.uid;
         const userRef = admin.firestore().collection("users").doc(userId);
 
         // 1. Save payment details
