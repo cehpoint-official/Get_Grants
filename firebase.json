@@ -28,10 +28,15 @@
       "codebase": "grant-functions",
       "ignore": [
         "node_modules",
+        "**/node_modules/**",
         ".git",
         "firebase-debug.log",
         "firebase-debug.*.log",
         "*.local"
+      ],
+      "include": [
+        "package-lock.json",
+        "npm-shrinkwrap.json"
       ]
     }
   ],
