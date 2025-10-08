@@ -5,8 +5,12 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import { https } from "firebase-functions/v1";
 import axios from "axios";
+import { defineSecret } from "firebase-functions/params";
 
 import Razorpay from "razorpay";
+
+// Define the secret parameter for Gemini API key
+const geminiApiKey = defineSecret("GEMINI_API_KEY");
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -309,14 +313,32 @@ interface ExtractedGrantData {
   category: string;
 }
 
+function getGeminiModel() {
+  const rawKey = (geminiApiKey.value?.() ?? geminiApiKey.value()) as string | undefined;
+  const apiKey = (rawKey || "").trim();
+
+  if (!apiKey) {
+    logger.error("GEMINI_API_KEY is empty or not provided. Skipping AI extraction.");
+    throw new Error("Missing GEMINI_API_KEY");
+  }
+  // mask all but last 4 characters for diagnostics
+  const masked = apiKey.length >= 8 ? `${"*".repeat(apiKey.length - 4)}${apiKey.slice(-4)}` : "****";
+  logger.info(`Using GEMINI_API_KEY (masked): ${masked} | length=${apiKey.length}`);
+
+  const { GoogleGenerativeAI } = require("@google/generative-ai");
+  const genAI = new GoogleGenerativeAI(apiKey);
+  // ===========================================
+  // === YAHAN PAR BADLAAV KIYA GAYA HAI ===
+  // ===========================================
+  return genAI.getGenerativeModel({ model: "gemini-pro" });
+}
+
 /**
  * Call Google Gemini API to extract grant links from a website
  */
 async function extractGrantLinks(html: string, baseUrl: string): Promise<string[]> {
   try {
-    const { GoogleGenerativeAI } = require("@google/generative-ai");
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = getGeminiModel();
 
     const prompt = `
     Analyze the following HTML content and extract all grant-related links. 
@@ -355,9 +377,7 @@ async function extractGrantLinks(html: string, baseUrl: string): Promise<string[
  */
 async function extractGrantDetails(html: string, url: string): Promise<ExtractedGrantData | null> {
   try {
-    const { GoogleGenerativeAI } = require("@google/generative-ai");
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = getGeminiModel();
 
     const prompt = `
     Extract grant information from the following HTML content and return it as a JSON object.
@@ -441,7 +461,7 @@ async function savePendingGrant(grantData: ExtractedGrantData, sourceUrl: string
  * Runs every 24 hours to discover new grants from source websites
  */
 export const smartGrantFinder = onSchedule(
-  { schedule: "every 24 hours" },
+  { schedule: "every 24 hours", secrets: [geminiApiKey] },
   async () => {
     logger.info("Starting smart grant discovery process...");
     
