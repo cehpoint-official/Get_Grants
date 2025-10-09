@@ -330,7 +330,7 @@ function getGeminiModel() {
   // ===========================================
   // === YAHAN PAR BADLAAV KIYA GAYA HAI ===
   // ===========================================
-  return genAI.getGenerativeModel({ model: "gemini-pro" });
+  return genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 }
 
 /**
