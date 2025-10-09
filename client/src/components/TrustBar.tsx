@@ -1,36 +1,72 @@
-import { Building2, Lightbulb, Rocket, Network, IndianRupee } from 'lucide-react';
+import React from 'react';
+import l1 from '../assets/logos/logo1.png';
+import l2 from '../assets/logos/logo2.png';
+import l3 from '../assets/logos/logo3.png';
+import l4 from '../assets/logos/logo4.png';
+import l5 from '../assets/logos/logo5.png';
+import l6 from '../assets/logos/logo6.png';
+
+export default function App() {
+  return <TrustBar />;
+}
 
 export function TrustBar() {
-  const partners = [
-    { name: 'Govt. Schemes', icon: <Building2 className="h-10 w-10 text-primary-blue" /> },
-    { name: 'Startup India', icon: <Rocket className="h-10 w-10 text-primary-blue" /> },
-    { name: 'Incubators', icon: <Network className="h-10 w-10 text-primary-blue" /> },
-    { name: 'Innovation Mission', icon: <Lightbulb className="h-10 w-10 text-primary-blue" /> },
-    { name: 'Funding Agencies', icon: <IndianRupee className="h-10 w-10 text-primary-blue" /> },
+  const grantLogos = [
+    { name: 'IIT-D', url: l1 },
+    { name: 'NIT-A', url: l2 },
+    { name: 'NSRCEL', url: l3 },
+    { name: 'NCU', url: l4 },
+    { name: 'Startup India', url: l5 },
+    { name: 'Start Gujarat', url: l6 },
   ];
 
+  const duplicatedLogos = [...grantLogos, ...grantLogos];
+
   return (
-    <section className="py-16 md:py-20 bg-light-blue">
-      <div className="container mx-auto px-4 md:px-6">
-        <h2 className="text-center text-3xl font-bold text-gray-800 mb-12">
-          Trusted by India's most innovative schemes & incubators
-        </h2>
-        
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
-          {partners.map((partner) => (
-            <div 
-              key={partner.name} 
-              className="bg-white p-6 rounded-xl text-center cursor-pointer
-                         hover:-translate-y-2 hover:shadow-xl transition-all duration-300 ease-in-out"
-            >
-              <div className="flex justify-center mb-4">
-                {partner.icon}
-              </div>
-              <p className="font-semibold text-gray-700">{partner.name}</p>
+    <>
+      <style>
+        {`
+          @keyframes marquee {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+          }
+          .animate-marquee {
+            animation: marquee 15s linear infinite;
+          }
+          .marquee-container:hover .animate-marquee {
+            animation-play-state: paused;
+          }
+        `}
+      </style>
+
+      <section className="py-12" style={{ background: 'white' }}>
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-[#565F6C] mb-4">
+              Trusted by Leading Grant Organizations
+            </h2>
+          </div>
+          
+          <div className="relative w-full overflow-hidden marquee-container">
+            <div className="flex items-center animate-marquee gap-16">
+              {duplicatedLogos.map((logo, idx) => (
+                <div key={`${logo.name}-${idx}`} className="flex-shrink-0 w-44">
+                  <img
+                    src={logo.url}
+                    alt={`${logo.name} logo`}
+                    className="h-16 w-full object-contain transition-all duration-300"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null;
+                      target.src = `https://placehold.co/176x64/f0f0f0/333333?text=${logo.name.replace(/\s/g, '+')}`;
+                    }}
+                  />
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

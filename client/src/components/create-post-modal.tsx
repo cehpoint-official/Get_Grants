@@ -25,7 +25,7 @@ interface CreatePostModalProps {
     content: string;
     category: string;
     imageUrl?: string;
-  };
+  } | null;
 }
 
 export function CreatePostModal({
@@ -38,7 +38,7 @@ export function CreatePostModal({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState<string>("");
-  
+
   const { createPost } = usePosts();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -54,11 +54,9 @@ export function CreatePostModal({
     },
   });
 
-  // Handle modal open/close and data initialization
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
-        // Editing mode
         const formData = {
           title: initialData.title || "",
           content: initialData.content || "",
@@ -66,16 +64,13 @@ export function CreatePostModal({
           author: user?.email || "Admin",
           imageUrl: initialData.imageUrl || "",
         };
-        
+
         form.reset(formData);
         setCurrentImageUrl(initialData.imageUrl || "");
         setImagePreview(initialData.imageUrl || null);
         setSelectedImage(null);
-        
-        console.log("Edit mode - Initial data:", initialData);
-        console.log("Edit mode - Form reset with:", formData);
+
       } else {
-        // Create mode
         const formData = {
           title: "",
           content: "",
@@ -83,13 +78,12 @@ export function CreatePostModal({
           author: user?.email || "Admin",
           imageUrl: "",
         };
-        
+
         form.reset(formData);
         setCurrentImageUrl("");
         setImagePreview(null);
         setSelectedImage(null);
-        
-        console.log("Create mode - Form reset");
+
       }
     }
   }, [isOpen, initialData, form, user]);
@@ -103,7 +97,6 @@ export function CreatePostModal({
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
-      console.log("New image selected:", file.name);
     }
   };
 
@@ -111,31 +104,21 @@ export function CreatePostModal({
     setSelectedImage(null);
     setImagePreview(null);
     form.setValue("imageUrl", "");
-    console.log("Image removed");
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmitForm = async (data: any) => {
     if (!user) return;
-
-    console.log("Submit started with data:", data);
-    console.log("Current image URL:", currentImageUrl);
-    console.log("Selected image:", selectedImage?.name);
 
     try {
       let finalImageUrl = currentImageUrl;
 
-      // If a new image was selected, upload it
       if (selectedImage) {
-        console.log("Uploading new image to Cloudinary...");
         setUploadingImage(true);
         finalImageUrl = await uploadToCloudinary(selectedImage);
-        console.log("New image uploaded:", finalImageUrl);
       } else if (!imagePreview) {
-        // If no preview and no selected image, user removed the image
-        finalImageUrl = "";
-        console.log("Image was removed, setting empty URL");
+        toast({ title: "Image required", description: "Please upload a featured image.", variant: "destructive" });
+        return;
       }
-      // If no new image selected and preview exists, keep current image
 
       const payload = {
         ...data,
@@ -143,13 +126,9 @@ export function CreatePostModal({
         imageUrl: finalImageUrl,
       };
 
-      console.log("Final payload:", payload);
-
       if (initialData && onSubmit) {
-        console.log("Calling onSubmit for edit...");
-        await onSubmit(payload);
+        await onSubmit({ ...payload, id: initialData.id });
       } else {
-        console.log("Calling createPost for new post...");
         await createPost(payload);
       }
 
@@ -160,10 +139,9 @@ export function CreatePostModal({
 
       handleClose();
     } catch (error) {
-      console.error("Submit error:", error);
       toast({
         title: "Error",
-        description: `Failed to ${initialData ? "update" : "create"} post.`,
+        description: error instanceof Error ? error.message : `Failed to ${initialData ? "update" : "create"} post.`,
         variant: "destructive",
       });
     } finally {
@@ -172,7 +150,6 @@ export function CreatePostModal({
   };
 
   const handleClose = () => {
-    console.log("Modal closing...");
     form.reset();
     setSelectedImage(null);
     setImagePreview(null);
@@ -182,37 +159,42 @@ export function CreatePostModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#F8F5FA] p-8 rounded-2xl">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-[#30343B]">
             {initialData ? "Edit Post" : "Create New Post"}
           </DialogTitle>
+          <p className="text-[#565F6C] mt-2">Create and publish your blog post</p>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmitForm)} className="space-y-6 bg-white p-6 rounded-xl shadow-lg">
             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel className="text-[#30343B] font-semibold">Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter post title" {...field} />
+                    <Input 
+                      placeholder="Enter post title" 
+                      {...field} 
+                      className="bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel className="text-[#30343B] font-semibold">Category</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg">
                         <SelectValue placeholder="Select Category" />
                       </SelectTrigger>
                     </FormControl>
@@ -222,28 +204,30 @@ export function CreatePostModal({
                       <SelectItem value="Startup Funding">Startup Funding</SelectItem>
                       <SelectItem value="Tools">Tools</SelectItem>
                       <SelectItem value="Strategy">Strategy</SelectItem>
+                      <SelectItem value="Funding">Funding</SelectItem>
+                      <SelectItem value="General">General</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
-            <div className="space-y-2">
-              <Label>Featured Image</Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+
+            <div className="space-y-3">
+              <Label className="text-[#30343B] font-semibold">Featured Image</Label>
+              <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center bg-white hover:border-[#8541EF]/50 transition-colors">
                 {imagePreview ? (
                   <div className="relative">
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      className="max-w-full h-48 mx-auto rounded-lg object-cover"
+                      className="max-w-full h-48 mx-auto rounded-lg object-cover shadow-lg"
                     />
                     <Button
                       type="button"
                       variant="destructive"
                       size="sm"
-                      className="absolute top-2 right-2"
+                      className="absolute top-2 right-2 bg-red-500 hover:bg-red-600"
                       onClick={removeImage}
                     >
                       <X className="h-4 w-4" />
@@ -251,8 +235,8 @@ export function CreatePostModal({
                   </div>
                 ) : (
                   <div>
-                    <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-600 mb-2">Upload a featured image for your post</p>
+                    <Upload className="h-12 w-12 mx-auto text-[#8541EF] mb-4" />
+                    <p className="text-[#565F6C] mb-4 font-medium">Upload a featured image for your post</p>
                     <Input
                       type="file"
                       accept="image/*"
@@ -260,27 +244,28 @@ export function CreatePostModal({
                       className="hidden"
                       id="image-upload"
                     />
-                    <Label
-                      htmlFor="image-upload"
-                      className="cursor-pointer bg-primary-blue hover:bg-accent-blue text-white px-4 py-2 rounded-md inline-block"
+                    <Button
+                      type="button"
+                      onClick={() => document.getElementById('image-upload')?.click()}
+                      className="bg-[#8541EF] hover:bg-[#7a38d9] text-white px-6 py-3 rounded-lg font-semibold transition-colors"
                     >
                       Choose Image
-                    </Label>
+                    </Button>
                   </div>
                 )}
               </div>
             </div>
-            
+
             <FormField
               control={form.control}
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Content</FormLabel>
+                  <FormLabel className="text-[#30343B] font-semibold">Content</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Enter post content"
-                      className="min-h-[200px]"
+                      className="min-h-[200px] bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg resize-none"
                       {...field}
                     />
                   </FormControl>
@@ -288,18 +273,23 @@ export function CreatePostModal({
                 </FormItem>
               )}
             />
-            
-            <div className="flex justify-end space-x-4">
-              <Button type="button" variant="outline" onClick={handleClose}>
+
+            <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleClose}
+                className="border-gray-300 text-[#565F6C] hover:bg-gray-50 px-6 py-3 rounded-lg font-semibold min-w-[100px]"
+              >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                className="bg-primary-blue hover:bg-accent-blue"
+                className="bg-[#8541EF] hover:bg-[#7a38d9] text-white px-8 py-3 rounded-lg font-semibold disabled:opacity-50 min-w-[120px]"
                 disabled={form.formState.isSubmitting || uploadingImage}
               >
-                {form.formState.isSubmitting || uploadingImage 
-                  ? "Publishing..." 
+                {form.formState.isSubmitting || uploadingImage
+                  ? "Publishing..."
                   : initialData ? "Update Post" : "Publish Post"
                 }
               </Button>

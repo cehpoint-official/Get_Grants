@@ -1,9 +1,9 @@
-// src/lib/firebase.ts
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApp, getApps } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
 import { getStorage } from "firebase/storage";
+import { getMessaging, isSupported } from "firebase/messaging";
+import { Messaging } from "firebase/messaging"; 
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -12,16 +12,27 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_MEASUREMENT_ID,
 };
 
-// console.log("🔥 Firebase Config Debug:", firebaseConfig);
+// Initialize Firebase App
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// Declare messaging with its type, initially as null
+let messaging: Messaging | null = null;
 
-// Export Firebase services
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app); 
+// This function will be called from App.tsx to ensure messaging is initialized
+const initializeMessaging = async () => {
+  const isMessagingSupported = await isSupported();
+  if (isMessagingSupported) {
+    messaging = getMessaging(app);
+  } else {
+    console.log("Firebase Messaging is not supported in this browser.");
+  }
+  return messaging;
+};
+
+
+export { app, auth, db, storage, messaging, initializeMessaging };

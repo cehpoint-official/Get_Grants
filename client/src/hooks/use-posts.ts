@@ -22,11 +22,20 @@ export function usePosts() {
           imageUrl: data.imageUrl || "",
           createdAt: data.createdAt?.toDate() || new Date(),
           published: data.published ?? true,
+          status: data.status || (data.published ? "published" : "pending"),
+          authorName: data.authorName,
+          authorEmail: data.authorEmail,
         };
       }) as Post[];
       setPosts(postsData);
     } catch (error) {
       console.error("Error fetching posts:", error);
+      
+      
+      setPosts([]);
+      
+     
+      // toast({ title: "Error", description: "Failed to load posts. Please try again.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -38,8 +47,8 @@ export function usePosts() {
         ...post,
         createdAt: serverTimestamp(),
         published: true,
+        status: "published",
       });
-      // Refresh posts after creation
       await fetchPosts();
     } catch (error) {
       console.error("Error creating post:", error);

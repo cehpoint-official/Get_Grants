@@ -1,57 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   --background: hsl(0, 0%, 100%);
-  --foreground: hsl(20, 14.3%, 4.1%);
-  --muted: hsl(60, 4.8%, 95.9%);
-  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --foreground: hsl(222, 47%, 11%); /* #111827 */
+  --muted: hsl(210, 40%, 96.1%);
+  --muted-foreground: hsl(215, 10%, 44%); /* #565F6C */
   --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --popover-foreground: hsl(222, 47%, 11%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(20, 14.3%, 4.1%);
-  --border: hsl(20, 5.9%, 90%);
-  --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(238, 79%, 60%);
+  --card-foreground: hsl(222, 47%, 11%);
+  --border: hsl(214.3, 31.8%, 91.4%);
+  --input: hsl(214.3, 31.8%, 91.4%);
+  --primary: hsl(266, 53%, 56%); /* #8A51CE */
   --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(60, 4.8%, 95.9%);
-  --secondary-foreground: hsl(24, 9.8%, 10%);
-  --accent: hsl(60, 4.8%, 95.9%);
-  --accent-foreground: hsl(24, 9.8%, 10%);
+  --secondary: hsl(210, 40%, 96.1%);
+  --secondary-foreground: hsl(222.2, 47.4%, 11.2%);
+  --accent: hsl(210, 40%, 96.1%);
+  --accent-foreground: hsl(222.2, 47.4%, 11.2%);
   --destructive: hsl(0, 84.2%, 60.2%);
-  --destructive-foreground: hsl(60, 9.1%, 97.8%);
-  --ring: hsl(20, 14.3%, 4.1%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(215, 20.2%, 65.1%);
   --radius: 0.5rem;
   
-  /* Custom theme colors */
-  --primary-blue: hsl(238, 79%, 60%);
-  --accent-blue: hsl(238, 79%, 65%);
-  --light-blue: hsl(238, 100%, 97%);
-  --dark-blue: hsl(238, 79%, 25%);
+  /* Custom theme colors from Figma */
+  --nav-dark: hsl(222, 47%, 11%); /* #111827 */
+  --nav-gray: hsl(215, 10%, 44%); /* #565F6C */
+  --nav-pink-accent: hsl(350, 78%, 64%); /* #EB5E77 */
+  --gradient-start: hsl(266, 53%, 56%); /* #8A51CE */
+  --gradient-end: hsl(350, 78%, 64%); /* #EB5E77 */
+  --violet: hsl(266, 51%, 56%); /* Re-using for consistency */
+  --dark-violet: hsl(270, 75%, 43%); /* Re-using for consistency */
+  --pink: hsl(350, 78%, 64%); /* Re-using for consistency */
+  --pain-point-bg: hsl(358, 100%, 94%); /* #FFE1E0 */
+  --pain-point-text: hsl(350, 78%, 64%); /* #EB5E77 */
+  --title-dark: hsl(220, 13%, 21%); /* #30343B */
+  --text-muted-custom: hsl(215, 10%, 44%); /* #565F6C */
+  
 }
 
 .dark {
-  --background: hsl(240, 10%, 3.9%);
+  /* Dark mode colors can be adjusted later if needed */
+  --background: hsl(222, 47%, 11%);
   --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(240, 3.7%, 15.9%);
-  --muted-foreground: hsl(240, 5%, 64.9%);
-  --popover: hsl(240, 10%, 3.9%);
-  --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(240, 10%, 3.9%);
-  --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 3.7%, 15.9%);
-  --input: hsl(240, 3.7%, 15.9%);
-  --primary: hsl(238, 79%, 60%);
-  --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(240, 3.7%, 15.9%);
-  --secondary-foreground: hsl(0, 0%, 98%);
-  --accent: hsl(240, 3.7%, 15.9%);
-  --accent-foreground: hsl(0, 0%, 98%);
-  --destructive: hsl(0, 62.8%, 30.6%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(240, 4.9%, 83.9%);
-  --radius: 0.5rem;
+  /* ... other dark mode variables */
 }
 
 @layer base {
@@ -59,85 +53,15 @@
     @apply border-border;
   }
 
+ 
+
   body {
-    @apply font-sans antialiased bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  }
-}
-
-@layer utilities {
-  .text-primary-blue {
-    color: var(--primary-blue);
-  }
-  
-  .bg-primary-blue {
-    background-color: var(--primary-blue);
-  }
-  
-  .bg-light-blue {
-    background-color: var(--light-blue);
-  }
-  
-  .hover\:bg-accent-blue:hover {
-    background-color: var(--accent-blue);
-  }
-  
-  .border-primary-blue {
-    border-color: var(--primary-blue);
-  }
-  
-  .hover\:text-primary-blue:hover {
-    color: var(--primary-blue);
+    background-color: white;
+    @apply font-sans font-normal antialiased bg-background text-foreground;
+    font-family: 'Open Sans', system-ui, -apple-system, sans-serif;
   }
 
-  /* Line clamp utilities */
-  .line-clamp-1 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 1;
+  p, span, li, a, small, label {
+    @apply font-normal;
   }
-  
-  .line-clamp-2 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-  }
-  
-  .line-clamp-3 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-  }
-}
-
-.react-calendar {
-  width: 100%;
-  font-family: inherit;
-  line-height: 1.5;
-  border: none !important;
-  background-color: transparent !important;
-}
-
-.react-calendar__tile {
-  padding: 0.75rem 0.5rem;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease-in-out;
-}
-
-.react-calendar__tile--active {
-  background-color: #2563eb !important; /* Tailwind's primary-blue */
-  color: white !important;
-}
-
-.react-calendar__tile:hover {
-  background-color: #dbeafe; /* Tailwind's blue-100 */
-  color: #1e3a8a;
-}
-
-.react-calendar__navigation button {
-  color: #1e40af;
-  font-weight: 500;
 }

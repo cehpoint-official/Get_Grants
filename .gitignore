@@ -10,3 +10,5 @@ firebase-debug.log
 
 firebase-debug.log
 .env
+client/public/firebase-config.js
+.env.local

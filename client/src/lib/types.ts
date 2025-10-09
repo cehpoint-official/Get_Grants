@@ -1,27 +1,29 @@
-// src/lib/types.ts
-export type UserRole = 'admin' | 'incubator';
 
+
+// Firestore user profile data
 export interface UserProfile {
-  uid: string;
+  id: string; 
+  fullName: string;
   email: string;
-  role: UserRole;
+  role: 'founder' | 'incubator';
+  subscriptionStatus: 'free' | 'premium' | 'active' | 'inactive' | 'expired'; 
+  subscriptionPlan?: 'monthly' | 'quarterly' | 'free';
+  subscriptionEndDate?: Date | null;
+  savedGrants?: string[];
   createdAt: Date;
-  updatedAt: Date;
-  // Incubator specific fields
-  companyName?: string;
-  contactName?: string;
   phone?: string;
-  website?: string;
-  description?: string;
-  status?: 'pending' | 'approved' | 'rejected';
+  notifyEmail?: boolean;
+  notifyWhatsapp?: boolean;
+  notificationConsentGiven?: boolean;
+  avatarUrl?: string;
 }
 
+// Data needed to create a new user profile
 export interface CreateUserData {
+  fullName: string;
   email: string;
-  role: UserRole;
-  companyName?: string;
-  contactName?: string;
   phone?: string;
-  website?: string;
-  description?: string;
+  role: 'founder' | 'incubator';
+  notifyEmail?: boolean;
+  notifyWhatsapp?: boolean;
 }

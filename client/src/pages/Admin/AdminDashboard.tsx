@@ -1,1282 +1,1161 @@
-import { useEffect, useState } from "react";
-import Calendar from "react-calendar";
+import { useEffect, useState, useMemo, useRef } from "react";
 import "react-calendar/dist/Calendar.css";
 import {
-  fetchPosts,
-  createPost,
-  updatePost,
-  deletePost,
+    fetchPosts, createPost, updatePost, deletePost, fetchPendingPosts, approvePost, rejectPost,
 } from "@/services/firebase";
-import { uploadToCloudinary } from "@/services/cloudinary";
+import {
+    fetchGrants, createGrant, updateGrant, deleteGrant,
+} from "@/services/grants";
+import {
+    fetchApplications as fetchAllApplications,
+} from "@/services/applications";
+import { fetchAllUsers } from "@/services/users";
+import {
+    fetchPremiumInquiries, sendInquiryMessage, subscribeToInquiryMessages, subscribeToLastMessage,
+} from "@/services/premiumSupport";
+
+import {
+    Grant, InsertGrant, Post, InsertPost, Application, User, CalendarEvent, InsertEvent, InquiryMessage, PremiumInquiry, Testimonial
+} from "@shared/schema";
+
+import { GrantLead } from "@/services/grantSubmissions"; 
 import { CreatePostModal } from "@/components/create-post-modal";
+import { CreateGrantModal } from "@/components/create-grant-modal";
+import { EventModal } from "@/components/ui/EventModal";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Link, useLocation } from "wouter";
-import { updateDoc } from "firebase/firestore";
-import { toast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import {
-  Facebook,
-  Twitter,
-  Instagram,
-  Linkedin,
-  Youtube,
-  Share2,
-  Users,
-  TrendingUp,
-  Calendar as CalendarIcon,
-  Mail,
-  Trash,
-  Phone,
-  Building,
+    
+    X, LayoutDashboard, Inbox, Home, BookOpen, Menu as MenuIcon, Users, FileCheck, Award, LoaderCircle, Calendar as CalendarIcon, Briefcase, Share2, MessageSquare, Mail, LogOut, Check, Trash2, Edit, PlusCircle, MoreHorizontal, Download, Send, ChevronLeft, ChevronRight, MessageCircle
 } from "lucide-react";
-import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { AdvancedLoader } from "@/components/ui/AdvancedLoader";
+import { fetchDashboardStats, DashboardStats, fetchContactMessages, ContactMessage } from "@/services/admin";
+import { Calendar } from "@/components/ui/calendar";
+import {
+    fetchEvents, createEvent as createCalendarEvent, updateEvent as updateCalendarEvent, deleteEvent as deleteCalendarEvent,
+} from "@/services/events";
+import {
+    Dialog, DialogContent, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { exportToExcel, exportPlainToExcel } from "@/lib/excelUtils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+
+import { CreateTestimonialModal } from "@/components/create-testimonial-modal";
+
 import { db } from "@/lib/firebase";
-interface Post {
-  id: string;
-  title: string;
-  link?: string;
-  content?: string;
-  category?: string;
-  imageUrl: string;
-}
-interface Application {
-  id: string;
-  name: string;
-  phone: string;
-  email: string;
-  helpAreas: string[]; // ✅ Replaces helpDescription with checkbox values
-  submittedAt?: any;   // Keep this if you still log timestamps
-}
+import { collection, query, orderBy, getDocs, Timestamp, deleteDoc as deleteFirestoreDoc, doc, addDoc } from "firebase/firestore";
 
 
-interface SocialApp {
-  id: string;
-  name: string;
-  icon: React.ReactNode;
-  connected: boolean;
-  followers: number;
-  engagement: number;
-  color: string;
-  bgColor: string;
-}
-interface IncubatorApplication {
-  id: string;
-  name: string;
-  email: string;
-  phoneNumber: string;
-  sectors: { label: string; value: string }[];
-  programName?: string;
-  deadlineDate: string;
-  programDetails: string;
-  applicationFormLink: string;
-}
-const sidebarItems = ["Dashboard","Inbox", "Incubators", "Calendar", "Social Apps","Home"];
-export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState("Dashboard");
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [selectedApplication, setSelectedApplication] =
-    useState<Application | null>(null);
-  const [editingPost, setEditingPost] = useState<Post | null>(null);
-  const [showModal, setShowModal] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, logout } = useAuth();
-  const [, navigate] = useLocation();
-  const [incubatorApplications, setIncubatorApplications] = useState<IncubatorApplication[]>([]);
-const [selectedIncubator, setSelectedIncubator] = useState<IncubatorApplication | null>(null);
-  // Social apps mock data
-  const [socialApps] = useState<SocialApp[]>([
-    {
-      id: "1",
-      name: "Facebook",
-      icon: <Facebook className="w-6 h-6" />,
-      connected: true,
-      followers: 12500,
-      engagement: 85,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50 border-blue-200",
-    },
-    {
-      id: "2",
-      name: "Twitter",
-      icon: <Twitter className="w-6 h-6" />,
-      connected: true,
-      followers: 8900,
-      engagement: 72,
-      color: "text-sky-500",
-      bgColor: "bg-sky-50 border-sky-200",
-    },
-    {
-      id: "3",
-      name: "Instagram",
-      icon: <Instagram className="w-6 h-6" />,
-      connected: false,
-      followers: 0,
-      engagement: 0,
-      color: "text-pink-600",
-      bgColor: "bg-pink-50 border-pink-200",
-    },
-    {
-      id: "4",
-      name: "LinkedIn",
-      icon: <Linkedin className="w-6 h-6" />,
-      connected: true,
-      followers: 3200,
-      engagement: 68,
-      color: "text-blue-700",
-      bgColor: "bg-blue-50 border-blue-200",
-    },
-    {
-      id: "5",
-      name: "YouTube",
-      icon: <Youtube className="w-6 h-6" />,
-      connected: false,
-      followers: 0,
-      engagement: 0,
-      color: "text-red-600",
-      bgColor: "bg-red-50 border-red-200",
-    },
-  ]);
+import { useIsMobile } from "@/hooks/use-mobile";
 
-  useEffect(() => {
-  if (activeTab === "Dashboard") loadPosts();
-  if (activeTab === "Inbox") listenToApplications();
-  if (activeTab === "Incubators") listenToIncubatorApplications(); // Add this line
-  if (activeTab === "Home") navigate("/");
-}, [activeTab]);
+const sidebarItems = [
+    { name: "Dashboard", icon: LayoutDashboard },
+    { name: "Grants", icon: Award },
+    { name: "Grant Drafts", icon: Edit },
+    { name: "Manage Sources", icon: PlusCircle },
+    { name: "Grant Leads", icon: FileCheck }, 
+    { name: "Applications", icon: Inbox },
+    { name: "Users", icon: Users },
+    { name: "Blogs", icon: BookOpen },
+    { name: "Testimonials", icon: MessageCircle },
+    { name: "Users Queries", icon: MessageSquare },
+    { name: "Contact Messages", icon: Mail },
+    { name: "Incubators", icon: Briefcase },
+    { name: "Calendar", icon: CalendarIcon },
+    { name: "Social Apps", icon: Share2 },
+    { name: "Home", icon: Home },
+];
 
-  // Close sidebar when clicking outside on mobile
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setSidebarOpen(false);
-      }
-    };
+const StatCard = ({ title, value, icon: Icon, onClick, cta }: { title: string, value: string | number, icon: React.ElementType, onClick: () => void, cta: string }) => (
+    <Card onClick={onClick} className="cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-l-4 border-transparent hover:border-violet">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500">{title}</CardTitle>
+            <Icon className="h-5 w-5 text-gray-400" />
+        </CardHeader>
+        <CardContent>
+            <div className="text-4xl font-bold text-gray-800">{value}</div>
+            <p className="text-xs text-gray-500 pt-1">{cta}</p>
+        </CardContent>
+    </Card>
+);
 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+const DashboardAnalytics = ({ setActiveTab }: { setActiveTab: (tab: string) => void; }) => {
+    const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [loading, setLoading] = useState(true);
 
-  const loadPosts = async () => {
-    const data = await fetchPosts();
-    setPosts(data);
-  };
+    useEffect(() => {
+        fetchDashboardStats().then((data) => {
+            setStats(data);
+            setLoading(false);
+        });
+    }, []);
 
-  const handleCreate = async (formData: any) => {
-    const imageUrl = await uploadToCloudinary(formData.image);
-    await createPost({ ...formData, imageUrl });
-    loadPosts();
-    setShowModal(false);
-  };
-
-  const handleUpdate = async (updated: any) => {
-    const imageUrl = updated.image
-      ? await uploadToCloudinary(updated.image)
-      : editingPost?.imageUrl;
-
-    await updatePost(editingPost!.id, { ...updated, imageUrl });
-    loadPosts();
-    setEditingPost(null);
-    setShowModal(false);
-  };
-
-  const handleDelete = async (id: string) => {
-    await deletePost(id);
-    loadPosts();
-  };
-  const listenToApplications = () => {
-    const unsubscribe = onSnapshot(
-      collection(db, "grant_applications"),
-      (snapshot) => {
-        const apps = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Application[];
-        setApplications(apps);
-      }
-    );
-    return unsubscribe;
-  };
-
-  const deleteApplication = async (id: string) => {
-    await deleteDoc(doc(db, "grant_applications", id));
-    // Clear selection if the deleted application was selected
-    if (selectedApplication?.id === id) {
-      setSelectedApplication(null);
+    if (loading) {
+        return <div className="p-8"><AdvancedLoader compact message="Loading dashboard stats..." /></div>;
     }
-  };
-  const getCategoryColor = (category: string = "") => {
-    const colors = {
-      "Government Grants": "bg-blue-100 text-blue-700",
-      "Private Grants": "bg-green-100 text-green-700",
-      "Startup Funding": "bg-orange-100 text-orange-700",
-      Tools: "bg-green-100 text-green-700",
-      Strategy: "bg-purple-100 text-purple-700",
-      Funding: "bg-yellow-100 text-yellow-700",
-    };
+
     return (
-      colors[category as keyof typeof colors] || "bg-gray-100 text-gray-700"
-    );
-  };
-
-  const handleSidebarItemClick = (item: string) => {
-    setActiveTab(item);
-    setSidebarOpen(false); // Close sidebar on mobile after selection
-  };
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1) + "M";
-    } else if (num >= 1000) {
-      return (num / 1000).toFixed(1) + "K";
-    }
-    return num.toString();
-  };
-
-  const toggleSocialConnection = (appId: string) => {
-    // This would typically integrate with actual social media APIs
-    console.log(`Toggling connection for app: ${appId}`);
-  };
-
-
-const listenToIncubatorApplications = () => {
-  const unsubscribe = onSnapshot(
-    collection(db, "incubator_requests"),
-    (snapshot) => {
-      const apps = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        name: doc.data().name || "",
-        email: doc.data().email || "",
-        phoneNumber: doc.data().phoneNumber || "",
-        sectors: doc.data().sectors || [],
-        programName: doc.data().programName,
-        deadlineDate: doc.data().deadlineDate || "",
-        programDetails: doc.data().programDetails || "",
-        applicationFormLink: doc.data().applicationFormLink || "",
-      })) as IncubatorApplication[];
-      setIncubatorApplications(apps);
-    }
-  );
-  return unsubscribe;
-};
-
-const deleteIncubatorApplication = async (id: string) => {
-  try {
-    await deleteDoc(doc(db, "incubator_requests", id));
-    if (selectedIncubator?.id === id) {
-      setSelectedIncubator(null);
-    }
-  } catch (error) {
-    console.error("Error deleting incubator application:", error);
-    throw error;
-  }
-};
-  return (
-    <div className="min-h-screen flex bg-gray-50 relative">
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside
-        className={`
-        fixed md:relative 
-        w-64 bg-white shadow-md border-r 
-        flex flex-col justify-between
-        h-full md:h-auto
-        z-50
-        transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-      `}
-      >
         <div>
-          <div className="px-6 py-6 font-bold text-lg border-b text-primary-blue flex items-center justify-between">
-            <span>ADMIN PANEL</span>
-            {/* Close button for mobile */}
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="md:hidden p-1 rounded-md hover:bg-gray-100"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-          <nav className="flex flex-col gap-2 mt-6 px-4 text-sm text-gray-700">
-            {sidebarItems.map((item) => (
-              <div
-                key={item}
-                className={`px-3 py-2 rounded-md cursor-pointer transition-all ${
-                  activeTab === item
-                    ? "bg-blue-100 text-blue-700"
-                    : "hover:bg-blue-50"
-                }`}
-                onClick={() => handleSidebarItemClick(item)}
-              >
-                {item}
-              </div>
-            ))}
-          </nav>
+            <h1 className="text-3xl font-bold text-gray-800 mb-6">Dashboard</h1>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <StatCard title="Total Users" value={stats?.totalUsers ?? 0} icon={Users} onClick={() => setActiveTab("Users")} cta="View all users" />
+                <StatCard title="Applications" value={stats?.totalApplications ?? 0} icon={FileCheck} onClick={() => setActiveTab("Applications")} cta="View applications" />
+                <StatCard title="Grants Listed" value={stats?.totalGrants ?? 0} icon={Award} onClick={() => setActiveTab("Grants")} cta="Manage grants" />
+            </div>
         </div>
+    );
+};
 
-        <div className="p-4 border-t">
-          <Button
-            variant="destructive"
-            className="w-full"
-            onClick={() => logout()}
-          >
-            Logout
-          </Button>
+const PlaceholderContent = ({ title }: { title: string }) => (
+    <div>
+        <h2 className="text-3xl font-bold text-gray-800 mb-6">{title}</h2>
+        <div className="bg-white p-12 rounded-lg shadow-sm border text-center text-gray-500">
+            <Briefcase className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-700">Coming Soon!</h3>
+            <p className="text-sm mt-2">The <span className="font-semibold text-violet">{title}</span> section is under construction.</p>
         </div>
-      </aside>
+    </div>
+);
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0">
-        {/* Mobile Header */}
-        <div className="md:hidden bg-white border-b px-4 py-3 flex items-center justify-between">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-md hover:bg-gray-100"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
-          <h1 className="font-semibold text-gray-800">{activeTab}</h1>
-          <div className="w-9"></div> {/* Spacer for centering */}
-        </div>
 
-        {/* Content Area */}
-        <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
-          {activeTab === "Dashboard" && (
-            <>
-              {user && (
-                <div className="bg-blue-50 border border-blue-100 rounded-xl shadow-sm mb-6 sm:mb-8 px-4 sm:px-6 py-4 sm:py-5">
-                  <div className="flex justify-between items-center flex-col sm:flex-row gap-3 sm:gap-4">
-                    <div className="text-center sm:text-left">
-                      <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
-                        Welcome, Admin
-                      </h2>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Manage blog posts — create, update, or delete content
-                        here.
-                      </p>
-                    </div>
-                    <Button
-                      onClick={() => {
-                        setEditingPost(null);
-                        setShowModal(true);
-                      }}
-                      className="bg-primary-blue text-white hover:bg-accent-blue font-medium whitespace-nowrap"
-                    >
-                      + Create Post
+const AdminChatInterface = ({ activeInquiry, isMobile, onBack }: { activeInquiry: PremiumInquiry | null; isMobile?: boolean; onBack?: () => void; }) => {
+    const [messages, setMessages] = useState<InquiryMessage[]>([]);
+    const [newMessage, setNewMessage] = useState("");
+    const { user: adminUser } = useAuth();
+    const { toast } = useToast();
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (activeInquiry?.id) {
+            const unsubscribe = subscribeToInquiryMessages(activeInquiry.id, setMessages);
+            return () => unsubscribe();
+        } else {
+            setMessages([]);
+        }
+    }, [activeInquiry]);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
+
+    const handleSendMessage = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newMessage.trim() || !activeInquiry?.id || !adminUser?.id) return;
+        try {
+            await sendInquiryMessage({
+                inquiryId: activeInquiry.id,
+                text: newMessage,
+                sender: 'admin',
+                senderId: adminUser.id,
+            });
+            setNewMessage("");
+        } catch (error) {
+            toast({ title: "Error", description: "Failed to send message.", variant: "destructive" });
+        }
+    };
+    
+    if (!activeInquiry) {
+        return (
+            <div className="flex h-full flex-col items-center justify-center text-center text-gray-500 p-4">
+                <MessageSquare className="h-12 w-12 text-gray-300 mb-4"/>
+                <h3 className="font-semibold">Select a conversation</h3>
+                <p className="text-sm">Select a conversation from the left to see messages.</p>
+            </div>
+        )
+    }
+
+    return (
+       <div className="flex flex-col h-full bg-white">
+            <div className="p-4 border-b flex items-center">
+               
+                {isMobile && onBack && (
+                    <Button variant="ghost" size="icon" className="mr-2" onClick={onBack}>
+                        <ChevronLeft className="h-5 w-5" />
                     </Button>
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                {posts.map((post) => (
-                  <article
-                    key={post.id}
-                    className="bg-white rounded-2xl border border-gray-100 shadow hover:shadow-lg transition-all overflow-hidden"
-                  >
-                    <img
-                      src={post.imageUrl}
-                      alt={post.title}
-                      className="w-full h-36 sm:h-44 object-cover"
-                    />
-                    <div className="p-4 sm:p-5">
-                      {post.category && (
-                        <span
-                          className={`inline-block mb-2 sm:mb-3 px-2 sm:px-3 py-1 text-xs font-semibold rounded-full ${getCategoryColor(
-                            post.category
-                          )}`}
-                        >
-                          {post.category}
-                        </span>
-                      )}
-                      <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 line-clamp-2">
-                        {post.title}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-3 leading-relaxed line-clamp-3">
-                        {post.content?.slice(0, 100)}
-                        {post.content && post.content.length > 100 && "..."}
-                      </p>
-
-                      <div className="text-sm text-blue-600 hover:underline mb-3">
-                        <Link href={`/blog?id=${post.id}`}>Read more →</Link>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          className="text-sm bg-primary-blue text-white hover:bg-accent-blue flex-1"
-                          onClick={() => {
-                            setEditingPost(post);
-                            setShowModal(true);
-                          }}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="text-sm flex-1"
-                          onClick={() => handleDelete(post.id)}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-
-              <CreatePostModal
-                isOpen={showModal}
-                onClose={() => {
-                  setEditingPost(null);
-                  setShowModal(false);
-                }}
-                initialData={
-                  editingPost
-                    ? {
-                        id: editingPost.id,
-                        title: editingPost.title,
-                        content: editingPost.content || "",
-                        category: editingPost.category || "",
-                        imageUrl: editingPost.imageUrl || "",
-                      }
-                    : undefined
-                }
-                onSubmit={editingPost ? handleUpdate : handleCreate}
-              />
-            </>
-          )}
-          {activeTab === "Inbox" && (
-            <div className="flex h-full">
-              {/* Left Panel - Applications List */}
-              <div
-                className={`${
-                  selectedApplication ? "hidden md:block" : "block"
-                } w-full md:w-1/2 bg-white border-r border-gray-200 flex flex-col`}
-              >
-                <div className="p-4 md:p-6 border-b border-gray-100">
-                  <div className="flex justify-between items-center">
-                    <h2 className="text-lg md:text-xl font-semibold text-gray-900">
-                      Grant Applications
-                    </h2>
-                    <div className="text-sm text-gray-500">
-                      {applications.length} application
-                      {applications.length !== 1 ? "s" : ""}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto">
-                  {applications.length === 0 ? (
-                    <div className="text-center py-12">
-                      <p className="text-gray-500">
-                        No applications submitted yet.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="p-3 md:p-4 space-y-3">
-                      {applications.map((app) => (
-                        <div
-                          key={app.id}
-                          onClick={() => setSelectedApplication(app)}
-                          className={`p-3 md:p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
-                            selectedApplication?.id === app.id
-                              ? "bg-blue-50 border-blue-200 shadow-sm"
-                              : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300"
-                          }`}
-                        >
-                          <div className="flex items-center space-x-3">
-                            {/* Company Avatar */}
-                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                              <span className="text-white font-medium text-xs md:text-sm">
-                                {app.name?.charAt(0)?.toUpperCase() || '?'}
-                              </span>
-                            </div>
-
-                            {/* Application Info */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center space-x-2 mb-1">
-                                <h3 className="text-sm md:text-base font-semibold text-gray-900 truncate">
-                                  {app.name || 'Unknown'}
-                                </h3>
-                                <span className="inline-flex items-center px-1.5 md:px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                  {app.email}
-                                </span>
-                              </div>
-
-                              <p className="text-xs text-gray-500 mt-1 line-clamp-1 hidden md:block">
-                                {app.helpAreas?.join(", ")}
-                              </p>
-                            </div>
-
-                            {/* Time/Status indicator */}
-                            <div className="flex flex-col items-end space-y-1">
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                              <span className="text-xs text-gray-400 hidden sm:block">
-                                New
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Right Panel - Detail View */}
-              <div
-                className={`${
-                  selectedApplication ? "block" : "hidden md:block"
-                } w-full md:w-1/2 bg-gray-50 flex flex-col`}
-              >
-                {selectedApplication ? (
-                  <>
-                    {/* Detail Header */}
-                    <div className="bg-white border-b border-gray-200 p-4 md:p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-3 md:space-x-4 min-w-0 flex-1">
-                          {/* Back button for mobile */}
-                          <button
-                            onClick={() => setSelectedApplication(null)}
-                            className="md:hidden p-1 text-gray-500 hover:text-gray-700"
-                          >
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 19l-7-7 7-7"
-                              />
-                            </svg>
-                          </button>
-
-                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                            <span className="text-white font-semibold text-sm md:text-lg">
-                              {selectedApplication.name?.charAt(0)?.toUpperCase() || '?'}
-                            </span>
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h2 className="text-lg md:text-xl font-bold text-gray-900 truncate">
-                              {selectedApplication.name || 'Unknown'}
-                            </h2>
-                            <p className="text-sm text-gray-600 truncate">
-                              {selectedApplication.email}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Help Areas Tags */}
-                      <div className="flex flex-wrap items-center gap-2">
-                        {selectedApplication.helpAreas?.map((area, index) => (
-                          <span 
-                            key={index}
-                            className="inline-flex items-center px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium bg-blue-100 text-blue-800"
-                          >
-                            {area}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Detail Content */}
-                    <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6">
-                      {/* Contact Information */}
-                      <div className="bg-white rounded-lg p-4 md:p-5 shadow-sm border border-gray-200">
-                        <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">
-                          Contact Information
-                        </h3>
-                        <div className="grid grid-cols-1 gap-3">
-                          <div className="flex items-center space-x-3">
-                            <Mail className="w-4 h-4 md:w-5 md:h-5 text-gray-400 flex-shrink-0" />
-                            <span className="text-sm md:text-base text-gray-900 break-all">
-                              {selectedApplication.email}
-                            </span>
-                          </div>
-                          <div className="flex items-center space-x-3">
-                            <Phone className="w-4 h-4 md:w-5 md:h-5 text-gray-400 flex-shrink-0" />
-                            <span className="text-sm md:text-base text-gray-900">
-                              {selectedApplication.phone}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Help Areas */}
-                      <div className="bg-white rounded-lg p-4 md:p-5 shadow-sm border border-gray-200">
-                        <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">
-                          Areas of Support Requested
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedApplication.helpAreas?.map((area, index) => (
-                            <span 
-                              key={index}
-                              className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-800 border"
-                            >
-                              {area}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Application Details */}
-                      <div className="bg-white rounded-lg p-4 md:p-5 shadow-sm border border-gray-200">
-                        <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">
-                          Application Details
-                        </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <span className="text-xs md:text-sm text-gray-500">
-                              Application ID
-                            </span>
-                            <p className="text-sm md:text-base font-medium text-gray-900">
-                              #{selectedApplication.id}
-                            </p>
-                          </div>
-                          <div>
-                            <span className="text-xs md:text-sm text-gray-500">
-                              Status
-                            </span>
-                            <p className="text-sm md:text-base font-medium text-green-600">
-                              New Application
-                            </p>
-                          </div>
-                          {selectedApplication.submittedAt && (
-                            <div className="sm:col-span-2">
-                              <span className="text-xs md:text-sm text-gray-500">
-                                Submitted At
-                              </span>
-                              <p className="text-sm md:text-base font-medium text-gray-900">
-                                {new Date(selectedApplication.submittedAt).toLocaleString()}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="bg-white border-t border-gray-200 p-4 md:p-6">
-                      <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-                        <Button
-                          onClick={() => {
-                            const helpAreasText = selectedApplication.helpAreas?.join(', ') || 'various areas';
-                            const applicantName = selectedApplication.name || 'there';
-                            const emailBody = `Hi ${applicantName},%0D%0A%0D%0AThanks for applying for grant support.%0D%0A%0D%0AWe'll get back to you shortly regarding your request for help with: ${helpAreasText}.%0D%0A%0D%0ABest,%0D%0AYour GrantPulse Team`;
-                            const mailto = `mailto:${selectedApplication.email}?subject=Regarding your grant application&body=${emailBody}`;
-                            window.open(mailto);
-                          }}
-                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors inline-flex items-center justify-center gap-2"
-                        >
-                          <Mail className="w-4 h-4" />
-                          Send Response
-                        </Button>
-
-                        <Button
-                          variant="outline"
-                          className="flex-1 sm:flex-none px-6 py-3 border-gray-300 text-gray-700 hover:bg-gray-50"
-                        >
-                          Mark as Reviewed
-                        </Button>
-
-                        <Button
-                          variant="destructive"
-                          onClick={() =>
-                            deleteApplication(selectedApplication.id)
-                          }
-                          className="sm:flex-none px-4 py-3 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg justify-center"
-                        >
-                          <Trash className="w-4 h-4" />
-                          <span className="sm:hidden ml-2">Delete</span>
-                        </Button>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex-1 flex items-center justify-center p-4">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Mail className="w-8 h-8 text-gray-400" />
-                      </div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        Select an Application
-                      </h3>
-                      <p className="text-gray-500 text-center">
-                        Click on an application from the list to view details
-                      </p>
-                    </div>
-                  </div>
                 )}
-              </div>
-            </div>
-          )}
-          {activeTab === "Calendar" && (
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8 text-white">
-                  <div className="flex items-center justify-center gap-3 mb-2">
-                    <CalendarIcon className="w-8 h-8" />
-                    <h2 className="text-2xl font-bold">Event Calendar</h2>
-                  </div>
-                  <p className="text-blue-100 text-center">
-                    Select a date to view or schedule events
-                  </p>
+                <div>
+                    <h3 className="font-semibold text-gray-800">{activeInquiry.name}</h3>
+                    <p className="text-xs text-gray-500">{activeInquiry.email}</p>
                 </div>
-
-                <div className="p-6">
-                  <div className="calendar-container">
-                    <Calendar
-                      onChange={(value) => {
-                        if (value instanceof Date) setSelectedDate(value);
-                      }}
-                      value={selectedDate}
-                      calendarType="gregory"
-                      className="enhanced-calendar w-full"
-                      tileClassName={({ date, view }) => {
-                        if (view === "month") {
-                          const isSelected =
-                            date.toDateString() === selectedDate.toDateString();
-                          const isToday =
-                            date.toDateString() === new Date().toDateString();
-
-                          if (isSelected) {
-                            return "selected-date";
-                          } else if (isToday) {
-                            return "today-date";
-                          }
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                 {messages.map((msg) => (
+                    <div key={msg.id} className={`flex items-end gap-2 ${msg.sender === 'admin' ? 'justify-end' : 'justify-start'}`}>
+                        {msg.sender === 'user' && (
+                             <Avatar className="h-8 w-8">
+                                <AvatarFallback className="bg-gray-300 text-gray-700 text-xs">
+                                    {activeInquiry.name?.[0].toUpperCase()}
+                                </AvatarFallback>
+                             </Avatar>
+                        )}
+                        <div className={`rounded-lg px-3 py-2 max-w-[80%] ${msg.sender === 'admin' ? 'bg-violet text-white' : 'bg-gray-200 text-gray-800'}`}>
+                            <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
+                            <p className={`text-xs mt-1 text-right ${msg.sender === 'admin' ? 'text-violet-200' : 'text-gray-500'}`}>
+                                {msg.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                        </div>
+                    </div>
+                 ))}
+                 <div ref={messagesEndRef} />
+            </div>
+            <form onSubmit={handleSendMessage} className="flex gap-2 w-full border-t p-4 bg-white">
+                <Textarea
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder={`Reply to ${activeInquiry.name}...`}
+                    className="resize-none flex-1"
+                    rows={1}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage(e);
                         }
-                        return "";
-                      }}
-                    />
-                  </div>
-
-                  <div className="mt-6 p-4 bg-gray-50 rounded-xl">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                      <span className="font-semibold text-gray-800">
-                        Selected Date
-                      </span>
-                    </div>
-                    <p className="text-lg text-gray-700 font-medium">
-                      {selectedDate.toLocaleDateString("en-US", {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <Button
-                        size="sm"
-                        className="bg-blue-600 hover:bg-blue-700"
-                      >
-                        Add Event
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        View Events
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-{activeTab === "Incubators" && (
-  <div className="flex h-full">
-    {/* Left Panel - Incubator Applications List */}
-    <div
-      className={`${
-        selectedIncubator ? "hidden md:block" : "block"
-      } w-full md:w-1/2 bg-white border-r border-gray-200 flex flex-col`}
-    >
-      <div className="p-4 md:p-6 border-b border-gray-100">
-        <div className="flex justify-between items-center">
-          <h2 className="text-lg md:text-xl font-semibold text-gray-900">
-            Incubator Applications
-          </h2>
-          <div className="text-sm text-gray-500">
-            {incubatorApplications.length} application
-            {incubatorApplications.length !== 1 ? "s" : ""}
-          </div>
+                    }}
+                />
+                <Button type="submit" size="icon" className="flex-shrink-0 bg-violet hover:bg-violet/90">
+                    <Send className="h-4 w-4" />
+                </Button>
+            </form>
         </div>
-      </div>
+    );
+};
 
-      <div className="flex-1 overflow-y-auto">
-        {incubatorApplications.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">
-              No incubator applications submitted yet.
-            </p>
-          </div>
-        ) : (
-          <div className="p-3 md:p-4 space-y-3">
-            {incubatorApplications.map((app) => (
-              <div
-                key={app.id}
-                onClick={() => setSelectedIncubator(app)}
-                className={`p-3 md:p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
-                  selectedIncubator?.id === app.id
-                    ? "bg-blue-50 border-blue-200 shadow-sm"
-                    : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300"
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  {/* Incubator Avatar */}
-                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center flex-shrink-0">
-                    <span className="text-white font-medium text-xs md:text-sm">
-                      {app.name?.charAt(0)?.toUpperCase() || '?'}
-                    </span>
-                  </div>
+export default function AdminDashboard() {
+    const [activeTab, setActiveTab] = useState("Dashboard");
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [grants, setGrants] = useState<Grant[]>([]);
+    const [applications, setApplications] = useState<Application[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
+    const [premiumInquiries, setPremiumInquiries] = useState<PremiumInquiry[]>([]);
+    const [contactMessages, setContactMessages] = useState<ContactMessage[]>([]);
+    const [grantLeads, setGrantLeads] = useState<GrantLead[]>([]); 
+    const [editingPost, setEditingPost] = useState<Post | null>(null);
+    const [editingGrant, setEditingGrant] = useState<Grant | null>(null);
+    const [showModal, setShowModal] = useState(false);
+    const [showGrantModal, setShowGrantModal] = useState(false);
+    const [pendingPosts, setPendingPosts] = useState<Post[]>([]);
+    const [showPendingModal, setShowPendingModal] = useState(false);
+    const [activePendingPost, setActivePendingPost] = useState<Post | null>(null);
+    const [events, setEvents] = useState<CalendarEvent[]>([]);
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    const [showEventModal, setShowEventModal] = useState(false);
+    const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [activeInquiry, setActiveInquiry] = useState<PremiumInquiry | null>(null);
+    const [lastMessages, setLastMessages] = useState<Record<string, string>>({});
+    const { logout, user: adminUser } = useAuth();
+    const [, navigate] = useLocation();
+    const [currentPage, setCurrentPage] = useState(1);
+    const grantsPerPage = 6;
+    
+    const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+    const [showTestimonialModal, setShowTestimonialModal] = useState(false);
+    const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
+    
+    // New state for source websites and pending grants
+    const [sourceWebsites, setSourceWebsites] = useState<Array<{id: string, name: string, url: string}>>([]);
+    const [pendingGrants, setPendingGrants] = useState<Array<{
+        id: string;
+        title: string;
+        organization: string;
+        description: string;
+        overview: string;
+        deadline: string;
+        fundingAmount: string;
+        eligibility: string;
+        applyLink: string;
+        category: string;
+        sourceUrl: string;
+        status: string;
+        createdAt: Date;
+    }>>([]);
+    const [newWebsiteName, setNewWebsiteName] = useState("");
+    const [newWebsiteUrl, setNewWebsiteUrl] = useState("");
+    const [loading, setLoading] = useState(false);
+    
+    const isMobile = useIsMobile();
+    const [mobileChatVisible, setMobileChatVisible] = useState(false);
 
-                  {/* Incubator Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <h3 className="text-sm md:text-base font-semibold text-gray-900 truncate">
-                        {app.name}
-                      </h3>
-                      {app.programName && (
-                        <span className="inline-flex items-center px-1.5 md:px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                          {app.programName}
-                        </span>
-                      )}
+    useEffect(() => {
+        const tabActions: { [key: string]: () => void } = {
+            "Blogs": () => { loadPosts(); loadPending(); },
+            "Grants": loadGrants,
+            "Grant Leads": loadGrantLeads, 
+            "Calendar": loadEvents,
+            "Applications": loadApplications,
+            "Users": loadUsers,
+            "Manage Sources": loadSourceWebsites,
+            "Grant Drafts": loadPendingGrants,
+            "Testimonials": loadTestimonials,
+            "Users Queries": loadPremiumInquiries,
+            "Contact Messages": loadContactMessages,
+            "Home": () => navigate("/"),
+        };
+        tabActions[activeTab]?.();
+    }, [activeTab, navigate]);
+    
+    const loadPosts = async () => setPosts(await fetchPosts() as Post[]);
+    const loadPending = async () => setPendingPosts(await fetchPendingPosts() as Post[]);
+    const loadGrants = async () => setGrants(await fetchGrants() as Grant[]);
+    const loadApplications = async () => setApplications(await fetchAllApplications());
+    const loadUsers = async () => setUsers(await fetchAllUsers());
+    const loadEvents = async () => setEvents((await fetchEvents()).sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime()));
+    const loadPremiumInquiries = async () => {
+        const inquiries = await fetchPremiumInquiries();
+        setPremiumInquiries(inquiries);
+        // NEW: Don't auto-select on mobile
+        if (!isMobile && inquiries.length > 0 && !activeInquiry) {
+            setActiveInquiry(inquiries[0]);
+        }
+    };
+    const loadContactMessages = async () => setContactMessages(await fetchContactMessages());
+
+    
+    const loadGrantLeads = async () => {
+        const q = query(collection(db, "grantLeads"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        const leads = snapshot.docs.map(d => ({
+            id: d.id,
+            ...d.data(),
+            createdAt: (d.data().createdAt as Timestamp).toDate()
+        } as GrantLead));
+        setGrantLeads(leads);
+    };
+
+    
+    const loadTestimonials = async () => {
+        const q = query(collection(db, "testimonials"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        const data = snapshot.docs.map(d => ({ 
+            id: d.id, 
+            ...d.data(), 
+            createdAt: (d.data().createdAt as Timestamp).toDate() 
+        } as Testimonial));
+        setTestimonials(data);
+    };
+
+    const loadSourceWebsites = async () => {
+        const q = query(collection(db, "sourceWebsites"), orderBy("name"));
+        const snapshot = await getDocs(q);
+        const data = snapshot.docs.map(d => ({ 
+            id: d.id, 
+            ...d.data() 
+        } as { id: string; name: string; url: string }));
+        setSourceWebsites(data);
+    };
+
+    const loadPendingGrants = async () => {
+        const q = query(collection(db, "pendingGrants"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        const data = snapshot.docs.map(d => ({ 
+            id: d.id, 
+            ...d.data(), 
+            createdAt: (d.data().createdAt as Timestamp).toDate() 
+        } as {
+            id: string;
+            title: string;
+            organization: string;
+            description: string;
+            overview: string;
+            deadline: string;
+            fundingAmount: string;
+            eligibility: string;
+            applyLink: string;
+            category: string;
+            sourceUrl: string;
+            status: string;
+            createdAt: Date;
+        }));
+        setPendingGrants(data);
+    };
+
+    useEffect(() => {
+        if (activeTab === "Users Queries" && premiumInquiries.length > 0) {
+            const unsubscribes = premiumInquiries.map(inquiry =>
+                subscribeToLastMessage(inquiry.id, (lastMsg) => {
+                    setLastMessages(prev => ({ ...prev, [inquiry.id]: lastMsg?.text || inquiry.specificNeeds }))
+                })
+            );
+            return () => unsubscribes.forEach(unsub => unsub());
+        }
+    }, [premiumInquiries, activeTab]);
+    
+    const handleDeletePost = async (id: string) => { await deletePost(id); loadPosts(); };
+    const handleCreatePost = async (formData: InsertPost) => { await createPost(formData); loadPosts(); setShowModal(false); };
+    const handleUpdatePost = async (updated: InsertPost & { id: string }) => { if (editingPost) { await updatePost(editingPost.id, updated); loadPosts(); setEditingPost(null); setShowModal(false); } };
+    const handleUpdateGrant = async (updatedData: InsertGrant) => { if (editingGrant) { await updateGrant(editingGrant.id, updatedData); loadGrants(); setEditingGrant(null); setShowGrantModal(false); } };
+    const handleDeleteGrant = async (id: string) => { if (window.confirm("Sure you want to delete?")) { await deleteGrant(id); loadGrants(); } };
+    const handleCreateEvent = async (data: InsertEvent) => { await createCalendarEvent(data); await loadEvents(); setShowEventModal(false); };
+    const handleUpdateEvent = async (data: InsertEvent & { id: string }) => { await updateCalendarEvent(data.id, data); await loadEvents(); setEditingEvent(null); setShowEventModal(false); };
+    const handleDeleteEvent = async (id: string) => { if (window.confirm("Delete this event?")) { await deleteCalendarEvent(id); await loadEvents(); } };
+    
+ 
+    const handleDeleteTestimonial = async (id: string) => {
+        if (window.confirm("Are you sure you want to delete this testimonial?")) {
+            await deleteFirestoreDoc(doc(db, "testimonials", id));
+            loadTestimonials();
+        }
+    };
+
+    // Source website management functions
+    const handleAddWebsite = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newWebsiteName.trim() || !newWebsiteUrl.trim()) return;
+        
+        setLoading(true);
+        try {
+            await addDoc(collection(db, "sourceWebsites"), {
+                name: newWebsiteName.trim(),
+                url: newWebsiteUrl.trim()
+            });
+            setNewWebsiteName("");
+            setNewWebsiteUrl("");
+            loadSourceWebsites();
+        } catch (error) {
+            console.error("Error adding website:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeleteWebsite = async (id: string) => {
+        if (window.confirm("Are you sure you want to delete this source website?")) {
+            await deleteFirestoreDoc(doc(db, "sourceWebsites", id));
+            loadSourceWebsites();
+        }
+    };
+
+    // Pending grant management functions
+    const handleReviewGrant = (pendingGrant: any) => {
+        // Convert pending grant to grant format for the modal
+        const grantData = {
+            title: pendingGrant.title,
+            organization: pendingGrant.organization,
+            description: pendingGrant.description,
+            overview: pendingGrant.overview,
+            deadline: pendingGrant.deadline,
+            fundingAmount: pendingGrant.fundingAmount,
+            eligibility: pendingGrant.eligibility,
+            applyLink: pendingGrant.applyLink,
+            category: pendingGrant.category,
+            documents: [{ title: "Business Plan", description: "Detailed business plan", required: true }],
+            faqs: [],
+            contactEmail: "contact@example.com",
+            isPremium: false
+        };
+        
+        setEditingGrant(grantData as any);
+        setShowGrantModal(true);
+    };
+
+    const handleCreateGrant = async (formData: InsertGrant) => {
+        await createGrant(formData);
+        loadGrants();
+        setShowGrantModal(false);
+        
+        // If this was from a pending grant review, delete the pending grant
+        if (editingGrant && (editingGrant as any).sourceUrl) {
+            const pendingGrant = pendingGrants.find(pg => pg.sourceUrl === (editingGrant as any).sourceUrl);
+            if (pendingGrant) {
+                await deleteFirestoreDoc(doc(db, "pendingGrants", pendingGrant.id));
+                loadPendingGrants();
+            }
+        }
+    };
+
+    const handleSidebarItemClick = (item: string) => { setActiveTab(item); setSidebarOpen(false); };
+    
+    const eventsForSelectedDate = useMemo(() => {
+        const y = selectedDate.getFullYear();
+        const m = selectedDate.getMonth();
+        const d = selectedDate.getDate();
+        return events.filter(ev => {
+            const start = new Date(ev.start);
+            return start.getFullYear() === y && start.getMonth() === m && start.getDate() === d;
+        });
+    }, [events, selectedDate]);
+    
+    const eventDates = useMemo(() => events.map(ev => new Date(ev.start)), [events]);
+
+    const formatEventTime = (ev: CalendarEvent) => {
+        if (ev.allDay) return "All day";
+        const start = new Date(ev.start);
+        const end = new Date(ev.end);
+        return `${start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - ${end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+    };
+
+    const indexOfLastGrant = currentPage * grantsPerPage;
+    const indexOfFirstGrant = indexOfLastGrant - grantsPerPage;
+    const currentGrants = grants.slice(indexOfFirstGrant, indexOfLastGrant);
+    const totalPages = Math.ceil(grants.length / grantsPerPage);
+
+    const paginate = (pageNumber: number) => {
+        if (pageNumber > 0 && pageNumber <= totalPages) {
+            setCurrentPage(pageNumber);
+        }
+    };
+
+    const renderContent = () => {
+        switch (activeTab) {
+            case "Dashboard": return <DashboardAnalytics setActiveTab={setActiveTab} />;
+            
+            // --- NEW CASE TO RENDER GRANT LEADS TABLE ---
+            case "Grant Leads":
+                return (
+                    <div>
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-3xl font-bold text-gray-800">Grant Leads</h1>
+                            <Button
+                                onClick={() => exportPlainToExcel(grantLeads.map(l => ({
+                                    Name: l.name,
+                                    Email: l.email,
+                                    Mobile: l.mobile,
+                                    Grant: l.grantName,
+                                    CreatedAt: l.createdAt.toLocaleString(),
+                                })), "GrantLeads", "GrantLeads")}
+                                className="bg-green-600 hover:bg-green-700 text-white font-semibold shadow-md"
+                                disabled={grantLeads.length === 0}
+                            >
+                                <Download className="mr-2 h-5 w-5" /> Export
+                            </Button>
+                        </div>
+                        <Card className="overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left text-gray-500">
+                                    <thead className="text-xs text-gray-700 uppercase bg-gray-100">
+                                        <tr>
+                                            <th scope="col" className="px-6 py-4">Name</th>
+                                            <th scope="col" className="px-6 py-4">Contact</th>
+                                            <th scope="col" className="px-6 py-4">Grant Name</th>
+                                            <th scope="col" className="px-6 py-4">Submitted On</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {grantLeads.map((lead) => (
+                                            <tr key={lead.id} className="bg-white border-b hover:bg-gray-50">
+                                                <td className="px-6 py-4 font-medium text-gray-900">{lead.name}</td>
+                                                <td className="px-6 py-4">{lead.email}<br/><span className="text-xs text-gray-400">{lead.mobile}</span></td>
+                                                <td className="px-6 py-4 font-semibold text-violet">{lead.grantName}</td>
+                                                <td className="px-6 py-4">{lead.createdAt.toLocaleString()}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </Card>
                     </div>
+                );
+            
+            case "Manage Sources":
+                return (
+                    <div>
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-3xl font-bold text-gray-800">Manage Source Websites</h1>
+                        </div>
+                        
+                        {/* Add Website Form */}
+                        <Card className="mb-6">
+                            <CardHeader>
+                                <CardTitle>Add New Source Website</CardTitle>
+                                <CardDescription>Add websites that contain grant listings for automated discovery</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <form onSubmit={handleAddWebsite} className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <Label htmlFor="websiteName">Website Name</Label>
+                                            <Input
+                                                id="websiteName"
+                                                value={newWebsiteName}
+                                                onChange={(e) => setNewWebsiteName(e.target.value)}
+                                                placeholder="e.g., Startup India"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="websiteUrl">Website URL</Label>
+                                            <Input
+                                                id="websiteUrl"
+                                                type="url"
+                                                value={newWebsiteUrl}
+                                                onChange={(e) => setNewWebsiteUrl(e.target.value)}
+                                                placeholder="https://www.startupindia.gov.in"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <Button type="submit" disabled={loading} className="bg-violet hover:bg-violet/90">
+                                        {loading ? "Adding..." : "Add Website"}
+                                    </Button>
+                                </form>
+                            </CardContent>
+                        </Card>
 
-                    <p className="text-xs md:text-sm text-gray-600 truncate">
-                      {app.email}
-                    </p>
-                    
-                    <p className="text-xs text-gray-500 mt-1 truncate">
-                      {app.phoneNumber}
-                    </p>
-
-                    <div className="text-xs text-gray-500 mt-1">
-                      Deadline: {new Date(app.deadlineDate).toLocaleDateString()}
+                        {/* List of Source Websites */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Source Websites ({sourceWebsites.length})</CardTitle>
+                                <CardDescription>Websites currently being monitored for grant discovery</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {sourceWebsites.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {sourceWebsites.map(website => (
+                                            <div key={website.id} className="flex items-center justify-between p-4 border rounded-lg">
+                                                <div>
+                                                    <h3 className="font-semibold text-gray-800">{website.name}</h3>
+                                                    <p className="text-sm text-gray-500">{website.url}</p>
+                                                </div>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() => handleDeleteWebsite(website.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 text-gray-500">
+                                        <p>No source websites configured yet.</p>
+                                        <p className="text-sm">Add websites above to start automated grant discovery.</p>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
                     </div>
-                  </div>
+                );
 
-                  {/* Status indicator */}
-                  <div className="flex flex-col items-end space-y-1">
-                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                  </div>
+            case "Grant Drafts":
+                return (
+                    <div>
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-3xl font-bold text-gray-800">Grant Drafts</h1>
+                            <Badge variant="outline" className="text-sm">
+                                {pendingGrants.length} pending review
+                            </Badge>
+                        </div>
+                        
+                        {pendingGrants.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {pendingGrants.map(grant => (
+                                    <Card key={grant.id} className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow flex flex-col overflow-hidden">
+                                        <CardHeader>
+                                            <div className="flex justify-between items-start">
+                                                <CardTitle className="text-lg font-bold text-gray-800 line-clamp-2 leading-tight">{grant.title}</CardTitle>
+                                                <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Draft</Badge>
+                                            </div>
+                                            <CardDescription className="text-sm text-gray-500 pt-1">{grant.organization}</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="flex-grow">
+                                            <p className="text-sm text-gray-600 mb-4 line-clamp-3">{grant.description}</p>
+                                            <div className="text-xs text-gray-500 space-y-2">
+                                                <p><strong>Funding:</strong> <span className="font-semibold text-violet">{grant.fundingAmount}</span></p>
+                                                <p><strong>Category:</strong> {grant.category}</p>
+                                                <p><strong>Source:</strong> <a href={grant.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">View Source</a></p>
+                                            </div>
+                                        </CardContent>
+                                        <div className="p-4 border-t bg-gray-50 flex gap-2">
+                                            <Button 
+                                                size="sm" 
+                                                className="w-full bg-violet hover:bg-violet/90" 
+                                                onClick={() => handleReviewGrant(grant)}
+                                            >
+                                                <Edit className="mr-2 h-4 w-4"/> Review & Edit
+                                            </Button>
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        ) : (
+                            <Card>
+                                <CardContent className="text-center py-12">
+                                    <Award className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                                    <h3 className="text-lg font-semibold text-gray-700 mb-2">No Grant Drafts</h3>
+                                    <p className="text-gray-500">No grants are currently pending review. New grants will appear here after the automated discovery process runs.</p>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
+                );
+
+            case "Testimonials":
+                return (
+                    <div>
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-3xl font-bold text-gray-800">Testimonials</h1>
+                            <Button onClick={() => { setEditingTestimonial(null); setShowTestimonialModal(true); }} className="bg-violet hover:bg-violet/90"><PlusCircle className="mr-2 h-4 w-4" /> Add Testimonial</Button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {testimonials.map(t => (
+                                <Card key={t.id}>
+                                    <CardHeader>
+                                        <CardTitle>{t.author}</CardTitle>
+                                        <CardDescription>{t.title}</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="italic">"{t.quote}"</p>
+                                        <p className="mt-2 font-semibold">{t.amountSecured}</p>
+                                    </CardContent>
+                                    <div className="p-4 border-t flex gap-2">
+                                        <Button size="sm" variant="outline" className="w-full" onClick={() => {setEditingTestimonial(t); setShowTestimonialModal(true);}}><Edit className="mr-2 h-4 w-4"/> Edit</Button>
+                                        <Button size="sm" variant="destructive" className="w-full" onClick={() => handleDeleteTestimonial(t.id)}><Trash2 className="mr-2 h-4 w-4"/> Delete</Button>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+                    </div>
+                );
+
+            
+            // NEW: Mobile responsive chat UI
+            case "Users Queries":
+                if (isMobile) {
+                    return (
+                        <Card className="overflow-hidden h-full flex flex-col">
+                            {mobileChatVisible && activeInquiry ? (
+                                <AdminChatInterface 
+                                    activeInquiry={activeInquiry} 
+                                    isMobile={true} 
+                                    onBack={() => {
+                                        setMobileChatVisible(false);
+                                        setActiveInquiry(null);
+                                    }}
+                                />
+                            ) : (
+                                <div className="flex flex-col h-full w-full">
+                                    <div className="p-4 border-b">
+                                       <h3 className="font-semibold text-lg text-gray-800">User Chats</h3>
+                                    </div>
+                                    <div className="flex-1 overflow-y-auto">
+                                        {premiumInquiries.map(inquiry => (
+                                            <div
+                                                key={inquiry.id}
+                                                onClick={() => {
+                                                    setActiveInquiry(inquiry);
+                                                    setMobileChatVisible(true);
+                                                }}
+                                                className={`p-4 cursor-pointer border-l-4 ${activeInquiry?.id === inquiry.id ? 'bg-violet/10 border-violet' : 'border-transparent hover:bg-gray-100'}`}
+                                            >
+                                                <div className="flex justify-between items-center">
+                                                    <p className="font-semibold text-sm text-gray-800 line-clamp-1">{inquiry.name}</p>
+                                                    {inquiry.status === 'new' && <Badge className="bg-green-500 text-white">New</Badge>}
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-1 line-clamp-1">
+                                                    {lastMessages[inquiry.id] || inquiry.specificNeeds}
+                                                </p>
+                                            </div>
+                                        ))}
+                                        {premiumInquiries.length === 0 && (
+                                             <div className="p-4 text-center text-sm text-gray-500 h-full flex items-center justify-center">
+                                                 <p>No user queries yet.</p>
+                                             </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </Card>
+                    );
+                }
+                
+                // Desktop view
+                return (
+                    <Card className="overflow-hidden h-full">
+                        <div className="flex flex-row h-full w-full">
+                            <div className="w-1/3 border-r flex flex-col bg-gray-50/50">
+                                <div className="p-4 border-b">
+                                   <h3 className="font-semibold text-lg text-gray-800">User Chats</h3>
+                                </div>
+                                <div className="flex-1 overflow-y-auto">
+                                    {premiumInquiries.map(inquiry => (
+                                        <div
+                                            key={inquiry.id}
+                                            onClick={() => setActiveInquiry(inquiry)}
+                                            className={`p-4 cursor-pointer border-l-4 ${activeInquiry?.id === inquiry.id ? 'bg-violet/10 border-violet' : 'border-transparent hover:bg-gray-100'}`}
+                                        >
+                                            <div className="flex justify-between items-center">
+                                                <p className="font-semibold text-sm text-gray-800 line-clamp-1">{inquiry.name}</p>
+                                                {inquiry.status === 'new' && <Badge className="bg-green-500 text-white">New</Badge>}
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-1 line-clamp-1">
+                                                {lastMessages[inquiry.id] || inquiry.specificNeeds}
+                                            </p>
+                                        </div>
+                                    ))}
+                                    {premiumInquiries.length === 0 && (
+                                         <div className="p-4 text-center text-sm text-gray-500 h-full flex items-center justify-center">
+                                             <p>No user queries yet.</p>
+                                         </div>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="w-2/3 flex flex-col">
+                                <AdminChatInterface activeInquiry={activeInquiry} />
+                            </div>
+                        </div>
+                    </Card>
+                );
+            
+            case "Grants": return (
+                <div>
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-3xl font-bold text-gray-800">Grants Management</h1>
+                        <Button onClick={() => { setEditingGrant(null); setShowGrantModal(true); }} className="bg-violet hover:bg-violet/90 text-white font-semibold shadow-md"><PlusCircle className="mr-2 h-5 w-5" /> Create Grant</Button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {currentGrants.map((grant) => (
+                            <Card key={grant.id} className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow flex flex-col overflow-hidden">
+                                <CardHeader>
+                                    <div className="flex justify-between items-start">
+                                        <CardTitle className="text-lg font-bold text-gray-800 line-clamp-2 leading-tight">{grant.title}</CardTitle>
+                                        <Badge variant={grant.status === "Active" ? "default" : "destructive"} className={`${grant.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{grant.status}</Badge>
+                                    </div>
+                                    <CardDescription className="text-sm text-gray-500 pt-1">{grant.organization}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-grow">
+                                    <p className="text-sm text-gray-600 mb-4 line-clamp-3">{grant.description}</p>
+                                    <div className="text-xs text-gray-500 space-y-2">
+                                        <p><strong>Funding:</strong> <span className="font-semibold text-violet">{grant.fundingAmount}</span></p>
+                                        <p><strong>Deadline:</strong> {new Date(grant.deadline).toLocaleDateString()}</p>
+                                    </div>
+                                </CardContent>
+                                <div className="p-4 border-t bg-gray-50 flex gap-2">
+                                    <Button size="sm" variant="outline" className="w-full" onClick={() => { setEditingGrant(grant); setShowGrantModal(true); }}><Edit className="mr-2 h-4 w-4"/>Edit</Button>
+                                    <Button size="sm" variant="destructive" className="w-full" onClick={() => handleDeleteGrant(grant.id)}><Trash2 className="mr-2 h-4 w-4"/>Delete</Button>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                    {totalPages > 1 && (
+                        <div className="flex justify-end items-center mt-6 gap-2">
+                            <Button variant="outline" size="icon" onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
+                            <Button variant="outline" size="icon" onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    )}
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+            );
+            case "Applications": return (
+                <div>
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-3xl font-bold text-gray-800">Grant Applications</h1>
+                        <Button onClick={() => exportToExcel(applications, "GrantApplications")} className="bg-green-600 hover:bg-green-700 text-white font-semibold shadow-md" disabled={applications.length === 0}><Download className="mr-2 h-5 w-5"/>Export</Button>
+                    </div>
+                    <Card className="overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left text-gray-500">
+                                <thead className="text-xs text-gray-700 uppercase bg-gray-100">
+                                    <tr>
+                                        <th scope="col" className="px-6 py-4">Applicant</th>
+                                        <th scope="col" className="px-6 py-4">Contact</th>
+                                        <th scope="col" className="px-6 py-4">Help Needed</th>
+                                        <th scope="col" className="px-6 py-4">Support Areas</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {applications.map((app) => (
+                                        <tr key={app.id} className="bg-white border-b hover:bg-gray-50">
+                                            <td className="px-6 py-4 font-medium text-gray-900">{app.name}</td>
+                                            <td className="px-6 py-4">{app.email}<br/><span className="text-xs text-gray-400">{app.phone}</span></td>
+                                            <td className="px-6 py-4 max-w-xs truncate">{app.helpDescription || 'N/A'}</td>
+                                            <td className="px-6 py-4">{app.supportAreas ? app.supportAreas.join(', ') : 'N/A'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Card>
+                </div>
+            );
+            case "Users": return (
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-800 mb-6">User Management</h1>
+                    <Card className="overflow-hidden">
+                       <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-gray-100 text-xs text-gray-700 uppercase">
+                                <tr>
+                                    <th className="px-6 py-4">User</th>
+                                    <th className="px-6 py-4">Phone</th>
+                                    <th className="px-6 py-4">Joined On</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {users.map((user) => (
+                                    <tr key={user.id} className="border-b hover:bg-gray-50">
+                                        <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-3">
+                                            <Avatar>
+                                                <AvatarImage src={(user as any).avatarUrl} alt={user.fullName}/>
+                                                <AvatarFallback>{user.fullName?.[0]}</AvatarFallback>
+                                            </Avatar>
+                                            <div>
+                                              {user.fullName}
+                                              <p className="text-xs text-gray-500">{user.email}</p>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">{user.phoneNumber || "N/A"}</td>
+                                        <td className="px-6 py-4">{new Date(user.createdAt).toLocaleDateString()}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                       </div>
+                    </Card>
+                </div>
+            );
+            case "Contact Messages": return (
+                <div>
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-3xl font-bold text-gray-800">Contact Messages</h1>
+                        <Button onClick={() => exportToExcel(contactMessages as any, "ContactMessages")} className="bg-green-600 hover:bg-green-700 text-white font-semibold shadow-md" disabled={contactMessages.length === 0}><Download className="mr-2 h-5 w-5"/>Export</Button>
+                    </div>
+                    <Card className="overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead className="bg-gray-100 text-xs text-gray-700 uppercase">
+                                    <tr>
+                                        <th className="px-6 py-4">Received</th>
+                                        <th className="px-6 py-4">From</th>
+                                        <th className="px-6 py-4">Subject</th>
+                                        <th className="px-6 py-4">Message</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {contactMessages.map((msg) => (
+                                        <tr key={msg.id} className="border-b hover:bg-gray-50">
+                                            <td className="px-6 py-4 text-gray-500">{msg.createdAt.toLocaleString()}</td>
+                                            <td className="px-6 py-4 font-medium">{msg.name}<br/><span className="text-xs text-gray-400">{msg.email}</span></td>
+                                            <td className="px-6 py-4 font-semibold">{msg.subject}</td>
+                                            <td className="px-6 py-4 max-w-sm truncate text-gray-600">{msg.message}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Card>
+                </div>
+            );
+            case "Blogs": return (
+                <>
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-3xl font-bold text-gray-800">Blog Management</h1>
+                        <Button onClick={() => { setEditingPost(null); setShowModal(true); }} className="bg-violet hover:bg-violet/90 text-white font-semibold shadow-md"><PlusCircle className="mr-2 h-5 w-5"/> Create Blog</Button>
+                    </div>
+                    <Card className="mb-8">
+                       <CardHeader>
+                        <CardTitle className="text-pink">Pending Approval ({pendingPosts.length})</CardTitle>
+                        <CardDescription>Review and publish user-submitted blog posts.</CardDescription>
+                       </CardHeader>
+                       <CardContent>
+                           {pendingPosts.length > 0 ? (
+                               <div className="space-y-3">
+                                   {pendingPosts.map((p) => (
+                                       <div key={p.id} className="border rounded-lg p-3 flex justify-between items-center">
+                                           <div>
+                                            <p className="font-semibold text-gray-800">{p.title}</p>
+                                            <p className="text-xs text-gray-500">By {p.authorName || p.author}</p>
+                                           </div>
+                                           <div className="flex gap-2">
+                                            <Button size="sm" variant="outline" onClick={() => { setActivePendingPost(p); setShowPendingModal(true); }}>View</Button>
+                                            <Button size="sm" className="bg-green-100 text-green-800 hover:bg-green-200" onClick={async () => { await approvePost(p.id); await loadPending(); await loadPosts(); }}><Check className="h-4 w-4"/></Button>
+                                            <Button size="sm" variant="destructive" onClick={async () => { await rejectPost(p.id); await loadPending(); }}><X className="h-4 w-4"/></Button>
+                                           </div>
+                                       </div>
+                                   ))}
+                               </div>
+                           ) : (<div className="text-center py-6 text-gray-500">No pending posts for approval.</div>)}
+                       </CardContent>
+                    </Card>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {posts.map((post) => (
+                            <Card key={post.id} className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow flex flex-col overflow-hidden">
+                                <img src={post.imageUrl || "https://placehold.co/600x400"} alt={post.title} className="w-full h-40 object-cover" />
+                                <CardHeader>
+                                    <CardTitle className="text-lg font-bold line-clamp-2">{post.title}</CardTitle>
+                                    <CardDescription>{post.category}</CardDescription>
+                                </CardHeader>
+                                <div className="p-4 border-t mt-auto bg-gray-50">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild><Button variant="outline" size="sm" className="w-full"><MoreHorizontal className="h-4 w-4"/> Options</Button></DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => { setEditingPost(post); setShowModal(true); }}><Edit className="mr-2 h-4 w-4"/> Edit</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleDeletePost(post.id)} className="text-red-600"><Trash2 className="mr-2 h-4 w-4"/> Delete</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                </>
+            );
+            case "Incubators": return <PlaceholderContent title="Incubators" />;
+            case "Calendar": return (
+                <div>
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-3xl font-bold text-gray-800">Event Calendar</h1>
+                        <Button onClick={() => { setEditingEvent(null); setShowEventModal(true); }} className="bg-violet hover:bg-violet/90 text-white font-semibold shadow-md"><PlusCircle className="mr-2 h-5 w-5"/> Add Event</Button>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                        <Card className="lg:col-span-1"><Calendar mode="single" selected={selectedDate} onSelect={(d: any) => setSelectedDate(d || new Date())} className="p-0" modifiers={{ hasEvent: eventDates }} modifiersClassNames={{ hasEvent: "bg-violet/20 text-violet rounded-full" }}/></Card>
+                        <Card className="lg:col-span-2">
+                           <CardHeader><CardTitle>Events on {selectedDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardTitle></CardHeader>
+                           <CardContent>
+                               <div className="space-y-4">
+                                  {eventsForSelectedDate.length > 0 ? (eventsForSelectedDate.map((ev) => (
+                                      <div key={ev.id} className="border-l-4 border-violet pl-4 py-2">
+                                          <div className="flex justify-between items-start">
+                                              <div>
+                                               <p className="font-semibold text-gray-800">{ev.title}</p>
+                                               <p className="text-xs text-gray-500">{formatEventTime(ev)} {ev.location && `• ${ev.location}`}</p>
+                                              </div>
+                                              <DropdownMenu>
+                                               <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal/></Button></DropdownMenuTrigger>
+                                               <DropdownMenuContent>
+                                                <DropdownMenuItem onClick={() => { setEditingEvent(ev); setShowEventModal(true); }}>Edit</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleDeleteEvent(ev.id)} className="text-red-600">Delete</DropdownMenuItem>
+                                               </DropdownMenuContent>
+                                              </DropdownMenu>
+                                          </div>
+                                          {ev.description && (<p className="text-sm text-gray-600 mt-1">{ev.description}</p>)}
+                                      </div>
+                                  ))) : (<p className="text-sm text-center text-gray-500 py-8">No events for this day.</p>)}
+                               </div>
+                           </CardContent>
+                        </Card>
+                    </div>
+                    <Card className="mt-6">
+                        <CardHeader><CardTitle>All Upcoming Events</CardTitle></CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                {events.length > 0 ? (events.map((ev) => (
+                                    <div key={ev.id} className="border-l-4 border-gray-300 pl-4 py-2">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="font-semibold text-gray-800">{ev.title}</p>
+                                                <p className="text-xs text-gray-500">{new Date(ev.start).toLocaleDateString()} • {formatEventTime(ev)} {ev.location && `• ${ev.location}`}</p>
+                                            </div>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal/></Button></DropdownMenuTrigger>
+                                                <DropdownMenuContent>
+                                                    <DropdownMenuItem onClick={() => { setEditingEvent(ev); setShowEventModal(true); }}>Edit</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleDeleteEvent(ev.id)} className="text-red-600">Delete</DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </div>
+                                ))) : (<p className="text-sm text-center text-gray-500 py-8">No events scheduled.</p>)}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            );
+            case "Social Apps": return <PlaceholderContent title="Social Apps" />;
+            default: return <DashboardAnalytics setActiveTab={setActiveTab} />;
+        }
+    };
 
-    {/* Right Panel - Detail View */}
-    <div
-      className={`${
-        selectedIncubator ? "block" : "hidden md:block"
-      } w-full md:w-1/2 bg-gray-50 flex flex-col`}
-    >
-      {selectedIncubator ? (
+    const SidebarContent = () => (
         <>
-          {/* Detail Header */}
-          <div className="bg-white border-b border-gray-200 p-4 md:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3 md:space-x-4 min-w-0 flex-1">
-                {/* Back button for mobile */}
-                <button
-                  onClick={() => setSelectedIncubator(null)}
-                  className="md:hidden p-1 text-gray-500 hover:text-gray-700"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                </button>
-
-                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-semibold text-sm md:text-lg">
-                    {selectedIncubator.name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h2 className="text-lg md:text-xl font-bold text-gray-900 truncate">
-                    {selectedIncubator.name}
-                  </h2>
-                  <p className="text-sm text-gray-600 truncate">
-                    {selectedIncubator.programName || 'Incubator Application'}
-                  </p>
-                </div>
-              </div>
+            <div className="flex-1 flex flex-col min-h-0">
+                <div className="px-6 py-6 font-bold text-xl border-b text-violet flex items-center justify-between"><span>ADMIN</span></div>
+                 <nav className="flex-1 overflow-y-auto flex flex-col gap-1 mt-4 px-4 text-sm text-gray-700">
+                    {sidebarItems.map(({ name, icon: Icon }) => (
+                        <button key={name} className={`px-4 py-3 rounded-lg cursor-pointer transition-all flex items-center text-left ${activeTab === name ? "bg-violet/10 text-violet font-semibold" : "hover:bg-violet/5"}`} onClick={() => handleSidebarItemClick(name)}>
+                            <Icon className="w-5 h-5 mr-3" /> {name}
+                        </button>
+                    ))}
+                </nav>
             </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium bg-green-100 text-green-800">
-                Active
-              </span>
-              <span className="inline-flex items-center px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium bg-orange-100 text-orange-800">
-                Deadline: {new Date(selectedIncubator.deadlineDate).toLocaleDateString()}
-              </span>
+           
+            <div className="p-4 border-t">
+                <Button variant="ghost" onClick={logout} className="w-full justify-start text-gray-600 hover:text-red-500 hover:bg-red-50">
+                    <LogOut className="mr-3 h-5 w-5"/>
+                    Logout
+                </Button>
             </div>
-          </div>
-
-          {/* Detail Content */}
-          <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6">
-            {/* Contact Information */}
-            <div className="bg-white rounded-lg p-4 md:p-5 shadow-sm border border-gray-200">
-              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">
-                Contact Information
-              </h3>
-              <div className="grid grid-cols-1 gap-3">
-                <div className="flex items-center space-x-3">
-                  <Mail className="w-4 h-4 md:w-5 md:h-5 text-gray-400 flex-shrink-0" />
-                  <span className="text-sm md:text-base text-gray-900 break-all">
-                    {selectedIncubator.email}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Building className="w-4 h-4 md:w-5 md:h-5 text-gray-400 flex-shrink-0" />
-                  <span className="text-sm md:text-base text-gray-900">
-                    {selectedIncubator.name}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Phone className="w-4 h-4 md:w-5 md:h-5 text-gray-400 flex-shrink-0" />
-                  <span className="text-sm md:text-base text-gray-900">
-                    {selectedIncubator.phoneNumber}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Program Information */}
-            <div className="bg-white rounded-lg p-4 md:p-5 shadow-sm border border-gray-200">
-              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">
-                Program Details
-              </h3>
-              <div className="grid grid-cols-1 gap-4">
-                {selectedIncubator.programName && (
-                  <div>
-                    <span className="text-xs md:text-sm text-gray-500">Program Name</span>
-                    <p className="text-sm md:text-base font-medium text-gray-900">
-                      {selectedIncubator.programName}
-                    </p>
-                  </div>
-                )}
-                <div>
-                  <span className="text-xs md:text-sm text-gray-500">Application Deadline</span>
-                  <p className="text-sm md:text-base font-medium text-gray-900">
-                    {new Date(selectedIncubator.deadlineDate).toLocaleDateString()}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-xs md:text-sm text-gray-500">Program Description</span>
-                  <p className="text-sm md:text-base text-gray-700 mt-1">
-                    {selectedIncubator.programDetails}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Sectors */}
-            {selectedIncubator.sectors && selectedIncubator.sectors.length > 0 && (
-              <div className="bg-white rounded-lg p-4 md:p-5 shadow-sm border border-gray-200">
-                <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">
-                  Target Sectors
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedIncubator.sectors.map((sector, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
-                    >
-                      {sector.label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Application Details */}
-            <div className="bg-white rounded-lg p-4 md:p-5 shadow-sm border border-gray-200">
-              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">
-                Application Details
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <span className="text-xs md:text-sm text-gray-500">Application ID</span>
-                  <p className="text-sm md:text-base font-medium text-gray-900">
-                    #{selectedIncubator.id}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-xs md:text-sm text-gray-500">Application Form</span>
-                  <a
-                    href={selectedIncubator.applicationFormLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm md:text-base font-medium text-blue-600 hover:text-blue-800 underline"
-                  >
-                    View Form
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="bg-white border-t border-gray-200 p-4 md:p-6">
-            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-              <Button
-                onClick={() => {
-                  const emailBody = `Hi,%0D%0A%0D%0ARegarding your incubator program "${selectedIncubator.programName || 'application'}" for ${selectedIncubator.name}:%0D%0A%0D%0AThank you for your submission.%0D%0A%0D%0ABest,%0D%0AYour Admin Team`;
-                  const mailto = `mailto:${selectedIncubator.email}?subject=Incubator Program Update&body=${emailBody}`;
-                  window.open(mailto);
-                }}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors inline-flex items-center justify-center gap-2"
-              >
-                <Mail className="w-4 h-4" />
-                Send Email
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => deleteIncubatorApplication(selectedIncubator.id)}
-                className="sm:flex-none px-4 py-3 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg justify-center"
-              >
-                <Trash className="w-4 h-4" />
-                <span className="sm:hidden ml-2">Delete</span>
-              </Button>
-            </div>
-          </div>
+         
         </>
-      ) : (
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Building className="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Select an Incubator Application
-            </h3>
-            <p className="text-gray-500 text-center">
-              Click on an application from the list to view details
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
-  </div>
-)}
-          {activeTab === "Social Apps" && (
-            <div className="flex flex-col items-center justify-center h-full p-8">
-              <div className="text-center max-w-md">
-                {/* Icon */}
-                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg
-                    className="w-10 h-10 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                    />
-                  </svg>
+    );
+
+    return (
+        <div className="h-screen flex bg-[#F9FAFB]">
+            <aside className="fixed md:relative w-64 bg-white shadow-lg border-r flex-col h-full z-50 transition-transform duration-300 ease-in-out hidden md:flex">
+                <SidebarContent/>
+            </aside>
+            <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+                <SheetContent side="left" className="p-0 w-64 flex flex-col">
+                   <SidebarContent />
+                </SheetContent>
+            </Sheet>
+
+            <main className="flex-1 flex flex-col min-w-0 h-screen">
+                <div className="md:hidden bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-40 shadow-sm">
+                    <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-md text-gray-800 hover:bg-gray-100" aria-label="Open menu">
+                        <MenuIcon className="w-6 h-6" />
+                    </button>
+                    <h1 className="font-semibold text-gray-800">{activeTab}</h1>
+                    <div className="w-9"></div>
                 </div>
 
-                {/* Title */}
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                  Social Media Management
-                </h2>
+                <div className={`flex-1 p-4 sm:p-8 ${activeTab === 'Users Queries' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+                    {renderContent()}
+                </div>
+            </main>
 
-                {/* Subtitle */}
-                <p className="text-lg text-gray-600 mb-4">Coming Soon</p>
+            <CreatePostModal isOpen={showModal} onClose={() => { setEditingPost(null); setShowModal(false); }} initialData={editingPost} onSubmit={editingPost ? handleUpdatePost : handleCreatePost} />
+            <CreateGrantModal isOpen={showGrantModal} onClose={() => { setEditingGrant(null); setShowGrantModal(false); }} initialData={editingGrant} onSubmit={editingGrant && !(editingGrant as any).sourceUrl ? handleUpdateGrant : handleCreateGrant} />
+             <EventModal
+                isOpen={showEventModal}
+                onClose={() => { setEditingEvent(null); setShowEventModal(false); }}
+                initialData={editingEvent}
+                onSubmit={(data: any) => editingEvent ? handleUpdateEvent({ ...data, id: editingEvent.id }) : handleCreateEvent(data)}
+            />
+            
+        
+            <CreateTestimonialModal 
+                isOpen={showTestimonialModal}
+                onClose={() => { setEditingTestimonial(null); setShowTestimonialModal(false); }}
+                initialData={editingTestimonial}
+                onSuccess={loadTestimonials}
+            />
 
-                {/* Description */}
-                <p className="text-gray-500 leading-relaxed">
-                  We're working hard to bring you powerful social media
-                  management tools. Stay tuned for updates!
-                </p>
-              </div>
-            </div>
-          )}
+            <Dialog open={showPendingModal} onOpenChange={() => { setShowPendingModal(false); setActivePendingPost(null); }}>
+                <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader><DialogTitle>Pending Blog Preview</DialogTitle></DialogHeader>
+                    {activePendingPost && (
+                        <div className="space-y-4">
+                            {activePendingPost.imageUrl && (<img src={activePendingPost.imageUrl} alt={activePendingPost.title} className="w-full h-64 object-cover rounded-md" />)}
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">{activePendingPost.title}</h2>
+                                <p className="text-sm text-gray-500 mt-1">Category: {activePendingPost.category || "General"}</p>
+                                <p className="text-sm text-gray-500">By {activePendingPost.authorName || activePendingPost.author} {activePendingPost.authorEmail ? `• ${activePendingPost.authorEmail}` : ""}</p>
+                            </div>
+                            <div className="prose max-w-none whitespace-pre-wrap">{activePendingPost.content}</div>
+                            <div className="flex justify-end gap-2 pt-2">
+                                <Button variant="outline" onClick={() => { setShowPendingModal(false); setActivePendingPost(null); }}>Close</Button>
+                                <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={async () => { if (!activePendingPost) return; await approvePost(activePendingPost.id); await loadPending(); await loadPosts(); setShowPendingModal(false); setActivePendingPost(null); }}>Approve</Button>
+                                <Button variant="destructive" onClick={async () => { if (!activePendingPost) return; await rejectPost(activePendingPost.id); await loadPending(); setShowPendingModal(false); setActivePendingPost(null); }}>Reject</Button>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
-      </main>
-
-      <style>
-        {`
-          .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-          }
-
-          .line-clamp-3 {
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-          }
-
-          .calendar-container {
-            overflow-x: auto;
-          }
-
-          .enhanced-calendar {
-            width: 100%;
-            border: none;
-            font-family: inherit;
-          }
-
-          .enhanced-calendar .react-calendar__navigation {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin-bottom: 1rem;
-            border-radius: 0.75rem;
-            padding: 0.5rem;
-          }
-
-          .enhanced-calendar .react-calendar__navigation button {
-            color: white;
-            font-weight: 600;
-            background: none;
-            border: none;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            transition: all 0.2s;
-          }
-
-          .enhanced-calendar .react-calendar__navigation button:hover {
-            background: rgba(255, 255, 255, 0.1);
-          }
-
-          .enhanced-calendar .react-calendar__navigation button:disabled {
-            opacity: 0.5;
-          }
-
-          .enhanced-calendar .react-calendar__month-view__weekdays {
-            background: #f8fafc;
-            border-radius: 0.5rem;
-            margin-bottom: 0.5rem;
-          }
-
-          .enhanced-calendar .react-calendar__month-view__weekdays__weekday {
-            color: #64748b;
-            font-weight: 600;
-            font-size: 0.875rem;
-            padding: 0.75rem 0.5rem;
-            text-align: center;
-          }
-
-          .enhanced-calendar .react-calendar__tile {
-            background: white;
-            border: 1px solid #e2e8f0;
-            color: #334155;
-            font-weight: 500;
-            padding: 0.75rem 0.5rem;
-            margin: 0.125rem;
-            border-radius: 0.5rem;
-            transition: all 0.2s;
-            position: relative;
-            min-height: 3rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
-
-          .enhanced-calendar .react-calendar__tile:hover {
-            background: #f1f5f9;
-            border-color: #cbd5e1;
-            transform: translateY(-1px);
-          }
-
-          .enhanced-calendar .react-calendar__tile--active {
-            background: #3b82f6 !important;
-            color: white !important;
-            border-color: #3b82f6 !important;
-          }
-
-          .enhanced-calendar .selected-date {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
-            color: white !important;
-            border-color: #3b82f6 !important;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-          }
-
-          .enhanced-calendar .today-date {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-            color: white !important;
-            border-color: #10b981 !important;
-          }
-
-          .enhanced-calendar .react-calendar__tile--now {
-            background: #ecfdf5;
-            border-color: #10b981;
-            color: #059669;
-          }
-
-          .enhanced-calendar .react-calendar__tile--neighboringMonth {
-            color: #94a3b8;
-          }
-
-          @media (max-width: 640px) {
-            .enhanced-calendar {
-              font-size: 0.875rem;
-            }
-
-            .enhanced-calendar .react-calendar__tile {
-              padding: 0.5rem 0.25rem;
-              min-height: 2.5rem;
-            }
-          }
-        `}
-      </style>
-    </div>
-  );
+    );
 }
