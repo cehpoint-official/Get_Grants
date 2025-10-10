@@ -15,7 +15,7 @@ const geminiApiKey = defineSecret("GEMINI_API_KEY");
 admin.initializeApp();
 const db = admin.firestore();
 
-const ADMIN_EMAILS: string[] = (process.env.ADMIN_EMAILS || "admin@getgrants.in,kamini9926@gmail.com,aroranir12@gmail.com").split(",").map(e => e.trim());
+const ADMIN_EMAILS: string[] = (process.env.ADMIN_EMAILS || "admin@getgrants.in").split(",").map(e => e.trim());
 const WEBSITE_PROCESSING_TOPIC = "website-processing-topic";
 
 const getPremiumUserTokens = async (): Promise<string[]> => {
@@ -599,3 +599,4 @@ export const verifyPayment = https.onRequest(async (req, res) => {
         res.status(400).json({ error: "Payment verification failed." });
     }
 });
+

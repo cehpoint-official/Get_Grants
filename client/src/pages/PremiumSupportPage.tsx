@@ -242,7 +242,7 @@ export default function PremiumSupportPage() {
 
             const rzp = new (window as any).Razorpay(options);
             
-            // Add error handling for popup
+           
             rzp.on('payment.failed', function (response: any) {
                 console.error('Payment failed:', response.error);
                 toast({
