@@ -29,6 +29,7 @@ export function CreateGrantModal({ isOpen, onClose, onSubmit, initialData }: Cre
     defaultValues: {
       title: "",
       organization: "",
+      status: "Active",
       description: "",
       overview: "",
       startDate: "",
@@ -63,12 +64,14 @@ export function CreateGrantModal({ isOpen, onClose, onSubmit, initialData }: Cre
           deadline: format(new Date(initialData.deadline), "yyyy-MM-dd"),
           faqs: initialData.faqs || [],
           isPremium: initialData.isPremium || false,
+          status: initialData.status || "Active",
         });
       } else {
         
         form.reset({
           title: "",
           organization: "",
+          status: "Active",
           description: "",
           overview: "",
           startDate: "",
@@ -101,6 +104,8 @@ export function CreateGrantModal({ isOpen, onClose, onSubmit, initialData }: Cre
               <FormField name="title" control={form.control} render={({ field }) => (<FormItem><FormLabel className="text-[#30343B] font-semibold">Title</FormLabel><FormControl><Input placeholder="e.g., NIDHI-EIR Programme" {...field} className="bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg" /></FormControl><FormMessage /></FormItem>)} />
               <FormField name="organization" control={form.control} render={({ field }) => (<FormItem><FormLabel className="text-[#30343B] font-semibold">Organization</FormLabel><FormControl><Input placeholder="e.g., iCreate" {...field} className="bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg" /></FormControl><FormMessage /></FormItem>)} />
             </div>
+
+            <FormField name="status" control={form.control} render={({ field }) => (<FormItem><FormLabel className="text-[#30343B] font-semibold">Status</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg"><SelectValue placeholder="Select Status..." /></SelectTrigger></FormControl><SelectContent>{["Active", "Expired", "Upcoming", "Closing Soon"].map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
 
             <div className="grid md:grid-cols-2 gap-6 items-center">
               <FormField name="category" control={form.control} render={({ field }) => (<FormItem><FormLabel className="text-[#30343B] font-semibold">Category</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="bg-white border-gray-300 focus:border-[#8541EF] focus:ring-[#8541EF] rounded-lg"><SelectValue placeholder="Select Category..." /></SelectTrigger></FormControl><SelectContent>{categories.map(category => <SelectItem key={category} value={category}>{category}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />

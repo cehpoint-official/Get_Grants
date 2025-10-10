@@ -72,6 +72,7 @@ export const grantSchema = z.object({
 export const insertGrantSchema = z.object({
   title: z.string().min(3, "Title is required"),
   organization: z.string().min(3, "Organization is required"),
+  status: z.enum(["Active", "Expired", "Upcoming", "Closing Soon"]).optional().default("Active"),
   description: z.string().min(20, "Short description is required (min 20 chars)"),
   overview: z.string().min(50, "Grant overview is required (min 50 chars)"),
   startDate: z.string().optional(),

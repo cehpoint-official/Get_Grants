@@ -12,6 +12,7 @@ import { Footer } from '@/components/footer';
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { getGrantStatus, getStatusColor } from '@/lib/grantUtils';
 import fittLogo from '../assets/logos/FITT-Logo.avif';
 import iHubLogo from '../assets/logos/iHub-logo-New-2.avif';
 import iimlLogo from '../assets/logos/iiml-logo.avif';
@@ -51,18 +52,7 @@ const logoMap: { [key: string]: string } = {
 };
 
 const getStatusClass = (status: Grant['status']) => {
-    switch (status) {
-        case 'Active':
-            return 'bg-[#28D36F6B] text-[#099C46]';
-        case 'Upcoming':
-            return 'bg-[#FFB61730] text-[#E99000]';
-        case 'Expired':
-            return 'bg-[#FFBAB86B] text-[#EA3030]';
-        case 'Closing Soon':
-            return 'bg-orange-100 text-orange-600';
-        default:
-            return 'bg-gray-100 text-gray-700';
-    }
+    return getStatusColor(status);
 };
 
 export const GrantCard = ({ grant, user, onCardClick }: { grant: Grant, user: AppUser | null, onCardClick: (grant: Grant) => void }) => {
@@ -71,6 +61,7 @@ export const GrantCard = ({ grant, user, onCardClick }: { grant: Grant, user: Ap
     const isPremiumGrant = grant.isPremium;
     const isUserPremium = user?.subscriptionStatus === 'premium';
     const isLocked = isPremiumGrant && !isUserPremium;
+    const calculatedStatus = getGrantStatus(grant);
 
     return (
         <article
@@ -79,8 +70,8 @@ export const GrantCard = ({ grant, user, onCardClick }: { grant: Grant, user: Ap
         >
             <div className="p-5 flex flex-col h-full">
                 <div className="flex justify-between items-start mb-3">
-                    <span className={`px-3 py-1 text-xs font-semibold rounded-lg ${getStatusClass(grant.status)}`}>
-                        {grant.status}
+                    <span className={`px-3 py-1 text-xs font-semibold rounded-lg ${getStatusClass(calculatedStatus)}`}>
+                        {calculatedStatus}
                     </span>
                     {logo && (
                         <div className="flex justify-center items-center h-[54px] w-[61px] p-2 rounded-[9px] bg-white border shadow-sm">
@@ -271,7 +262,7 @@ export default function GrantsPage() {
             }
         }
         if (filters.status !== 'All') {
-            filtered = filtered.filter(grant => grant.status === filters.status);
+            filtered = filtered.filter(grant => getGrantStatus(grant) === filters.status);
         }
         if (filters.deadline) {
             filtered = filtered.filter(grant => new Date(grant.deadline) <= new Date(filters.deadline));

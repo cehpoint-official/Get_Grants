@@ -46,20 +46,32 @@ export const createGrant = async (grantData: InsertGrant) => {
     ...grantData,
     deadline: new Date(grantData.deadline),
     startDate: grantData.startDate ? new Date(grantData.startDate) : null,
+    status: grantData.status || "Active",
     createdAt: Timestamp.now(),
   });
 };
 
 export const updateGrant = async (id: string, grantData: InsertGrant) => {
-  const grantRef = doc(db, "grants", id);
-  await updateDoc(grantRef, {
-      ...grantData,
-      deadline: new Date(grantData.deadline),
-      startDate: grantData.startDate ? new Date(grantData.startDate) : null,
-  });
+  try {
+    const grantRef = doc(db, "grants", id);
+    await updateDoc(grantRef, {
+        ...grantData,
+        deadline: new Date(grantData.deadline),
+        startDate: grantData.startDate ? new Date(grantData.startDate) : null,
+        status: grantData.status || "Active",
+    });
+  } catch (error) {
+    console.error("Error updating grant:", error);
+    throw error;
+  }
 };
 
 export const deleteGrant = async (id: string) => {
-  const grantRef = doc(db, "grants", id);
-  await deleteDoc(grantRef);
+  try {
+    const grantRef = doc(db, "grants", id);
+    await deleteDoc(grantRef);
+  } catch (error) {
+    console.error("Error deleting grant:", error);
+    throw error;
+  }
 };

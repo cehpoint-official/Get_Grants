@@ -58,6 +58,7 @@ import { collection, query, orderBy, getDocs, Timestamp, deleteDoc as deleteFire
 
 
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getGrantStatus, getStatusColor, getStatusBadgeVariant } from "@/lib/grantUtils";
 
 const sidebarItems = [
     { name: "Dashboard", icon: LayoutDashboard },
@@ -256,6 +257,15 @@ export default function AdminDashboard() {
     const [lastMessages, setLastMessages] = useState<Record<string, string>>({});
     const { logout, user: adminUser } = useAuth();
     const [, navigate] = useLocation();
+    
+    // Debug admin authentication
+    useEffect(() => {
+        if (adminUser) {
+            console.log("Current user:", adminUser);
+            console.log("User email:", adminUser.email);
+            console.log("Is admin email:", adminUser.email === 'admin@getgrants.in' || adminUser.email === 'kamini9926@gmail.com');
+        }
+    }, [adminUser]);
     const [currentPage, setCurrentPage] = useState(1);
     const grantsPerPage = 6;
     
@@ -307,7 +317,17 @@ export default function AdminDashboard() {
     
     const loadPosts = async () => setPosts(await fetchPosts() as Post[]);
     const loadPending = async () => setPendingPosts(await fetchPendingPosts() as Post[]);
-    const loadGrants = async () => setGrants(await fetchGrants() as Grant[]);
+    const loadGrants = async () => {
+        try {
+            const grants = await fetchGrants() as Grant[];
+            setGrants(grants);
+            console.log(`Loaded ${grants.length} grants successfully`);
+        } catch (error) {
+            console.error("Error loading grants:", error);
+            console.error("Error details:", error);
+            alert("Failed to load grants. Please refresh the page.");
+        }
+    };
     const loadApplications = async () => setApplications(await fetchAllApplications());
     const loadUsers = async () => setUsers(await fetchAllUsers());
     const loadEvents = async () => setEvents((await fetchEvents()).sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime()));
@@ -394,8 +414,35 @@ export default function AdminDashboard() {
     const handleDeletePost = async (id: string) => { await deletePost(id); loadPosts(); };
     const handleCreatePost = async (formData: InsertPost) => { await createPost(formData); loadPosts(); setShowModal(false); };
     const handleUpdatePost = async (updated: InsertPost & { id: string }) => { if (editingPost) { await updatePost(editingPost.id, updated); loadPosts(); setEditingPost(null); setShowModal(false); } };
-    const handleUpdateGrant = async (updatedData: InsertGrant) => { if (editingGrant) { await updateGrant(editingGrant.id, updatedData); loadGrants(); setEditingGrant(null); setShowGrantModal(false); } };
-    const handleDeleteGrant = async (id: string) => { if (window.confirm("Sure you want to delete?")) { await deleteGrant(id); loadGrants(); } };
+    const handleUpdateGrant = async (updatedData: InsertGrant & { id: string }) => { 
+        try {
+            console.log("Updating grant with ID:", updatedData.id);
+            console.log("Update data:", updatedData);
+            await updateGrant(updatedData.id, updatedData); 
+            loadGrants(); 
+            setEditingGrant(null); 
+            setShowGrantModal(false);
+            console.log("Grant updated successfully");
+        } catch (error) {
+            console.error("Error updating grant:", error);
+            console.error("Error details:", error);
+            alert("Failed to update grant. Please try again.");
+        }
+    };
+    const handleDeleteGrant = async (id: string) => { 
+        if (window.confirm("Are you sure you want to delete this grant?")) { 
+            try {
+                console.log("Deleting grant with ID:", id);
+                await deleteGrant(id); 
+                loadGrants();
+                console.log("Grant deleted successfully");
+            } catch (error) {
+                console.error("Error deleting grant:", error);
+                console.error("Error details:", error);
+                alert("Failed to delete grant. Please try again.");
+            }
+        } 
+    };
     const handleCreateEvent = async (data: InsertEvent) => { await createCalendarEvent(data); await loadEvents(); setShowEventModal(false); };
     const handleUpdateEvent = async (data: InsertEvent & { id: string }) => { await updateCalendarEvent(data.id, data); await loadEvents(); setEditingEvent(null); setShowEventModal(false); };
     const handleDeleteEvent = async (id: string) => { if (window.confirm("Delete this event?")) { await deleteCalendarEvent(id); await loadEvents(); } };
@@ -812,28 +859,32 @@ export default function AdminDashboard() {
                         <Button onClick={() => { setEditingGrant(null); setShowGrantModal(true); }} className="bg-violet hover:bg-violet/90 text-white font-semibold shadow-md"><PlusCircle className="mr-2 h-5 w-5" /> Create Grant</Button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {currentGrants.map((grant) => (
-                            <Card key={grant.id} className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow flex flex-col overflow-hidden">
-                                <CardHeader>
-                                    <div className="flex justify-between items-start">
-                                        <CardTitle className="text-lg font-bold text-gray-800 line-clamp-2 leading-tight">{grant.title}</CardTitle>
-                                        <Badge variant={grant.status === "Active" ? "default" : "destructive"} className={`${grant.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{grant.status}</Badge>
+                        {currentGrants.map((grant) => {
+                            const calculatedStatus = getGrantStatus(grant);
+                            return (
+                                <Card key={grant.id} className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow flex flex-col overflow-hidden">
+                                    <CardHeader>
+                                        <div className="flex justify-between items-start">
+                                            <CardTitle className="text-lg font-bold text-gray-800 line-clamp-2 leading-tight">{grant.title}</CardTitle>
+                                            <Badge variant={getStatusBadgeVariant(calculatedStatus)} className={getStatusColor(calculatedStatus)}>{calculatedStatus}</Badge>
+                                        </div>
+                                        <CardDescription className="text-sm text-gray-500 pt-1">{grant.organization}</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex-grow">
+                                        <p className="text-sm text-gray-600 mb-4 line-clamp-3">{grant.description}</p>
+                                        <div className="text-xs text-gray-500 space-y-2">
+                                            <p><strong>Funding:</strong> <span className="font-semibold text-violet">{grant.fundingAmount}</span></p>
+                                            <p><strong>Deadline:</strong> {new Date(grant.deadline).toLocaleDateString()}</p>
+                                            {grant.startDate && <p><strong>Start Date:</strong> {new Date(grant.startDate).toLocaleDateString()}</p>}
+                                        </div>
+                                    </CardContent>
+                                    <div className="p-4 border-t bg-gray-50 flex gap-2">
+                                        <Button size="sm" variant="outline" className="w-full" onClick={() => { setEditingGrant(grant); setShowGrantModal(true); }}><Edit className="mr-2 h-4 w-4"/>Edit</Button>
+                                        <Button size="sm" variant="destructive" className="w-full" onClick={() => handleDeleteGrant(grant.id)}><Trash2 className="mr-2 h-4 w-4"/>Delete</Button>
                                     </div>
-                                    <CardDescription className="text-sm text-gray-500 pt-1">{grant.organization}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex-grow">
-                                    <p className="text-sm text-gray-600 mb-4 line-clamp-3">{grant.description}</p>
-                                    <div className="text-xs text-gray-500 space-y-2">
-                                        <p><strong>Funding:</strong> <span className="font-semibold text-violet">{grant.fundingAmount}</span></p>
-                                        <p><strong>Deadline:</strong> {new Date(grant.deadline).toLocaleDateString()}</p>
-                                    </div>
-                                </CardContent>
-                                <div className="p-4 border-t bg-gray-50 flex gap-2">
-                                    <Button size="sm" variant="outline" className="w-full" onClick={() => { setEditingGrant(grant); setShowGrantModal(true); }}><Edit className="mr-2 h-4 w-4"/>Edit</Button>
-                                    <Button size="sm" variant="destructive" className="w-full" onClick={() => handleDeleteGrant(grant.id)}><Trash2 className="mr-2 h-4 w-4"/>Delete</Button>
-                                </div>
-                            </Card>
-                        ))}
+                                </Card>
+                            );
+                        })}
                     </div>
                     {totalPages > 1 && (
                         <div className="flex justify-end items-center mt-6 gap-2">
@@ -1116,7 +1167,7 @@ export default function AdminDashboard() {
             </main>
 
             <CreatePostModal isOpen={showModal} onClose={() => { setEditingPost(null); setShowModal(false); }} initialData={editingPost} onSubmit={editingPost ? handleUpdatePost : handleCreatePost} />
-            <CreateGrantModal isOpen={showGrantModal} onClose={() => { setEditingGrant(null); setShowGrantModal(false); }} initialData={editingGrant} onSubmit={editingGrant && !(editingGrant as any).sourceUrl ? handleUpdateGrant : handleCreateGrant} />
+            <CreateGrantModal isOpen={showGrantModal} onClose={() => { setEditingGrant(null); setShowGrantModal(false); }} initialData={editingGrant} onSubmit={editingGrant ? (data) => handleUpdateGrant({ ...data, id: editingGrant.id }) : handleCreateGrant} />
              <EventModal
                 isOpen={showEventModal}
                 onClose={() => { setEditingEvent(null); setShowEventModal(false); }}

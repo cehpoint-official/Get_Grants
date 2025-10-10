@@ -164,7 +164,7 @@ export default function PremiumSupportPage() {
             const { orderId } = await createOrderResponse.json();
 
             const options = {
-                key: "rzp_test_1DP5mmOlF5G5ag", // Test key for development
+                key: "rzp_test_RQWXlGknPFoGZP", // Test key for development
                 amount: selectedPlan.price * 100,
                 currency: "INR",
                 name: "Get Grants",
