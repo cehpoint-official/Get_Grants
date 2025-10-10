@@ -9,7 +9,7 @@ import axios from "axios";
 import { defineSecret } from "firebase-functions/params";
 import Razorpay from "razorpay";
 import { PubSub } from "@google-cloud/pubsub";
-
+require('dotenv').config(); 
 const geminiApiKey = defineSecret("GEMINI_API_KEY");
 
 admin.initializeApp();
@@ -455,8 +455,8 @@ export const processSingleWebsite = onMessagePublished({
 
 function getRazorpayInstance(): Razorpay {
     // Use test keys for development
-    const keyId = process.env.RAZORPAY_KEY_ID || (functions.config()?.razorpay?.key_id as string | undefined) || "rzp_test_RQWXlGknPFoGZP";
-    const keySecret = process.env.RAZORPAY_KEY_SECRET || (functions.config()?.razorpay?.key_secret as string | undefined) || "HSCJ2ep0Q6gP1L0Agz6l4p3a";
+    const keyId = process.env.RAZORPAY_KEY_ID || functions.config().razorpay.key_id;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET || functions.config().razorpay.key_secret;
     if (!keyId || !keySecret) {
         throw new functions.https.HttpsError(
             "failed-precondition",
@@ -553,7 +553,7 @@ export const verifyPayment = https.onRequest(async (req, res) => {
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const crypto = require("crypto");
-    const keySecret = process.env.RAZORPAY_KEY_SECRET || (functions.config()?.razorpay?.key_secret as string | undefined) || "HSCJ2ep0Q6gP1L0Agz6l4p3a";
+    const keySecret = process.env.RAZORPAY_KEY_SECRET || functions.config().razorpay.key_secret;
     
     if (!keySecret) {
         res.status(500).json({ error: "Razorpay credentials are not configured." });

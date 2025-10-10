@@ -164,7 +164,7 @@ export default function PremiumSupportPage() {
             const { orderId } = await createOrderResponse.json();
 
             const options = {
-                key: "rzp_test_RQWXlGknPFoGZP", // Test key for development
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
                 amount: selectedPlan.price * 100,
                 currency: "INR",
                 name: "Get Grants",
