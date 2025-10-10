@@ -1,6 +1,6 @@
 import { onDocumentCreated, onDocumentWritten } from "firebase-functions/v2/firestore";
 import { onSchedule } from "firebase-functions/v2/scheduler";
-import { onMessagePublished } from "firebase-functions/v2/pubsub"; 
+import { onMessagePublished } from "firebase-functions/v2/pubsub";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
@@ -8,38 +8,27 @@ import { https } from "firebase-functions/v1";
 import axios from "axios";
 import { defineSecret } from "firebase-functions/params";
 import Razorpay from "razorpay";
+import { PubSub } from "@google-cloud/pubsub";
 
-// Secret parameter for Gemini API key
 const geminiApiKey = defineSecret("GEMINI_API_KEY");
 
 admin.initializeApp();
 const db = admin.firestore();
 
 const ADMIN_EMAILS: string[] = (process.env.ADMIN_EMAILS || "admin@getgrants.in,kamini9926@gmail.com,aroranir12@gmail.com").split(",").map(e => e.trim());
-
 const WEBSITE_PROCESSING_TOPIC = "website-processing-topic";
 
-// =================================================================
-// =================== NOTIFICATION LOGIC =================
-// =================================================================
-
-
 const getPremiumUserTokens = async (): Promise<string[]> => {
-    // ... (Aapka code - No changes needed)
     const tokens = new Set<string>();
     const now = admin.firestore.Timestamp.now();
-    const statusSnap = await db.collection('users')
-      .where('subscriptionStatus', 'in', ['premium', 'active'])
-      .get();
+    const statusSnap = await db.collection('users').where('subscriptionStatus', 'in', ['premium', 'active']).get();
     statusSnap.forEach(doc => {
         const user = doc.data();
         if (user.fcmToken && user.notificationConsentGiven === true) {
             tokens.add(user.fcmToken);
         }
     });
-    const endDateSnap = await db.collection('users')
-      .where('subscriptionEndDate', '>', now)
-      .get();
+    const endDateSnap = await db.collection('users').where('subscriptionEndDate', '>', now).get();
     endDateSnap.forEach(doc => {
         const user = doc.data();
         if (user.fcmToken && user.notificationConsentGiven === true) {
@@ -77,7 +66,6 @@ export const onUserUpgradeToPremiumV2 = onDocumentWritten("users/{userId}", asyn
 });
 
 export const notifyPremiumUsersOnNewGrantV2 = onDocumentCreated("grants/{grantId}", async (event) => {
-   
     const grant = event.data?.data();
     if (!grant) {
         logger.error("No grant data found");
@@ -102,7 +90,6 @@ export const notifyPremiumUsersOnNewGrantV2 = onDocumentCreated("grants/{grantId
 });
 
 export const notifyAdminNewPremiumInquiryV2 = onDocumentCreated("premiumInquiries/{inquiryId}", async (event) => {
-   
     const inquiryData = event.data?.data();
     if (!inquiryData) {
         logger.error("No inquiry data found for new premium inquiry.");
@@ -135,7 +122,6 @@ export const notifyAdminNewPremiumInquiryV2 = onDocumentCreated("premiumInquirie
 });
 
 export const notifyUserAdminResponseV2 = onDocumentCreated("premiumInquiries/{inquiryId}/messages/{messageId}", async (event) => {
-   
     const messageData = event.data?.data();
     const inquiryId = event.params.inquiryId;
     if (!messageData || messageData.sender !== 'admin') {
@@ -166,7 +152,6 @@ export const notifyUserAdminResponseV2 = onDocumentCreated("premiumInquiries/{in
 });
 
 export const notifyPremiumUsersOnPostPublishV2 = onDocumentWritten("posts/{postId}", async (event) => {
-    
     const before = event.data?.before?.data();
     const after = event.data?.after?.data();
     if (!after) return;
@@ -191,7 +176,6 @@ export const notifyPremiumUsersOnPostPublishV2 = onDocumentWritten("posts/{postI
 });
 
 export const remindPremiumUsersBeforeExpiryV2 = onSchedule({ schedule: 'every day 09:00' }, async () => {
-   
     const now = admin.firestore.Timestamp.now();
     const inThreeDays = admin.firestore.Timestamp.fromMillis(now.toMillis() + 3 * 24 * 60 * 60 * 1000);
     try {
@@ -226,7 +210,6 @@ export const remindPremiumUsersBeforeExpiryV2 = onSchedule({ schedule: 'every da
 });
 
 export const notifyPremiumUsersOnGrantUpdateV2 = onDocumentWritten("grants/{grantId}", async (event) => {
-   
     const before = event.data?.before?.data();
     const after = event.data?.after?.data();
     if (!after || !before) return;
@@ -253,64 +236,61 @@ export const notifyPremiumUsersOnGrantUpdateV2 = onDocumentWritten("grants/{gran
     }
 });
 
-// =================================================================
-// ================== SMART GRANT FINDER =================
-// =================================================================
-
 interface SourceWebsite {
-  id: string;
-  name: string;
-  url: string;
+    id: string;
+    name: string;
+    url: string;
 }
 
 interface ExtractedGrantData {
-  title: string;
-  organization: string;
-  description: string;
-  overview: string;
-  deadline: string;
-  fundingAmount: string;
-  eligibility: string;
-  applyLink: string;
-  category: string;
+    title: string;
+    organization: string;
+    description: string;
+    overview: string;
+    deadline: string;
+    fundingAmount: string;
+    eligibility: string;
+    applyLink: string;
+    category: string;
 }
 
 function getGeminiModel() {
-  const apiKey = geminiApiKey.value();
-  if (!apiKey) {
-    logger.error("GEMINI_API_KEY is not available.");
-    throw new Error("Missing GEMINI_API_KEY");
-  }
-  const { GoogleGenerativeAI } = require("@google/generative-ai");
-  const genAI = new GoogleGenerativeAI(apiKey);
-  return genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const apiKey = geminiApiKey.value();
+    if (!apiKey) {
+        logger.error("GEMINI_API_KEY is not available.");
+        throw new Error("Missing GEMINI_API_KEY");
+    }
+    const { GoogleGenerativeAI } = require("@google/generative-ai");
+    const genAI = new GoogleGenerativeAI(apiKey);
+    return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 }
 
 async function extractGrantLinks(html: string, baseUrl: string): Promise<string[]> {
-  try {
-    const model = getGeminiModel();
-    const prompt = `
-     Analyze the following HTML content and extract all grant-related links.
-     Look for links that lead to specific grant detail pages, application pages, or grant announcements.
-     Base URL: ${baseUrl}
-     Return ONLY a JSON array of absolute URLs. Each URL should be a complete, valid URL.
-     If no grant links are found, return an empty array.
-     HTML Content:
-     ${html.substring(0, 10000)}
-     `;
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    const cleanText = text.replace(/```json|```/g, "").trim();
-    const links = JSON.parse(cleanText);
-    if (Array.isArray(links)) {
-      return links.filter(link => typeof link === "string" && link.startsWith("http"));
+    try {
+        const model = getGeminiModel();
+        const prompt = `
+        Analyze the following HTML content and extract all grant-related links.
+        Look for links that lead to specific grant detail pages, application pages, or grant announcements.
+        Base URL: ${baseUrl}
+        Return ONLY a JSON array of absolute URLs. Each URL should be a complete, valid URL.
+        If no grant links are found, return an empty array.
+        HTML Content:
+        ${html.substring(0, 10000)}
+        `;
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+
+        const cleanText = text.replace(/```json|```/g, "").trim();
+        const links = JSON.parse(cleanText);
+        if (Array.isArray(links)) {
+            return links.filter(link => typeof link === "string" && link.startsWith("http"));
+        }
+        return [];
+    } catch (error) {
+        logger.error("Full error in extractGrantLinks:", error);
+        return [];
     }
-    return [];
-  } catch (error) {
-    logger.error("Error extracting grant links:", error);
-    return [];
-  }
 }
 
 async function extractGrantDetails(html: string, url: string): Promise<ExtractedGrantData | null> {
@@ -348,6 +328,7 @@ async function extractGrantDetails(html: string, url: string): Promise<Extracted
     }
 }
 
+
 async function isDuplicateGrant(sourceUrl: string): Promise<boolean> {
   try {
     const snapshot = await db.collection("pendingGrants").where("sourceUrl", "==", sourceUrl).limit(1).get();
@@ -358,212 +339,263 @@ async function isDuplicateGrant(sourceUrl: string): Promise<boolean> {
   }
 }
 
+
 async function savePendingGrant(grantData: ExtractedGrantData, sourceUrl: string): Promise<void> {
-  try {
-    await db.collection("pendingGrants").add({
-      ...grantData,
-      sourceUrl,
-      status: "pending_review",
-      createdAt: admin.firestore.Timestamp.now(),
-    });
-    logger.info(`Saved pending grant: ${grantData.title}`);
-  } catch (error) {
-    logger.error("Error saving pending grant:", error);
-  }
+    try {
+        let deadlineTimestamp: admin.firestore.Timestamp | null = null;
+        if (grantData.deadline && grantData.deadline.toLowerCase() !== 'not specified' && grantData.deadline.toLowerCase() !== 'n/a') {
+            try {
+                const date = new Date(grantData.deadline);
+                if (!isNaN(date.getTime())) {
+                    deadlineTimestamp = admin.firestore.Timestamp.fromDate(date);
+                } else {
+                    logger.warn(`Could not parse deadline string: "${grantData.deadline}". Saving as null.`);
+                }
+            } catch (e) {
+                logger.error(`Error converting deadline string "${grantData.deadline}" to Date:`, e);
+            }
+        }
+
+        await db.collection("pendingGrants").add({
+            ...grantData,
+            deadline: deadlineTimestamp,
+            sourceUrl,
+            status: "pending_review",
+            createdAt: admin.firestore.Timestamp.now(),
+        });
+
+        logger.info(`Saved pending grant: ${grantData.title}`);
+    } catch (error) {
+        logger.error("Error saving pending grant:", error);
+    }
 }
 
-
-export const smartGrantFinderV2 = onSchedule(
-  {
+export const smartGrantFinderV2 = onSchedule({
     schedule: "every 24 hours",
     secrets: [geminiApiKey],
     timeoutSeconds: 60,
     memory: "256MiB",
-  },
-  async () => {
+}, async () => {
     logger.info("V3 Starting smart grant discovery orchestration...");
     try {
-      const sourceWebsitesSnapshot = await db.collection("sourceWebsites").get();
-      if (sourceWebsitesSnapshot.empty) {
-        logger.info("No source websites configured. Skipping.");
-        return;
-      }
+        const sourceWebsitesSnapshot = await db.collection("sourceWebsites").get();
+        if (sourceWebsitesSnapshot.empty) {
+            logger.info("No source websites configured. Skipping.");
+            return;
+        }
 
-      const { PubSub } = require("@google-cloud/pubsub");
-      const pubSubClient = new PubSub();
+        const pubSubClient = new PubSub();
 
-      const websites: SourceWebsite[] = sourceWebsitesSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...(doc.data() as Omit<SourceWebsite, "id">),
-      }));
+        const websites: SourceWebsite[] = sourceWebsitesSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                name: data.name,
+                url: data.url,
+            };
+        });
 
-      const promises = websites.map(website => {
-        const messageBuffer = Buffer.from(JSON.stringify(website), "utf8");
-        return pubSubClient.topic(WEBSITE_PROCESSING_TOPIC).publishMessage({ data: messageBuffer });
-      });
+        const promises = websites.map(website => {
+            const messageBuffer = Buffer.from(JSON.stringify(website), "utf8");
+            return pubSubClient.topic(WEBSITE_PROCESSING_TOPIC).publishMessage({ data: messageBuffer });
+        });
 
-      await Promise.all(promises);
-      logger.info(`Successfully published ${websites.length} websites to the processing topic.`);
-
+        await Promise.all(promises);
+        logger.info(`Successfully published ${websites.length} websites to the processing topic.`);
     } catch (error) {
-      logger.error("Error in smart grant orchestration:", error);
+        logger.error("Error in smart grant orchestration:", error);
     }
-  }
-);
+});
 
-
-export const processSingleWebsite = onMessagePublished(
-  {
+export const processSingleWebsite = onMessagePublished({
     topic: WEBSITE_PROCESSING_TOPIC,
     secrets: [geminiApiKey],
     timeoutSeconds: 540,
     memory: "1GiB",
-  },
-  async (event) => {
+}, async (event) => {
     try {
-      if (!event.data.message.data) {
-        logger.error("Received an empty message.");
-        return;
-      }
-      const websiteString = Buffer.from(event.data.message.data, "base64").toString("utf8");
-      const website: SourceWebsite = JSON.parse(websiteString);
-
-      logger.info(`Processing website: ${website.name} (${website.url})`);
-      
-      const response = await axios.get(website.url, {
-        timeout: 30000,
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-        },
-      });
-
-      const html = response.data;
-      const grantLinks = await extractGrantLinks(html, website.url);
-      logger.info(`Found ${grantLinks.length} potential grant links from ${website.name}`);
-
-      for (const grantUrl of grantLinks) {
-        try {
-          const isDuplicate = await isDuplicateGrant(grantUrl);
-          if (isDuplicate) {
-            logger.info(`Skipping duplicate grant: ${grantUrl}`);
-            continue;
-          }
-
-          const grantResponse = await axios.get(grantUrl, {
-            timeout: 30000,
-            headers: {
-              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            },
-          });
-          const grantHtml = grantResponse.data;
-          const grantData = await extractGrantDetails(grantHtml, grantUrl);
-
-          if (grantData) {
-            await savePendingGrant(grantData, grantUrl);
-          } else {
-            logger.warn(`Failed to extract grant data from: ${grantUrl}`);
-          }
-          await new Promise(resolve => setTimeout(resolve, 2000));
-        } catch (linkError) {
-          logger.error(`Error processing individual grant link ${grantUrl}:`, linkError);
-          continue;
+        if (!event.data.message.data) {
+            logger.error("Received an empty message.");
+            return;
         }
-      }
-      logger.info(`Finished processing website: ${website.name}`);
+        const websiteString = Buffer.from(event.data.message.data, "base64").toString("utf8");
+        const website: SourceWebsite = JSON.parse(websiteString);
+        logger.info(`Processing website: ${website.name} (${website.url})`);
+        const response = await axios.get(website.url, { timeout: 30000, headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36" } });
+        const html = response.data;
+        const grantLinks = await extractGrantLinks(html, website.url);
+        logger.info(`Found ${grantLinks.length} potential grant links from ${website.name}`);
+        for (const grantUrl of grantLinks) {
+            try {
+                const isDuplicate = await isDuplicateGrant(grantUrl);
+                if (isDuplicate) {
+                    logger.info(`Skipping duplicate grant: ${grantUrl}`);
+                    continue;
+                }
+                
+                const grantResponse = await axios.get(grantUrl, { timeout: 30000, headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36" } });
+                const grantHtml = grantResponse.data;
+                const grantData = await extractGrantDetails(grantHtml, grantUrl);
+                if (grantData) {
+                    await savePendingGrant(grantData, grantUrl);
+                } else {
+                    logger.warn(`Failed to extract grant data from: ${grantUrl}`);
+                }
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            } catch (linkError) {
+                logger.error(`Error processing individual grant link ${grantUrl}:`, linkError);
+                continue;
+            }
+        }
+        logger.info(`Finished processing website: ${website.name}`);
     } catch (error) {
-      logger.error("Error processing single website from Pub/Sub message:", error);
+        logger.error("Error processing single website from Pub/Sub message:", error);
     }
-  }
-);
-
-
-// =================================================================
-// ================== PAYMENT FUNCTIONS ================
-// =================================================================
+});
 
 function getRazorpayInstance(): Razorpay {
-  const keyId = process.env.RAZORPAY_KEY_ID || (functions.config()?.razorpay?.key_id as string | undefined);
-  const keySecret = process.env.RAZORPAY_KEY_SECRET || (functions.config()?.razorpay?.key_secret as string | undefined);
-
-  if (!keyId || !keySecret) {
-    throw new functions.https.HttpsError(
-      "failed-precondition",
-      "Razorpay credentials are not configured."
-    );
-  }
-
-  return new Razorpay({ key_id: keyId, key_secret: keySecret });
+    const keyId = process.env.RAZORPAY_KEY_ID || (functions.config()?.razorpay?.key_id as string | undefined);
+    const keySecret = process.env.RAZORPAY_KEY_SECRET || (functions.config()?.razorpay?.key_secret as string | undefined);
+    if (!keyId || !keySecret) {
+        throw new functions.https.HttpsError(
+            "failed-precondition",
+            "Razorpay credentials are not configured."
+        );
+    }
+    return new Razorpay({ key_id: keyId, key_secret: keySecret });
 }
 
-export const createOrder = https.onCall(async (request) => {
-    const amount = request.data.amount;
+export const createOrder = https.onRequest((req, res) => {
+    // Set CORS headers
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.set('Access-Control-Max-Age', '3600');
+
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        res.status(204).send('');
+        return;
+    }
+
+    // Only allow POST requests
+    if (req.method !== 'POST') {
+        res.status(405).send('Method Not Allowed');
+        return;
+    }
+
+    const { amount } = req.body;
+    if (!amount) {
+        res.status(400).send('Amount is required');
+        return;
+    }
+
     const currency = "INR";
     const options = {
         amount: amount * 100,
         currency,
         receipt: `receipt_order_${new Date().getTime()}`,
     };
+
     try {
         const razorpay = getRazorpayInstance();
-        const order = await razorpay.orders.create(options);
-        return { orderId: order.id };
+        razorpay.orders.create(options)
+            .then((order: any) => {
+                res.status(200).json({ orderId: order.id });
+            })
+            .catch((error: any) => {
+                console.error("Error creating Razorpay order:", error);
+                res.status(500).json({ error: "Could not create order." });
+            });
     } catch (error) {
         console.error("Error creating Razorpay order:", error);
-        throw new functions.https.HttpsError("internal", "Could not create order.");
+        res.status(500).json({ error: "Could not create order." });
     }
 });
 
-export const verifyPayment = https.onCall(async (request) => {
-  if (!request.auth) {
-    throw new functions.https.HttpsError(
-      "unauthenticated",
-      "The function must be called while authenticated."
-    );
-  }
-  const {
-    razorpay_order_id,
-    razorpay_payment_id,
-    razorpay_signature,
-    plan,
-  } = request.data;
-  const body = razorpay_order_id + "|" + razorpay_payment_id;
-  const crypto = require("crypto");
-  const keySecret = process.env.RAZORPAY_KEY_SECRET || (functions.config()?.razorpay?.key_secret as string | undefined);
-  if (!keySecret) {
-    throw new functions.https.HttpsError(
-      "failed-precondition",
-      "Razorpay credentials are not configured."
-    );
-  }
-  const expectedSignature = crypto
-    .createHmac("sha256", keySecret)
-    .update(body.toString())
-    .digest("hex");
-  if (expectedSignature === razorpay_signature) {
-    const userId = request.auth.uid;
-    const userRef = admin.firestore().collection("users").doc(userId);
-    await admin.firestore().collection("payments").add({
-      userId,
-      orderId: razorpay_order_id,
-      paymentId: razorpay_payment_id,
-      planName: plan.name,
-      amount: plan.price,
-      status: "success",
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-    const subscriptionEndDate = new Date();
-    if (plan.duration === "1-Month") {
-      subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
-    } else if (plan.duration === "3-Month") {
-      subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 3);
+export const verifyPayment = https.onRequest(async (req, res) => {
+    // Set CORS headers
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.set('Access-Control-Max-Age', '3600');
+
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        res.status(204).send('');
+        return;
     }
-    await userRef.update({
-      subscriptionStatus: "premium",
-      subscriptionPlan: plan.name,
-      subscriptionEndDate: admin.firestore.Timestamp.fromDate(subscriptionEndDate),
-    });
-    return { status: "success" };
-  } else {
-    throw new functions.https.HttpsError("invalid-argument", "Payment verification failed.");
-  }
+
+    // Only allow POST requests
+    if (req.method !== 'POST') {
+        res.status(405).send('Method Not Allowed');
+        return;
+    }
+
+    const {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+        plan,
+        userId
+    } = req.body;
+
+    if (!userId) {
+        res.status(401).json({ error: "User ID is required" });
+        return;
+    }
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !plan) {
+        res.status(400).json({ error: "Missing required payment data" });
+        return;
+    }
+
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    const crypto = require("crypto");
+    const keySecret = process.env.RAZORPAY_KEY_SECRET || (functions.config()?.razorpay?.key_secret as string | undefined);
+    
+    if (!keySecret) {
+        res.status(500).json({ error: "Razorpay credentials are not configured." });
+        return;
+    }
+
+    const expectedSignature = crypto
+        .createHmac("sha256", keySecret)
+        .update(body.toString())
+        .digest("hex");
+
+    if (expectedSignature === razorpay_signature) {
+        try {
+            const userRef = admin.firestore().collection("users").doc(userId);
+            await admin.firestore().collection("payments").add({
+                userId,
+                orderId: razorpay_order_id,
+                paymentId: razorpay_payment_id,
+                planName: plan.name,
+                amount: plan.price,
+                status: "success",
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+            
+            const subscriptionEndDate = new Date();
+            if (plan.duration === "1-Month") {
+                subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+            } else if (plan.duration === "3-Month") {
+                subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 3);
+            }
+            
+            await userRef.update({
+                subscriptionStatus: "premium",
+                subscriptionPlan: plan.name,
+                subscriptionEndDate: admin.firestore.Timestamp.fromDate(subscriptionEndDate),
+            });
+            
+            res.status(200).json({ status: "success" });
+        } catch (error) {
+            console.error("Error updating user subscription:", error);
+            res.status(500).json({ error: "Failed to update subscription" });
+        }
+    } else {
+        res.status(400).json({ error: "Payment verification failed." });
+    }
 });

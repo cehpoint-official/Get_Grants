@@ -7,7 +7,6 @@ export interface GrantLead {
   name: string;
   mobile: string;
   email: string;
-  grantName: string;
   createdAt: any;
 }
 

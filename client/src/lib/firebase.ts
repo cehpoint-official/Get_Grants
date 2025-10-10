@@ -6,12 +6,12 @@ import { getMessaging, isSupported } from "firebase/messaging";
 import { Messaging } from "firebase/messaging"; 
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: "AIzaSyAfgswoA7g4xRIN7KM0Y-stIh7kb7rxtJY",
+  authDomain: "grant-e982c.firebaseapp.com",
+  projectId: "grant-e982c",
+  storageBucket: "grant-e982c.firebasestorage.app",
+  messagingSenderId: "800955503496",
+  appId: "1:800955503496:web:1674c62b6c2e11edcc203d"
 };
 
 // Initialize Firebase App

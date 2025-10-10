@@ -19,8 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { getFunctions, httpsCallable } from "firebase/functions"; 
+import { useToast } from "@/hooks/use-toast"; 
 
 interface Plan {
     name: string;
@@ -131,7 +130,7 @@ export default function PremiumSupportPage() {
         if (user) {
             if (plan.price === 3999 && hasMeetingPlan) {
                 toast({ title: "Opening Scheduler", description: "Redirecting you to schedule your meeting." });
-                const zcalLink = import.meta.env.VITE_ZCAL_LINK;
+                const zcalLink = "https://calendly.com/your-calendly-link"; // Default calendly link
                 window.open(zcalLink, '_blank');
                 return;
             }
@@ -149,13 +148,23 @@ export default function PremiumSupportPage() {
         setIsProcessingPayment(true);
 
         try {
-            const functions = getFunctions();
-            const createOrder = httpsCallable(functions, 'createOrder');
-            const result = await createOrder({ amount: selectedPlan.price });
-            const { orderId } = result.data as { orderId: string };
+            // Create order using HTTP request instead of Firebase callable
+            const createOrderResponse = await fetch('https://us-central1-grant-e982c.cloudfunctions.net/createOrder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ amount: selectedPlan.price })
+            });
+
+            if (!createOrderResponse.ok) {
+                throw new Error('Failed to create order');
+            }
+
+            const { orderId } = await createOrderResponse.json();
 
             const options = {
-                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                key: "rzp_test_1DP5mmOlF5G5ag", // Test key for development
                 amount: selectedPlan.price * 100,
                 currency: "INR",
                 name: "Get Grants",
@@ -164,13 +173,26 @@ export default function PremiumSupportPage() {
                 handler: async (response: any) => {
                     setIsProcessingPayment(true);
                     try {
-                        const verifyPayment = httpsCallable(functions, 'verifyPayment');
-                        await verifyPayment({
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_signature: response.razorpay_signature,
-                            plan: selectedPlan,
+                        // Verify payment using HTTP request
+                        const verifyResponse = await fetch('https://us-central1-grant-e982c.cloudfunctions.net/verifyPayment', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature,
+                                plan: selectedPlan,
+                                userId: user.uid
+                            })
                         });
+
+                        if (!verifyResponse.ok) {
+                            throw new Error('Payment verification failed');
+                        }
+
+                        const verifyResult = await verifyResponse.json();
 
                         toast({
                             title: "✅ Payment Successful!",
@@ -181,7 +203,7 @@ export default function PremiumSupportPage() {
                         setIsEnquiryModalOpen(false);
                         if (selectedPlan.price === 3999) {
                             setHasMeetingPlan(true);
-                            const zcalLink = import.meta.env.VITE_ZCAL_LINK;
+                            const zcalLink = "https://calendly.com/your-calendly-link"; // Default calendly link
                             window.open(zcalLink, '_blank');
                         } else {
                             try { localStorage.setItem('askNotify', '1'); } catch {}
@@ -213,7 +235,24 @@ export default function PremiumSupportPage() {
                 }
             };
 
+            // Check if Razorpay is loaded
+            if (typeof (window as any).Razorpay === 'undefined') {
+                throw new Error('Razorpay is not loaded. Please refresh the page and try again.');
+            }
+
             const rzp = new (window as any).Razorpay(options);
+            
+            // Add error handling for popup
+            rzp.on('payment.failed', function (response: any) {
+                console.error('Payment failed:', response.error);
+                toast({
+                    title: "❌ Payment Failed",
+                    description: response.error.description || "Payment could not be completed.",
+                    variant: "destructive",
+                });
+                setIsProcessingPayment(false);
+            });
+
             rzp.open();
 
         } catch (error: any) {

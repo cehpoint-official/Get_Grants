@@ -71,7 +71,7 @@ const sidebarItems = [
     { name: "Testimonials", icon: MessageCircle },
     { name: "Users Queries", icon: MessageSquare },
     { name: "Contact Messages", icon: Mail },
-    { name: "Incubators", icon: Briefcase },
+    // { name: "Incubators", icon: Briefcase },
     { name: "Calendar", icon: CalendarIcon },
     { name: "Social Apps", icon: Share2 },
     { name: "Home", icon: Home },
@@ -521,7 +521,6 @@ export default function AdminDashboard() {
                                     Name: l.name,
                                     Email: l.email,
                                     Mobile: l.mobile,
-                                    Grant: l.grantName,
                                     CreatedAt: l.createdAt.toLocaleString(),
                                 })), "GrantLeads", "GrantLeads")}
                                 className="bg-green-600 hover:bg-green-700 text-white font-semibold shadow-md"
@@ -537,7 +536,6 @@ export default function AdminDashboard() {
                                         <tr>
                                             <th scope="col" className="px-6 py-4">Name</th>
                                             <th scope="col" className="px-6 py-4">Contact</th>
-                                            <th scope="col" className="px-6 py-4">Grant Name</th>
                                             <th scope="col" className="px-6 py-4">Submitted On</th>
                                         </tr>
                                     </thead>
@@ -546,7 +544,6 @@ export default function AdminDashboard() {
                                             <tr key={lead.id} className="bg-white border-b hover:bg-gray-50">
                                                 <td className="px-6 py-4 font-medium text-gray-900">{lead.name}</td>
                                                 <td className="px-6 py-4">{lead.email}<br/><span className="text-xs text-gray-400">{lead.mobile}</span></td>
-                                                <td className="px-6 py-4 font-semibold text-violet">{lead.grantName}</td>
                                                 <td className="px-6 py-4">{lead.createdAt.toLocaleString()}</td>
                                             </tr>
                                         ))}

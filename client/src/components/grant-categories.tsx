@@ -86,7 +86,7 @@ const GrantLeadModal = ({
   isOpen: boolean;
   onClose: () => void;
   grant: Grant | null;
-  onSubmit: (details: { name: string; mobile: string; email: string }) => Promise<void>; // <-- MAKE ASYNC
+  onSubmit: (details: { name: string; mobile: string; email: string }) => Promise<void>;
 }) => {
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
@@ -115,6 +115,8 @@ const GrantLeadModal = ({
     setIsSubmitting(true);
     try {
         await onSubmit({ name, mobile, email });
+        // Mark that user has submitted details before
+        localStorage.setItem('grantAccessSubmitted', 'true');
     } catch (apiError) {
         setError("Failed to submit. Please try again.");
     } finally {
@@ -126,9 +128,9 @@ const GrantLeadModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] bg-white rounded-2xl shadow-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-[#1F2937]">Access Grant: {grant.name}</DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-[#1F2937]">Access Grant Details</DialogTitle>
           <DialogDescription className="text-gray-500">
-            Please provide your details below to proceed to the grant website.
+            Please provide your details below to access grant information. This is a one-time requirement.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -175,7 +177,7 @@ const GrantLeadModal = ({
            {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
           <DialogFooter>
             <Button type="submit" className="w-full bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white font-semibold py-3" disabled={isSubmitting}>
-              {isSubmitting ? "Submitting..." : "Submit & View Grant"}
+              {isSubmitting ? "Submitting..." : "Submit & Access Grant"}
             </Button>
           </DialogFooter>
         </form>
@@ -200,9 +202,16 @@ export function GrantCategories() {
  const [bookmarkedGrants, setBookmarkedGrants] = useState<Set<string>>(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedGrant, setSelectedGrant] = useState<Grant | null>(null);
+  const [hasSubmittedBefore, setHasSubmittedBefore] = useState(false);
   const { toast } = useToast();
  const isMobile = useMobile();
  const [activeCategoryId, setActiveCategoryId] = useState<string | null>("stage");
+
+ // Check if user has submitted details before
+ useEffect(() => {
+   const hasSubmitted = localStorage.getItem('grantAccessSubmitted') === 'true';
+   setHasSubmittedBefore(hasSubmitted);
+ }, []);
  const filterOptions = {
    stage: ["Idea", "MVP", "Revenue", "Scaling"],
    fundingType: ["Grant", "Equity", "Fellowship", "Others"],
@@ -1503,6 +1512,13 @@ export function GrantCategories() {
  };
  
   const handleGrantCardClick = (grant: Grant) => {
+    // If user has already submitted details, directly open the website
+    if (hasSubmittedBefore) {
+      window.open(grant.website, "_blank");
+      return;
+    }
+    
+    // If first time, show the modal for details
     setSelectedGrant(grant);
     setIsModalOpen(true);
   };
@@ -1512,6 +1528,7 @@ export function GrantCategories() {
     setSelectedGrant(null);
   };
 
+
   // --- UPDATED to call the service ---
   const handleModalSubmit = async (details: { name: string; mobile: string; email: string }) => {
     if (!selectedGrant) return;
@@ -1519,7 +1536,6 @@ export function GrantCategories() {
     try {
         await saveGrantLead({
             ...details,
-            grantName: selectedGrant.name,
         });
 
         toast({
@@ -1528,6 +1544,8 @@ export function GrantCategories() {
             className: "bg-green-500 text-white",
         });
 
+        // Update the state to reflect that user has submitted
+        setHasSubmittedBefore(true);
         window.open(selectedGrant.website, "_blank");
         handleModalClose();
 
