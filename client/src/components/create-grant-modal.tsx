@@ -58,10 +58,26 @@ export function CreateGrantModal({ isOpen, onClose, onSubmit, initialData }: Cre
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
+        // Helper function to safely format dates
+        const formatDate = (dateValue: string | Date | null | undefined): string => {
+          if (!dateValue) return "";
+          try {
+            const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+            if (isNaN(date.getTime())) {
+              console.warn("Invalid date:", dateValue);
+              return "";
+            }
+            return format(date, "yyyy-MM-dd");
+          } catch (error) {
+            console.warn("Error formatting date:", dateValue, error);
+            return "";
+          }
+        };
+
         form.reset({
           ...initialData,
-          startDate: initialData.startDate ? format(new Date(initialData.startDate), "yyyy-MM-dd") : "",
-          deadline: format(new Date(initialData.deadline), "yyyy-MM-dd"),
+          startDate: formatDate(initialData.startDate),
+          deadline: formatDate(initialData.deadline),
           faqs: initialData.faqs || [],
           isPremium: initialData.isPremium || false,
           status: initialData.status || "Active",

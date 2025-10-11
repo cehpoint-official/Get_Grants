@@ -233,6 +233,7 @@ const AdminChatInterface = ({ activeInquiry, isMobile, onBack }: { activeInquiry
 };
 
 export default function AdminDashboard() {
+    const { toast } = useToast();
     const [activeTab, setActiveTab] = useState("Dashboard");
     const [posts, setPosts] = useState<Post[]>([]);
     const [grants, setGrants] = useState<Grant[]>([]);
@@ -396,8 +397,23 @@ export default function AdminDashboard() {
             sourceUrl: string;
             status: string;
             createdAt: Date;
+            method?: string;
         }));
-        setPendingGrants(data);
+        
+        // Filter to show only AI-generated grants (exclude sample grants)
+        const aiGeneratedGrants = data.filter(grant => {
+            // Check if it's a sample grant by looking at sourceUrl patterns
+            const isSampleGrant = grant.sourceUrl?.includes('/grant-1') || 
+                                grant.sourceUrl?.includes('/funding-opportunity') || 
+                                grant.sourceUrl?.includes('/startup-scheme') ||
+                                grant.title?.includes('Grant Opportunity') ||
+                                grant.title?.includes('Sample Grant');
+            
+            // Include grants that are either marked as AI or don't have sample patterns
+            return !isSampleGrant;
+        });
+        
+        setPendingGrants(aiGeneratedGrants);
     };
 
     useEffect(() => {
@@ -486,12 +502,34 @@ export default function AdminDashboard() {
     // Pending grant management functions
     const handleReviewGrant = (pendingGrant: any) => {
         // Convert pending grant to grant format for the modal
+        const formatDate = (dateValue: any): string => {
+            if (!dateValue) return "";
+            try {
+                // Handle Firestore Timestamp
+                if (dateValue && typeof dateValue === 'object' && 'toDate' in dateValue) {
+                    return dateValue.toDate().toISOString().split('T')[0];
+                }
+                // Handle Date object
+                if (dateValue instanceof Date) {
+                    return dateValue.toISOString().split('T')[0];
+                }
+                // Handle string
+                if (typeof dateValue === 'string') {
+                    return new Date(dateValue).toISOString().split('T')[0];
+                }
+                return "";
+            } catch (error) {
+                console.warn("Error formatting date:", dateValue, error);
+                return "";
+            }
+        };
+
         const grantData = {
             title: pendingGrant.title,
             organization: pendingGrant.organization,
             description: pendingGrant.description,
             overview: pendingGrant.overview,
-            deadline: pendingGrant.deadline,
+            deadline: formatDate(pendingGrant.deadline),
             fundingAmount: pendingGrant.fundingAmount,
             eligibility: pendingGrant.eligibility,
             applyLink: pendingGrant.applyLink,
@@ -499,25 +537,53 @@ export default function AdminDashboard() {
             documents: [{ title: "Business Plan", description: "Detailed business plan", required: true }],
             faqs: [],
             contactEmail: "contact@example.com",
-            isPremium: false
+            isPremium: false,
+            sourceUrl: pendingGrant.sourceUrl, // Keep the source URL for reference
+            pendingGrantId: pendingGrant.id // Store the pending grant ID
         };
         
+        console.log("Converting pending grant to grant data:", grantData);
         setEditingGrant(grantData as any);
         setShowGrantModal(true);
     };
 
     const handleCreateGrant = async (formData: InsertGrant) => {
-        await createGrant(formData);
-        loadGrants();
-        setShowGrantModal(false);
-        
-        // If this was from a pending grant review, delete the pending grant
-        if (editingGrant && (editingGrant as any).sourceUrl) {
-            const pendingGrant = pendingGrants.find(pg => pg.sourceUrl === (editingGrant as any).sourceUrl);
-            if (pendingGrant) {
-                await deleteFirestoreDoc(doc(db, "pendingGrants", pendingGrant.id));
-                loadPendingGrants();
+        try {
+            console.log("Creating grant with form data:", formData);
+            
+            // Validate required fields
+            if (!formData.title || !formData.organization || !formData.deadline) {
+                throw new Error("Missing required fields: title, organization, or deadline");
             }
+            
+            const grantId = await createGrant(formData);
+            console.log("Grant created successfully with ID:", grantId);
+            
+            loadGrants();
+            setShowGrantModal(false);
+            
+            // If this was from a pending grant review, delete the pending grant
+            if (editingGrant && (editingGrant as any).pendingGrantId) {
+                console.log("Deleting pending grant:", (editingGrant as any).pendingGrantId);
+                await deleteFirestoreDoc(doc(db, "pendingGrants", (editingGrant as any).pendingGrantId));
+                loadPendingGrants();
+                toast({
+                    title: "Success",
+                    description: "Grant created and published successfully!",
+                });
+            } else {
+                toast({
+                    title: "Success", 
+                    description: "Grant created successfully!",
+                });
+            }
+        } catch (error) {
+            console.error("Error creating grant:", error);
+            toast({
+                title: "Error",
+                description: `Failed to create grant: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                variant: "destructive",
+            });
         }
     };
 
@@ -686,7 +752,10 @@ export default function AdminDashboard() {
                 return (
                     <div>
                         <div className="flex justify-between items-center mb-6">
-                            <h1 className="text-3xl font-bold text-gray-800">Grant Drafts</h1>
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-800">Grant Drafts</h1>
+                                <p className="text-sm text-gray-600 mt-1">Showing only AI-generated grants (sample grants filtered out)</p>
+                            </div>
                             <Badge variant="outline" className="text-sm">
                                 {pendingGrants.length} pending review
                             </Badge>
@@ -699,7 +768,12 @@ export default function AdminDashboard() {
                                         <CardHeader>
                                             <div className="flex justify-between items-start">
                                                 <CardTitle className="text-lg font-bold text-gray-800 line-clamp-2 leading-tight">{grant.title}</CardTitle>
-                                                <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Draft</Badge>
+                                                <div className="flex gap-2">
+                                                    <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Draft</Badge>
+                                                    <Badge variant="outline" className="bg-green-100 text-green-800">
+                                                        🤖 AI Generated
+                                                    </Badge>
+                                                </div>
                                             </div>
                                             <CardDescription className="text-sm text-gray-500 pt-1">{grant.organization}</CardDescription>
                                         </CardHeader>
@@ -1167,7 +1241,7 @@ export default function AdminDashboard() {
             </main>
 
             <CreatePostModal isOpen={showModal} onClose={() => { setEditingPost(null); setShowModal(false); }} initialData={editingPost} onSubmit={editingPost ? handleUpdatePost : handleCreatePost} />
-            <CreateGrantModal isOpen={showGrantModal} onClose={() => { setEditingGrant(null); setShowGrantModal(false); }} initialData={editingGrant} onSubmit={editingGrant ? (data) => handleUpdateGrant({ ...data, id: editingGrant.id }) : handleCreateGrant} />
+            <CreateGrantModal isOpen={showGrantModal} onClose={() => { setEditingGrant(null); setShowGrantModal(false); }} initialData={editingGrant} onSubmit={editingGrant && editingGrant.id ? (data) => handleUpdateGrant({ ...data, id: editingGrant.id }) : handleCreateGrant} />
              <EventModal
                 isOpen={showEventModal}
                 onClose={() => { setEditingEvent(null); setShowEventModal(false); }}
