@@ -276,7 +276,7 @@ export default function PremiumSupportPage() {
     };
 
     const plans: Plan[] = [
-        { name: "1-Month Access", price: 390, duration: "1-Month" },
+        { name: "1-Month Access", price: 399, duration: "1-Month" },
         { name: "3-Month Access", price: 999, duration: "3-Month" },
         { name: "Custom Plan & Meeting", price: 3999, duration: "Custom Plan" }
     ];

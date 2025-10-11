@@ -8,7 +8,7 @@ importScripts("/firebase-config.js");
 // Initialize Firebase with the config
 const firebaseConfig = {
   apiKey: "AIzaSyAfgswoA7g4xRIN7KM0Y-stIh7kb7rxtJY",
-  authDomain: "grant-e982c.firebaseapp.com",
+  authDomain: "getgrants.in",
   projectId: "grant-e982c",
   storageBucket: "grant-e982c.firebasestorage.app",
   messagingSenderId: "800955503496",
