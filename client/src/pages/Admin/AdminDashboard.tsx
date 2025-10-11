@@ -74,7 +74,7 @@ const sidebarItems = [
     { name: "Contact Messages", icon: Mail },
     // { name: "Incubators", icon: Briefcase },
     { name: "Calendar", icon: CalendarIcon },
-    { name: "Social Apps", icon: Share2 },
+    // { name: "Social Apps", icon: Share2 },
     { name: "Home", icon: Home },
 ];
 

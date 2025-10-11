@@ -5,7 +5,17 @@ importScripts("https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-comp
 
 importScripts("/firebase-config.js");
 
-if (typeof firebaseConfig !== 'undefined') {
+// Initialize Firebase with the config
+const firebaseConfig = {
+  apiKey: "AIzaSyAfgswoA7g4xRIN7KM0Y-stIh7kb7rxtJY",
+  authDomain: "grant-e982c.firebaseapp.com",
+  projectId: "grant-e982c",
+  storageBucket: "grant-e982c.firebasestorage.app",
+  messagingSenderId: "800955503496",
+  appId: "1:800955503496:web:1674c62b6c2e11edcc203d"
+};
+
+if (typeof firebase !== 'undefined') {
   firebase.initializeApp(firebaseConfig);
 
   const messaging = firebase.messaging();

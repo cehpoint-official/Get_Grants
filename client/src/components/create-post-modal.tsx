@@ -110,12 +110,29 @@ export function CreatePostModal({
     if (!user) return;
 
     try {
+      console.log("Starting blog post creation...");
+      console.log("Form data:", data);
+      console.log("Selected image:", selectedImage);
+      console.log("Current image URL:", currentImageUrl);
+
       let finalImageUrl = currentImageUrl;
 
       if (selectedImage) {
+        console.log("Uploading image to Cloudinary...");
         setUploadingImage(true);
-        finalImageUrl = await uploadToCloudinary(selectedImage);
-      } else if (!imagePreview) {
+        try {
+          finalImageUrl = await uploadToCloudinary(selectedImage);
+          console.log("Image uploaded successfully:", finalImageUrl);
+        } catch (uploadError) {
+          console.error("Image upload failed:", uploadError);
+          toast({
+            title: "Image Upload Failed",
+            description: uploadError instanceof Error ? uploadError.message : "Failed to upload image. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+      } else if (!imagePreview && !currentImageUrl) {
         toast({ title: "Image required", description: "Please upload a featured image.", variant: "destructive" });
         return;
       }
@@ -126,12 +143,17 @@ export function CreatePostModal({
         imageUrl: finalImageUrl,
       };
 
+      console.log("Final payload:", payload);
+
       if (initialData && onSubmit) {
+        console.log("Updating existing post...");
         await onSubmit({ ...payload, id: initialData.id });
       } else {
+        console.log("Creating new post...");
         await createPost(payload);
       }
 
+      console.log("Post created/updated successfully");
       toast({
         title: "Success",
         description: `Post ${initialData ? "updated" : "created"} successfully!`,
@@ -139,6 +161,7 @@ export function CreatePostModal({
 
       handleClose();
     } catch (error) {
+      console.error("Error in blog post creation:", error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : `Failed to ${initialData ? "update" : "create"} post.`,

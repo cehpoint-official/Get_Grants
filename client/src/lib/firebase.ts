@@ -15,10 +15,13 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase App
+console.log("Initializing Firebase with config:", firebaseConfig);
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+console.log("Firebase app initialized:", app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+console.log("Firebase services initialized successfully");
 
 // Declare messaging with its type, initially as null
 let messaging: Messaging | null = null;
