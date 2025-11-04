@@ -4,6 +4,8 @@ import { User } from "firebase/auth";
 // Base admin(s) baked into the app (safe to keep yours here)
 const BASE_ADMIN_EMAILS = [
   'kamini9926@gmail.com',
+  'nirdosh@blackleoventures.com',
+  'utkarsh@blackleoventures.com',
 ];
 
 // Optional: add more admins via env so they aren't exposed in git
