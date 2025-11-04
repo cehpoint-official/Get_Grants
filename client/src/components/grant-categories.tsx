@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { saveGrantLead } from "@/services/grantSubmissions"; // <-- IMPORT THE NEW SERVICE
+import { ensureAnonymousUid, hasUserLeadForUid, upsertUserLeadForUid } from "@/services/userLeads";
 
 const useMobile = (breakpoint = 1024) => {
  const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
@@ -1502,46 +1503,51 @@ export function GrantCategories() {
    }
  };
  
-  const handleGrantCardClick = (grant: Grant) => {
-    setSelectedGrant(grant);
-    setIsModalOpen(true);
-  };
+ const handleGrantCardClick = async (grant: Grant) => {
+   try {
+     const uid = await ensureAnonymousUid();
+     const exists = await hasUserLeadForUid(uid);
+     if (exists) {
+       window.open(grant.website, "_blank");
+       return;
+     }
+   } catch {}
+   setSelectedGrant(grant);
+   setIsModalOpen(true);
+ };
 
   const handleModalClose = () => {
     setIsModalOpen(false);
     setSelectedGrant(null);
   };
 
-  // --- UPDATED to call the service ---
-  const handleModalSubmit = async (details: { name: string; mobile: string; email: string }) => {
-    if (!selectedGrant) return;
+ // --- UPDATED: save user once, no grant name; then suppress future popups ---
+ const handleModalSubmit = async (details: { name: string; mobile: string; email: string }) => {
+   if (!selectedGrant) return;
 
-    try {
-        await saveGrantLead({
-            ...details,
-            grantName: selectedGrant.name,
-        });
+   try {
+       const uid = await ensureAnonymousUid();
+       await upsertUserLeadForUid(uid, details);
 
-        toast({
-            title: "Success!",
-            description: "Thank you for your details. Redirecting you...",
-            className: "bg-green-500 text-white",
-        });
+       toast({
+           title: "Success!",
+           description: "Thank you for your details. Redirecting you...",
+           className: "bg-green-500 text-white",
+       });
 
-        window.open(selectedGrant.website, "_blank");
-        handleModalClose();
+       window.open(selectedGrant.website, "_blank");
+       handleModalClose();
 
-    } catch (error) {
-        console.error("Failed to save lead:", error);
-        toast({
-            title: "Error",
-            description: "Could not save your details. Please try again.",
-            variant: "destructive",
-        });
-        // Rethrow error to notify the modal form
-        throw error;
-    }
-  };
+   } catch (error) {
+       console.error("Failed to save lead:", error);
+       toast({
+           title: "Error",
+           description: "Could not save your details. Please try again.",
+           variant: "destructive",
+       });
+       throw error;
+   }
+ };
 
  const toggleStage = (stageId: string) => {
    const newSet = new Set(expandedStages);

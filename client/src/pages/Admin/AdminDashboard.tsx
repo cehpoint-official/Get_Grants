@@ -18,7 +18,7 @@ import {
     Grant, InsertGrant, Post, InsertPost, Application, User, CalendarEvent, InsertEvent, InquiryMessage, PremiumInquiry, Testimonial
 } from "@shared/schema";
 
-import { GrantLead } from "@/services/grantSubmissions"; 
+import { UserLead } from "@/services/userLeads"; 
 import { CreatePostModal } from "@/components/create-post-modal";
 import { CreateGrantModal } from "@/components/create-grant-modal";
 import { EventModal } from "@/components/ui/EventModal";
@@ -71,7 +71,7 @@ const sidebarItems = [
     { name: "Testimonials", icon: MessageCircle },
     { name: "Users Queries", icon: MessageSquare },
     { name: "Contact Messages", icon: Mail },
-    { name: "Incubators", icon: Briefcase },
+    // { name: "Incubators", icon: Briefcase },
     { name: "Calendar", icon: CalendarIcon },
     { name: "Social Apps", icon: Share2 },
     { name: "Home", icon: Home },
@@ -239,7 +239,7 @@ export default function AdminDashboard() {
     const [users, setUsers] = useState<User[]>([]);
     const [premiumInquiries, setPremiumInquiries] = useState<PremiumInquiry[]>([]);
     const [contactMessages, setContactMessages] = useState<ContactMessage[]>([]);
-    const [grantLeads, setGrantLeads] = useState<GrantLead[]>([]); 
+    const [grantLeads, setGrantLeads] = useState<UserLead[]>([]); 
     const [editingPost, setEditingPost] = useState<Post | null>(null);
     const [editingGrant, setEditingGrant] = useState<Grant | null>(null);
     const [showModal, setShowModal] = useState(false);
@@ -323,13 +323,13 @@ export default function AdminDashboard() {
 
     
     const loadGrantLeads = async () => {
-        const q = query(collection(db, "grantLeads"), orderBy("createdAt", "desc"));
+        const q = query(collection(db, "userLeads"), orderBy("createdAt", "desc"));
         const snapshot = await getDocs(q);
         const leads = snapshot.docs.map(d => ({
             id: d.id,
             ...d.data(),
             createdAt: (d.data().createdAt as Timestamp).toDate()
-        } as GrantLead));
+        } as UserLead));
         setGrantLeads(leads);
     };
 
@@ -449,6 +449,7 @@ export default function AdminDashboard() {
             eligibility: pendingGrant.eligibility,
             applyLink: pendingGrant.applyLink,
             category: pendingGrant.category,
+            sourceUrl: pendingGrant.sourceUrl,
             documents: [{ title: "Business Plan", description: "Detailed business plan", required: true }],
             faqs: [],
             contactEmail: "contact@example.com",
@@ -515,15 +516,14 @@ export default function AdminDashboard() {
                 return (
                     <div>
                         <div className="flex justify-between items-center mb-6">
-                            <h1 className="text-3xl font-bold text-gray-800">Grant Leads</h1>
+                            <h1 className="text-3xl font-bold text-gray-800">User Leads</h1>
                             <Button
                                 onClick={() => exportPlainToExcel(grantLeads.map(l => ({
                                     Name: l.name,
                                     Email: l.email,
                                     Mobile: l.mobile,
-                                    Grant: l.grantName,
                                     CreatedAt: l.createdAt.toLocaleString(),
-                                })), "GrantLeads", "GrantLeads")}
+                                })), "UserLeads", "UserLeads")}
                                 className="bg-green-600 hover:bg-green-700 text-white font-semibold shadow-md"
                                 disabled={grantLeads.length === 0}
                             >
@@ -537,7 +537,6 @@ export default function AdminDashboard() {
                                         <tr>
                                             <th scope="col" className="px-6 py-4">Name</th>
                                             <th scope="col" className="px-6 py-4">Contact</th>
-                                            <th scope="col" className="px-6 py-4">Grant Name</th>
                                             <th scope="col" className="px-6 py-4">Submitted On</th>
                                         </tr>
                                     </thead>
@@ -546,7 +545,6 @@ export default function AdminDashboard() {
                                             <tr key={lead.id} className="bg-white border-b hover:bg-gray-50">
                                                 <td className="px-6 py-4 font-medium text-gray-900">{lead.name}</td>
                                                 <td className="px-6 py-4">{lead.email}<br/><span className="text-xs text-gray-400">{lead.mobile}</span></td>
-                                                <td className="px-6 py-4 font-semibold text-violet">{lead.grantName}</td>
                                                 <td className="px-6 py-4">{lead.createdAt.toLocaleString()}</td>
                                             </tr>
                                         ))}

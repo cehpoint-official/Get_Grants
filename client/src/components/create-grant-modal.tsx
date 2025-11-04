@@ -54,13 +54,24 @@ export function CreateGrantModal({ isOpen, onClose, onSubmit, initialData }: Cre
     name: "faqs",
   });
 
+  const toDateInput = (value: any): string => {
+    try {
+      if (!value) return "";
+      const dt = new Date(value);
+      if (isNaN(dt.getTime())) return "";
+      return format(dt, "yyyy-MM-dd");
+    } catch {
+      return "";
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
         form.reset({
           ...initialData,
-          startDate: initialData.startDate ? format(new Date(initialData.startDate), "yyyy-MM-dd") : "",
-          deadline: format(new Date(initialData.deadline), "yyyy-MM-dd"),
+          startDate: toDateInput(initialData.startDate),
+          deadline: toDateInput(initialData.deadline),
           faqs: initialData.faqs || [],
           isPremium: initialData.isPremium || false,
         });
