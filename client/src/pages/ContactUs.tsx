@@ -89,8 +89,8 @@ const ContactUs = () => {
 
   return (
     <div className="bg-white">
-      <section className="bg-[#FAF5FF] pt-20 pb-40 relative z-0">
-        <div className="max-w-[417px] mx-auto px-4 text-center flex flex-col items-center space-y-3">
+      <section className="bg-[#FAF5FF] pt-16 md:pt-20 pb-32 md:pb-40 relative z-0">
+        <div className="container max-w-[720px] text-center flex flex-col items-center space-y-3">
           <h2
             className="font-semibold text-[#191919] text-[34px] leading-none"
             style={{ fontFamily: "Poppins, sans-serif" }}
@@ -106,7 +106,7 @@ const ContactUs = () => {
         </div>
       </section>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10">
+      <div className="container -mt-20 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 justify-items-center">
           <InfoCard
             icon={<img src={mailIcon} alt="Email Icon" className="h-[22px] w-[22px]" />}
@@ -129,9 +129,9 @@ const ContactUs = () => {
         </div>
       </div>
 
-      <section className="py-20 border-b border-[#E7E7E9]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white p-8 md:p-12 rounded-[17px] shadow-[0px_4px_23.1px_0px_#8541EF26] grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <section className="py-16 md:py-20 border-b border-[#E7E7E9]">
+        <div className="container">
+          <div className="bg-white p-6 md:p-10 rounded-[17px] shadow-[0px_4px_23.1px_0px_#8541EF26] grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
             <div className="flex flex-col">
               <div>
                 <h3 className="text-[32px] font-semibold bg-gradient-to-r from-[#8541EF] to-[#EB5E77] bg-clip-text text-transparent mb-4 leading-[44px]">
@@ -166,7 +166,7 @@ const ContactUs = () => {
               </div>
             </div>
 
-            <div className="relative bg-white p-8 rounded-[16px] border border-[#E7E7E9] shadow-[0px_4px_23.1px_0px_#8541EF26] pb-24 mt-2">
+            <div className="relative bg-white p-6 md:p-8 rounded-[16px] border border-[#E7E7E9] shadow-[0px_4px_23.1px_0px_#8541EF26] pb-24 mt-2">
               <h4 className="text-2xl font-semibold text-gray-800 mb-6">
                 Keep in touch
               </h4>

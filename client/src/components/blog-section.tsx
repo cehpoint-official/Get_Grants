@@ -33,7 +33,7 @@ export function BlogSection() {
   return (
     <>
       <section id="blog" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container">
           <div className="text-center">
             <div className="inline-block bg-[#FFE1E0] text-[#EB5E77] font-semibold px-4 py-1.5 rounded-full text-sm mb-4">
               Blog

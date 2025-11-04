@@ -52,7 +52,7 @@ export function SmartTools() {
 
   return (
     <section className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container">
         <div className="grid lg:grid-cols-2 gap-8 items-center mb-16">
           <div className="text-center lg:text-left">
             <div className="inline-block bg-[#F3E8FF] text-[#6D28D9] font-semibold px-4 py-1.5 rounded-full text-sm mb-4">

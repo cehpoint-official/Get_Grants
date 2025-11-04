@@ -12,10 +12,10 @@ const GrantCallToAction = () => {
   };
   return (
     <div 
-      className="py-20 px-4 sm:px-6 lg:px-8 text-center"
+      className="py-16 md:py-20 text-center"
       style={{ backgroundColor: '#EEE0FF' }}
     >
-      <div className="max-w-3xl mx-auto">
+      <div className="container max-w-3xl">
         {/* Main Heading */}
         <h1 
           className="text-3xl sm:text-4xl font-bold"

@@ -189,7 +189,7 @@ export default function GrantDetailPage() {
     
     return (
         <div className="bg-gray-50 min-h-screen">
-            <div className="max-w-4xl mx-auto py-8 px-4">
+            <div className="container py-8 md:py-10 3xl:py-12">
                 <Link href="/grants">
                     <Button variant="ghost" className="mb-6 text-violet hover:text-pink">
                         <ArrowLeft className="mr-2 h-4 w-4" />
@@ -197,14 +197,14 @@ export default function GrantDetailPage() {
                     </Button>
                 </Link>
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-                    <div className="p-8">
+                    <div className="p-6 md:p-8">
                         <div className="flex justify-between items-start">
                             <div>
                                 <div className="flex items-center gap-4 mb-2">
                                     <span className="px-3 py-1 text-sm font-semibold rounded-full bg-violet/10 text-violet">{grant.category}</span>
                                     <span className={`px-3 py-1 text-sm font-semibold rounded-full ${grant.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'}`}>{grant.status}</span>
                                 </div>
-                                <h1 className="text-3xl font-bold text-gray-900">{grant.title}</h1>
+                                <h1 className="text-2xl md:text-3xl 3xl:text-4xl font-bold text-gray-900">{grant.title}</h1>
                                 <p className="text-md font-semibold text-gray-700 mt-2 flex items-center gap-2"><Building className="h-5 w-5 text-violet" />{grant.organization}</p>
                             </div>
                             <Button
@@ -219,7 +219,7 @@ export default function GrantDetailPage() {
                             </Button>
                         </div>
 
-                        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 3xl:gap-10">
                             <div>
                                 <h2 className="text-xl font-bold text-violet mb-4">Grant Overview</h2>
                                 <p className="text-gray-700 leading-relaxed">{grant.overview}</p>

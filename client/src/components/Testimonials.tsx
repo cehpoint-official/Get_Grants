@@ -74,7 +74,7 @@ export default function Testimonials() {
 
   return (
     <section className="bg-white py-16 md:py-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div className="space-y-6 self-start text-center lg:text-left">
             <span className="inline-block text-sm font-semibold bg-purple-100 text-purple-700 px-3 py-1 rounded-full">
@@ -96,7 +96,7 @@ export default function Testimonials() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8 3xl:gap-10">
             {loading ? (
               <p>Loading testimonials...</p>
             ) : testimonials.length > 0 ? (

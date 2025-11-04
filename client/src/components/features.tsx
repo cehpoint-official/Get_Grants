@@ -20,8 +20,8 @@ export function Features() {
   ];
 
   return (
-    <section className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-16 md:py-20 bg-white">
+      <div className="container">
         <div className="text-center mb-24">
           <div className="inline-block bg-[#EB5E77]/10 text-[#EB5E77] font-semibold px-4 py-1.5 rounded-full text-sm mb-4">
             Pain Points
@@ -35,7 +35,7 @@ export function Features() {
         </div>
         
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-y-16 md:gap-x-8 max-w-sm md:max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 3xl:gap-10 max-w-3xl md:max-w-5xl lg:max-w-none mx-auto">
           {painPoints.map((point, index) => (
             <div
               key={index}

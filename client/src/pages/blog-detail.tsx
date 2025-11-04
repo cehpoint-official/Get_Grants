@@ -98,7 +98,7 @@ export default function BlogDetail() {
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container">
           <div className="flex gap-8">
             {/* Main Content Area */}
             <div className="flex-1 max-w-4xl">

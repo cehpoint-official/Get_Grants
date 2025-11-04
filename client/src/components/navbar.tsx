@@ -188,7 +188,7 @@ export function Navbar() {
   return (
     <>
       <nav className="bg-white sticky top-0 z-40 border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container">
           <div className="flex justify-between items-center h-20">
             <Link href="/" className="flex items-center gap-2">
               <Rocket className="h-8 w-8 text-violet" />

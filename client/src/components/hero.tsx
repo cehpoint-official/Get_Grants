@@ -26,32 +26,29 @@ export function Hero() {
   };
 
   return (
-    <section 
-      id="home" 
-      className="bg-[#F9FAFB] lg:bg-white p-4 md:p-6 lg:p-8" 
+    <section
+      id="home"
+      className="bg-[#F9FAFB] lg:bg-white py-8 md:py-12"
     >
-      <div 
-        className="w-full h-full rounded-2xl flex items-center relative" 
-        style={{ 
-          background: window.innerWidth >= 1024 ? 'linear-gradient(135deg,rgb(214, 170, 245) 0%,rgb(224, 192, 190) 50%, #FEE6CA 100%)' : 'transparent'
-        }}
+      <div
+        className="relative w-full"
       >
-        <div className="w-full">
-          <div className="max-w-7xl mx-auto lg:mx-[50px] my-12 lg:my-[50px] px-4 sm:px-6 lg:px-8">
-            <div className="lg:grid lg:grid-cols-[1.3fr_0.7fr] lg:gap-14 items-center">
+        <div className="container px-0 my-0">
+          <div className="rounded-2xl lg:rounded-3xl px-4 sm:px-6 lg:px-10 py-10 md:py-16 lg:py-20 min-h-[420px] md:min-h-[520px] lg:min-h-[600px] bg-[linear-gradient(135deg,_rgb(214,170,245)_0%,_rgb(224,192,190)_50%,_#FEE6CA_100%)] shadow-[0_10px_30px_rgba(0,0,0,0.08)] border border-white/40 overflow-hidden relative">
+            <div className="lg:grid lg:grid-cols-[1.2fr_0.8fr] lg:gap-14 items-center">
             
               <div className="flex flex-col text-center lg:text-left">
                 
-                <div>
-                  <h1 className="text-3xl lg:text-[40px] font-extrabold text-[#30343B] mb-4 leading-tight max-w-3xl mx-auto lg:mx-0">
+                <div className="max-w-3xl mx-auto lg:mx-0">
+                  <h1 className="text-3xl md:text-4xl lg:text-[44px] font-extrabold text-[#30343B] mb-3 md:mb-4 leading-tight">
                     <span style={{ color: '#EB5E77', fontWeight: 'bold' }}>Discover & Apply</span> for Startup Grants & Incubator Programs
                   </h1>
-                  <p className="text-lg text-[#565F6C] mb-10 lg:whitespace-nowrap hidden lg:block">
+                  <p className="text-base md:text-lg text-[#565F6C] mb-6 md:mb-8 lg:whitespace-nowrap hidden lg:block">
                     India's go-to platform for early-stage funding and acceleration.
                   </p>
                 </div>
                 
-                <div className="w-full max-w-md mx-auto lg:max-w-none lg:mx-0 mb-8 lg:mb-12">
+                <div className="w-full max-w-md mx-auto lg:max-w-2xl 3xl:max-w-3xl lg:mx-0 mb-6 md:mb-8 lg:mb-10">
                   <form
                     onSubmit={handleSearchSubmit}
                     className="relative w-full"
@@ -60,14 +57,14 @@ export function Hero() {
                       <Search className="absolute left-4 h-5 w-5 text-gray-400 lg:text-[#EB5E77] z-10" />
                       <Input
                         placeholder="Search for grants"
-                        className="pl-12 pr-4 lg:pr-32 h-12 text-base w-full border-0 focus-visible:ring-0 focus:outline-none bg-transparent"
+                        className="pl-12 pr-4 lg:pr-36 h-12 md:h-14 text-base md:text-lg w-full border-0 focus-visible:ring-0 focus:outline-none bg-transparent"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                       />
                       
                       <Button
                         type="submit"
-                        className="hidden lg:flex absolute right-2 top-1/2 -translate-y-1/2 h-11 bg-violet hover:bg-[#8A41CE] text-white px-5 font-semibold text-base rounded-lg transition-colors"
+                        className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 h-11 md:h-12 bg-violet hover:bg-[#8A41CE] text-white px-5 md:px-6 font-semibold text-base rounded-lg transition-colors"
                       >
                         Search
                       </Button>
@@ -112,12 +109,12 @@ export function Hero() {
 
               </div>
 
-              <div className="hidden lg:flex justify-center items-end lg:absolute lg:right-[-60px] lg:bottom-[-110px] z-10">
-                <div className="relative">
+              <div className="hidden lg:flex lg:absolute lg:bottom-0 lg:right-8 xl:right-12 3xl:right-16 z-10 pointer-events-none items-end justify-end">
+                <div className="relative pr-2">
                   <img
                     src={heroImage}
                     alt="Startup collaboration and planning"
-                    className="w-full max-w-lg lg:max-w-xl xl:max-w-2xl h-auto object-contain"
+                    className="w-full max-w-lg lg:max-w-[580px] xl:max-w-[680px] 2xl:max-w-[720px] 3xl:max-w-[780px] h-auto object-contain lg:translate-y-20"
                   />
                 </div>
               </div>

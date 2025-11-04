@@ -307,9 +307,9 @@ export default function GrantsPage() {
     return (
         <>
             <div className="bg-gray-50 min-h-screen">
-                <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div className="container py-10 md:py-12 3xl:py-14">
                     <div className="mb-12 text-center lg:text-left">
-                        <h1 className="font-poppins font-semibold text-[34px] text-gray-800 leading-tight">
+                        <h1 className="font-poppins font-semibold text-[32px] md:text-[36px] 3xl:text-[40px] text-gray-800 leading-tight">
                             Explore All Grants
                         </h1>
                         <p className="font-poppins font-medium text-base text-[#565F6C] leading-tight mt-[5px]">
@@ -317,20 +317,20 @@ export default function GrantsPage() {
                         </p>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-center gap-[20px] mb-8">
+                    <div className="flex flex-col sm:flex-row items-center gap-[16px] md:gap-[20px] mb-8">
                         <div className="relative flex-grow w-full">
                             <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#9F9F9F] pointer-events-none" />
                             <Input
                                 type="text"
                                 aria-label="Search"
                                 placeholder="Search grants by name or des..."
-                                className="w-full h-[50px] text-base font-sans text-[#3A3A3A] placeholder:text-[#9F9F9F] pl-12 pr-4 rounded-[16px] border border-gray-200 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.06)] focus:ring-2 focus:ring-[#8541EF33] focus:border-[#8541EF]"
+                                className="w-full h-[52px] md:h-[56px] text-[15px] md:text-base font-sans text-[#3A3A3A] placeholder:text-[#9F9F9F] pl-12 pr-4 rounded-[16px] border border-gray-200 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.06)] focus:ring-2 focus:ring-[#8541EF33] focus:border-[#8541EF]"
                                 value={searchInput}
                                 onChange={(e) => setSearchInput(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { setSearchTerm(searchInput); setCurrentPage(1); } }}
                             />
                         </div>
-                        <Button onClick={() => { setSearchTerm(searchInput); setCurrentPage(1); }} className="w-full sm:w-[140px] h-[49px] rounded-[16px] bg-[#7E4DFF] hover:bg-[#6f3eff] text-white shadow-[0_8px_18px_rgba(126,77,255,0.35)]">
+                        <Button onClick={() => { setSearchTerm(searchInput); setCurrentPage(1); }} className="w-full sm:w-[150px] h-[52px] md:h-[56px] rounded-[16px] bg-[#7E4DFF] hover:bg-[#6f3eff] text-white shadow-[0_8px_18px_rgba(126,77,255,0.35)]">
                             Search
                         </Button>
                     </div>
@@ -346,7 +346,7 @@ export default function GrantsPage() {
                         </Button>
                     </div>
 
-                    <div className="mb-12 flex flex-wrap justify-center lg:justify-start gap-[14px]">
+                    <div className="mb-10 md:mb-12 flex flex-wrap justify-center lg:justify-start gap-[10px] md:gap-[14px]">
                         {categories.map(category => (
                             <Button
                                 key={category}
@@ -363,7 +363,7 @@ export default function GrantsPage() {
                         ))}
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 md:gap-8 3xl:gap-10">
                         <div className={`${isFilterSidebarOpen ? 'block' : 'hidden'} lg:block`}>
                             <FilterSidebar filters={filters} onFilterChange={handleFilterChange} onResetFilters={handleResetFilters} />
                         </div>
@@ -371,7 +371,7 @@ export default function GrantsPage() {
                         <main className="lg:col-span-3">
                             {currentGrants.length > 0 ? (
                                 <>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 3xl:gap-10">
                                         {currentGrants.map((grant) => (
                                             <GrantCard key={grant.id} grant={grant} user={user} onCardClick={handleCardClick} />
                                         ))}

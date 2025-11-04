@@ -246,7 +246,7 @@ export default function PremiumSupportPage() {
         <div id="premium-support" className="bg-white" >
             
             <section className="bg-[#FAF5FF] pt-10 pb-20 relative z-0">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="container">
                     <div className="text-center py-16">
                         <h2 className="text-3xl lg:text-4xl font-bold text-[#30343B] mb-4">
                             Unlock All Features
@@ -259,7 +259,7 @@ export default function PremiumSupportPage() {
             </section>
 
             <section id="pricing" ref={pricingSectionRef}>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10">
+                <div className="container -mt-20 relative z-10">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 items-stretch">
                         
                         <div className="group bg-white rounded-2xl p-4 text-center shadow-lg border w-full transition-all duration-300 ease-in-out hover:scale-105">
@@ -338,7 +338,7 @@ export default function PremiumSupportPage() {
             </section>
 
             <section className="py-16 ">
-                <div className="max-w-7xl mx-auto px-4 bg-[#F9FAFB] sm:px-6 lg:px-8">
+                <div className="container bg-[#F9FAFB]">
                     <div className="text-center py-10 mb-12">
                         <h2 className="text-4xl mb-4" style={{ fontFamily: 'Poppins', fontWeight: 600, color: '#30343B' }}>Unlock All Features</h2>
                         <p className="text-base" style={{ fontFamily: 'Poppins', fontWeight: 400, color: '#00000094' }}>Enjoy full access to every tool and benefit without any limits.</p>
@@ -380,7 +380,7 @@ export default function PremiumSupportPage() {
             <Faq />
 
             <section className="py-16 bg-[#F5F5F5]">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <div className="container text-center">
                     <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Need Assistance?</h2>
                     <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-8">Reach out to our team for tailored solutions and <br /> personalized support.</p>
                     <Button onClick={handleConnectClick} className="bg-[linear-gradient(90deg,_#8A51CE_0%,_#EB5E77_100%)] hover:opacity-90 text-white px-8 py-4 font-semibold text-base rounded-lg shadow-lg transition-opacity" style={{ backgroundColor: '#EB5E77' }}>Connect Us</Button>

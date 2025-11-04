@@ -19,8 +19,8 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-[#111827] text-white py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="bg-[#111827] text-white py-14 md:py-16">
+      <div className="container">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-10 lg:gap-x-8 text-center lg:text-left">
           
           <div className="lg:col-span-4 flex flex-col items-center lg:items-start">
@@ -102,7 +102,7 @@ export function Footer() {
           </div>
         </div>
         
-        <div className="mt-12 pt-8 border-t border-gray-700">
+        <div className="mt-10 md:mt-12 pt-8 border-t border-gray-700">
           <div className="text-center text-white text-sm opacity-75">
             <p>&copy; {new Date().getFullYear()} Get Grants. All rights reserved</p>
           </div>

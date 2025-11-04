@@ -14,6 +14,34 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+// Guard: surface clearer error if env vars are missing/misconfigured
+(() => {
+  const required = [
+    "VITE_FIREBASE_API_KEY",
+    "VITE_FIREBASE_AUTH_DOMAIN",
+    "VITE_FIREBASE_PROJECT_ID",
+    "VITE_FIREBASE_STORAGE_BUCKET",
+    "VITE_FIREBASE_MESSAGING_SENDER_ID",
+    "VITE_FIREBASE_APP_ID",
+  ] as const;
+
+  const missing = required.filter((k) => !import.meta.env[k] || String(import.meta.env[k]).trim() === "");
+  if (missing.length > 0) {
+    // Do not log actual secrets; only which keys are missing
+    throw new Error(
+      `Missing Firebase env variables: ${missing.join(", ")}. Create client/.env.local with VITE_* keys from Firebase Console (Project settings > General > Your apps).`
+    );
+  }
+
+  const key = String(import.meta.env.VITE_FIREBASE_API_KEY || "");
+  if (!key.startsWith("AIza")) {
+    // Web API keys issued by Google typically start with AIza
+    throw new Error(
+      "VITE_FIREBASE_API_KEY looks invalid. Ensure you pasted the Web API key from Firebase Console (starts with AIza)."
+    );
+  }
+})();
+
 // Initialize Firebase App
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);

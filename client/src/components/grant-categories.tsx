@@ -1775,7 +1775,7 @@ export function GrantCategories() {
         grant={selectedGrant}
         onSubmit={handleModalSubmit}
       />
-     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="container">
        <div className="text-center mb-6">
          <h1 className="text-2xl sm:text-3xl lg:text-[44px] leading-[1.15] tracking-tight text-[#16181D]">
            Discover the Right Grants for Your Startup Journey
